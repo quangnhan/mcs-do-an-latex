@@ -1,0 +1,28 @@
+\documentclass[12pt,a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T5]{fontenc}
+\usepackage[vietnamese]{babel}
+\usepackage{graphicx}
+\usepackage{amsmath, amssymb}
+\usepackage{hyperref}
+
+\begin{document}
+
+% Trang bìa
+\input{trang_bia}
+
+% Mục lục
+\tableofcontents
+
+% Tài liệu tham khảo (đặt trước các chương theo yêu cầu)
+\input{tai_lieu_tham_khao}
+
+% Các chương thành phần
+\include{chuong_1_gioi_thieu}
+\include{chuong_2_co_so_ly_thuyet}
+\include{chuong_3_phan_tich_thiet_ke}
+\include{chuong_4_trien_khai_danh_gia}
+\include{chuong_5_ket_luan}
+
+\end{document}
