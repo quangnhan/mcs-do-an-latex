@@ -1,0 +1,63 @@
+\chapter{Giới thiệu đề tài}\label{chap:gioi-thieu-de-tai}
+
+\section{Đặt vấn đề}\label{sec:dat-van-de}
+
+Trong bối cảnh bùng nổ của mạng xã hội, đặc biệt là TikTok và Facebook tại thị trường Việt Nam, hoạt động marketing đóng vai trò sống còn đối với các doanh nghiệp vừa và nhỏ (SME) ngành Thực phẩm \& Đồ uống (F\&B). Tuy nhiên, các chủ doanh nghiệp F\&B thường là chuyên gia trong lĩnh vực ẩm thực nhưng lại thiếu kiến thức, kỹ năng và thời gian để xây dựng, triển khai một chiến lược marketing số nhất quán và hiệu quả. Nhiều đơn vị còn thiếu hụt nhân sự marketing chuyên môn, khiến việc duy trì tần suất đăng bài, bắt kịp xu hướng và tương tác kịp thời với khách hàng trở nên quá tải.
+
+Các giải pháp thuê agency truyền thống thường tốn kém; trong khi đó, việc chỉ dựa vào mô hình ngôn ngữ lớn (LLM) dạng tổng quát hoặc các công cụ quản lý mạng xã hội điển hình vẫn bắt buộc người dùng tự sáng tạo ý tưởng, tự kiểm duyệt và tự điều phối quy trình. Điều này không giải quyết trọn vẹn hai vấn đề cốt lõi: (i) nội dung cần mang phong cách phù hợp ngành F\&B và thương hiệu; (ii) trước khi đăng tải, cần một cơ chế đánh giá chất lượng có thể lặp lại, gần với tiêu chuẩn vận hành thực tế (production-ready) thay vì duyệt thủ công kéo dài.
+
+Ứng dụng AI Agent chuyên biệt, kết hợp kỹ thuật tinh chỉnh mô hình (fine-tuning)---ví dụ các phương pháp hiệu quả tham số như LoRA/QLoRA và tối ưu hóa theo phần thưởng nhóm như GRPO---cùng pipeline đánh giá đa lớp (quy tắc cứng, chỉ số xác suất từ logprobs, và đánh giá định tính kiểu LLM-as-a-Judge) mở ra hướng tiếp cận mới: vừa định hình phong cách marketing, vừa tự động hóa bước ``chấm điểm'' và gợi ý cải thiện trước khi nội dung được đưa lên kênh. Vì vậy, việc nghiên cứu phát triển và tối ưu hóa Marketing Agent cho SME F\&B trong khuôn khổ đề tài này có ý nghĩa thực tiễn rõ rệt: giảm thời gian và chi phí, nâng tính nhất quán nội dung, đồng thời tăng độ tin cậy của khâu kiểm soát chất lượng trước khi đăng bài.
+
+\section{Mục tiêu nghiên cứu}\label{sec:muc-tieu-nghien-cuu}
+
+\subsection{Mục đích của đề tài}\label{subsec:muc-dich-de-tai}
+
+Đề tài hướng tới xây dựng một Marketing Agent chuyên biệt cho SME ngành F\&B, không dừng ở việc gọi LLM tổng quát, mà tích hợp tinh chỉnh mô hình theo dữ liệu và mục tiêu phong cách, kèm quy trình đánh giá chất lượng tự động nhiều lớp nhằm hỗ trợ quyết định đăng tải an toàn và hiệu quả hơn.
+
+Cụ thể, hệ thống cần hỗ trợ người dùng không chuyên sâu về marketing trong việc biến các nguồn thông tin và tài liệu (văn bản, URL, tài liệu nội bộ, dữ liệu thực tế ngành F\&B) thành nội dung có cấu trúc: caption, kịch bản ngắn, gợi ý hook--thân bài--kêu gọi hành động (CTA), phù hợp kênh Facebook/TikTok. Đồng thời, đề tài hướng tới chứng minh tính khả thi của pipeline chấm điểm và lọc nội dung trước khi đăng, làm cơ sở cho cơ chế tự động hóa mức độ cao (ví dụ auto-approval có ngưỡng) trong bối cảnh vận hành thực tế.
+
+\subsection{Mục tiêu cụ thể}\label{subsec:muc-tieu-cu-the}
+
+Nhằm đạt mục đích trên, đề tài đặt các mục tiêu cụ thể sau:
+
+\begin{itemize}
+  \item \textbf{Xây dựng Agent chuyên biệt:} Thiết kế luồng xử lý kết hợp truy xuất tri thức (RAG) với tinh chỉnh mô hình mã nguồn mở, tối ưu theo phong cách marketing F\&B và brand voice.
+  \item \textbf{Nghiên cứu và áp dụng fine-tuning:} Triển khai các kỹ thuật PEFT (LoRA/QLoRA) và thuật toán tối ưu hóa theo nhóm (GRPO) nhằm định hình phong cách nội dung, giảm phụ thuộc vào prompt dài và biến động.
+  \item \textbf{Thiết lập hệ thống đánh giá đa lớp:} Xây dựng pipeline gồm các lớp kiểm tra (quy tắc cứng, chỉ số xác suất dựa trên perplexity/logprobs, đánh giá định tính với LLM-as-a-Judge/G-Eval) để tự động chấm điểm và hỗ trợ quyết định trước khi đăng bài.
+  \item \textbf{Thực nghiệm và đối chiếu:} So sánh mô hình nền và mô hình sau fine-tuning, đối soát điểm số pipeline với đánh giá của con người nhằm kiểm định độ tin cậy.
+  \item \textbf{Đánh giá trải nghiệm người dùng:} Đảm bảo hướng tới người dùng SME không chuyên công nghệ: giao diện và quy trình đơn giản, giảm cấu hình thủ công.
+\end{itemize}
+
+\section{Đối tượng và phạm vi nghiên cứu}\label{sec:doi-tuong-va-pham-vi}
+
+\textbf{Đối tượng nghiên cứu} là quy trình tự động hóa marketing số cho SME ngành F\&B, trong đó Marketing Agent đóng vai trò trung tâm trong sinh nội dung, truy xuất tri thức thương hiệu/menu và đánh giá chất lượng đầu ra.
+
+\textbf{Phạm vi nghiên cứu} được giới hạn như sau:
+\begin{itemize}
+  \item \textbf{Đối tượng doanh nghiệp:} SME F\&B tại Việt Nam, phản ánh nhu cầu vận hành thực tế và dữ liệu khảo sát trong khuôn khổ đề tài.
+  \item \textbf{Kênh truyền thông:} Ưu tiên nội dung ngắn, viral và tương tác trên Facebook và TikTok; không mở rộng đầy đủ sang đa kênh quảng cáo trả phí hay CRM nếu không được đề cập trong phần thực nghiệm.
+  \item \textbf{Phạm vi kỹ thuật:} Tập trung vào mô hình ngôn ngữ mã nguồn mở, RAG, fine-tuning (LoRA/GRPO) và pipeline đánh giá đa lớp; các hướng đa phương thức (sinh ảnh/video tự động) chỉ được nhắc trong phần hạn chế và hướng phát triển nếu chưa hiện thực đầy đủ.
+\end{itemize}
+
+\section{Phương pháp nghiên cứu}\label{sec:phuong-phap-nghien-cuu}
+
+Đề tài sử dụng các phương pháp sau:
+
+\begin{itemize}
+  \item \textbf{Khảo sát và phân tích tài liệu:} Hệ thống hóa lý thuyết về kiến trúc mô hình hiện đại (Transformer, MoE\ldots), fine-tuning hiệu quả tham số, RAG và metrics đánh giá; đồng thời phân tích thực trạng SME F\&B và nhu cầu người dùng.
+  \item \textbf{Thực nghiệm so sánh (benchmarking):} So sánh chất lượng đầu ra giữa mô hình gốc và mô hình đã tinh chỉnh trên cùng bộ tác vụ và tiêu chí đánh giá.
+  \item \textbf{Hiện thực pipeline đánh giá đa lớp:} Xây dựng và chạy thử pipeline gồm các module kiểm tra theo quy tắc, đo lường xác suất/ngôn ngữ, và đánh giá bằng mô hình trung gian (LLM-as-a-Judge), nhằm đạt chuẩn kiểm soát trước khi đăng.
+  \item \textbf{Đối chiếu với đánh giá con người:} Thu thập điểm số/ nhận xét từ người đánh giá để phân tích tương quan với điểm pipeline, làm cơ sở cho kết luận về độ tin cậy của hệ thống tự động chấm điểm.
+\end{itemize}
+
+\section{Bố cục báo cáo}\label{sec:bo-cuc-bao-cao}
+
+Báo cáo gồm năm chương:
+
+\begin{itemize}
+  \item \textbf{Chương 1 -- Giới thiệu đề tài:} Trình bày vấn đề, mục tiêu, đối tượng và phạm vi, phương pháp nghiên cứu.
+  \item \textbf{Chương 2 -- Tìm hiểu và nghiên cứu thị trường:} Phân tích thực trạng marketing SME F\&B, nhu cầu người dùng và lý giải sự cần thiết của bước kiểm soát chất lượng (approval) cùng hướng tự động hóa đánh giá.
+  \item \textbf{Chương 3 -- Cơ sở lý thuyết và công nghệ:} Trình bày nền tảng về mô hình ngôn ngữ, chiến lược fine-tuning (LoRA, GRPO), RAG và lý thuyết đánh giá chất lượng đa lớp.
+  \item \textbf{Chương 4 -- Thực nghiệm và phân tích kết quả:} Mô tả thiết kế hệ thống Agent, hiện thực pipeline đánh giá, thực nghiệm fine-tuning và phân tích tương quan giữa điểm tự động và đánh giá con người.
+  \item \textbf{Chương 5 -- Kết luận và hướng phát triển:} Tổng kết đóng góp, khả năng ứng dụng auto-approval, hạn chế và định hướng mở rộng.
+\end{itemize}

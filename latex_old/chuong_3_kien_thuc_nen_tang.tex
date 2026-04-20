@@ -1,0 +1,650 @@
+\section{Kiến thức nền tảng và công nghệ sử
+dụng}\label{kiux1ebfn-thux1ee9c-nux1ec1n-tux1ea3ng-vuxe0-cuxf4ng-nghux1ec7-sux1eed-dux1ee5ng}
+
+\subsection{NLP}\label{nlp}
+
+\subsubsection{Bag of word}\label{bag-of-word}
+
+Bag of Words (BoW) là một kỹ thuật biểu diễn văn bản đơn giản trong xử
+lý ngôn ngữ tự nhiên, trong đó mỗi tài liệu được xem như một "túi" chứa
+các từ mà không quan tâm đến thứ tự hay ngữ pháp. Mô hình này đếm số lần
+xuất hiện của từng từ trong tập từ vựng để tạo thành vector đặc trưng,
+giúp máy học có thể xử lý và so sánh các văn bản dựa trên tần suất xuất
+hiện của từ. BoW dễ triển khai nhưng không nắm được ngữ cảnh hay ý nghĩa
+của từ trong câu.
+
+\includegraphics[width=4.96354in,height=2.14372in]{media/image1.png}
+
+\emph{\textbf{Hình 3.1.1. Bag of words.}}
+
+\emph{Nguồn: ``Bag of Words in NLP'', Medium. Trích từ :
+https://ayselaydin.medium.com/4-bag-of-words-model-in-nlp-434cb38cdd1b}
+
+\subsubsection{TF-IDF}\label{tf-idf}
+
+TF-IDF (Term Frequency -- Inverse Document Frequency) là một phương pháp
+biểu diễn văn bản nhằm đo lường mức độ quan trọng của một từ trong một
+tài liệu so với toàn bộ tập tài liệu. TF thể hiện tần suất xuất hiện của
+từ trong tài liệu, còn IDF giảm trọng số của những từ xuất hiện phổ biến
+ở nhiều tài liệu vì chúng ít mang ý nghĩa phân biệt. Khi nhân TF và IDF,
+ta thu được trọng số TF-IDF: giá trị càng cao cho thấy từ đó vừa xuất
+hiện nhiều trong tài liệu, vừa ít gặp trong tài liệu khác, từ đó phản
+ánh mức độ quan trọng của nó. TF-IDF thường được dùng trong tìm kiếm,
+phân loại, và lọc thông tin văn bản.
+
+\includegraphics[width=4.80279in,height=2.86412in]{media/image2.png}
+
+\emph{\textbf{Hình 3.1.2. TF-IDF.}}
+
+\emph{Nguồn: ``Text Vectorization and Word Embedding \textbar{} Guide to
+Master NLP (Part 5)'', Analytics Vidhya. Trích từ :
+https://www.analyticsvidhya.com/blog/2021/06/part-5-step-by-step-guide-to-master-nlp-text-vectorization-approaches/}
+
+\subsubsection{Word Embeddings}\label{word-embeddings}
+
+Word Embedding là một kỹ thuật biểu diễn từ trong không gian vector liên
+tục, trong đó mỗi từ được ánh xạ thành một vector số thực có kích thước
+cố định. Khác với Bag of Words hay TF-IDF chỉ dựa vào tần suất, Word
+Embedding nắm bắt được ngữ nghĩa và mối quan hệ ngữ cảnh giữa các từ.
+Nhờ đó, các từ có nghĩa gần nhau thường nằm gần nhau trong không gian
+vector (ví dụ: \emph{king} gần \emph{queen}, \emph{cat} gần \emph{dog}).
+Word Embedding là nền tảng quan trọng trong nhiều mô hình học sâu xử lý
+ngôn ngữ tự nhiên như Word2Vec, GloVe, FastText và các mô hình
+Transformer hiện đại.
+
+\includegraphics[width=3.69758in,height=2.75565in]{media/image3.png}
+
+\emph{\textbf{Hình 3.1.3. Word embeddings.}}
+
+\emph{Nguồn: ``Word Embedding: Basics'', Medium. Trích từ :
+https://medium.com/@hari4om/word-embedding-d816f643140}
+
+\subsubsection{RNN}\label{rnn}
+
+Recurrent Neural Network (RNN) là một loại mạng nơ-ron được thiết kế để
+xử lý dữ liệu theo chuỗi, chẳng hạn như văn bản, âm thanh hoặc chuỗi
+thời gian. Điểm đặc biệt của RNN là bộ nhớ ẩn (hidden state), cho phép
+mạng ghi nhớ thông tin từ các bước trước và sử dụng nó để dự đoán bước
+tiếp theo, nhờ đó nắm bắt được mối quan hệ tuần tự trong dữ liệu.
+
+RNN thường được dùng trong các bài toán như dự đoán chuỗi, dịch máy,
+nhận dạng giọng nói, và tạo văn bản. Tuy nhiên, RNN truyền thống gặp vấn
+đề vanishing/exploding gradient khi học các chuỗi dài, dẫn đến khó khăn
+trong việc nắm bắt ngữ cảnh xa. Các biến thể như LSTM (Long Short-Term
+Memory) và GRU (Gated Recurrent Unit) đã được phát triển để giải quyết
+vấn đề này, cho phép ghi nhớ thông tin lâu hơn và cải thiện hiệu suất
+của mô hình.
+
+\includegraphics[width=6.26772in,height=1.86111in]{media/image4.png}
+
+\emph{\textbf{Hình 3.1.4. RNN.}}
+
+\emph{Nguồn: ``What is Recurrent Neural Networks (RNN)?'', Analytics
+Vidhya. Trích từ :
+https://www.analyticsvidhya.com/blog/2022/03/a-brief-overview-of-recurrent-neural-networks-rnn/}
+
+\subsubsection{Sequence-to-Sequence}\label{sequence-to-sequence}
+
+Sequence-to-Sequence (Seq2Seq) là một kiến trúc mạng nơ-ron được thiết
+kế để chuyển đổi một chuỗi đầu vào thành một chuỗi đầu ra, thường có độ
+dài khác nhau. Kiến trúc này bao gồm encoder và decoder:
+
+\begin{itemize}
+\item
+  Encoder đọc toàn bộ chuỗi đầu vào và mã hóa thông tin thành một vector
+  ngữ cảnh (context vector).
+\item
+  Decoder sử dụng vector này để sinh ra chuỗi đầu ra từng bước một, dựa
+  trên ngữ cảnh và các từ đã sinh trước đó.
+\end{itemize}
+
+Seq2Seq được ứng dụng rộng rãi trong các bài toán như dịch máy (machine
+translation), tóm tắt văn bản (text summarization), trả lời tự động
+(chatbots) và nhiều tác vụ chuyển đổi chuỗi khác. Khi kết hợp với cơ chế
+attention, Seq2Seq có thể nắm bắt ngữ cảnh tốt hơn, cải thiện chất lượng
+dự đoán cho các chuỗi dài.
+
+\includegraphics[width=4.92708in,height=1.55208in]{media/image5.png}
+
+\emph{\textbf{Hình 3.1.5. Seq2seq.}}
+
+\emph{Nguồn: ``Sequence-to-Sequence Learning for Machine Translation'',
+Dive Into Deep Learning. Trích từ :
+https://d2l.ai/chapter\_recurrent-modern/seq2seq.html}
+
+\subsubsection{Attention Mechanism}\label{attention-mechanism}
+
+Attention mechanism trong RNN giúp mô hình tập trung vào những phần quan
+trọng của chuỗi đầu vào khi tạo ra mỗi bước của đầu ra. Thay vì chỉ dựa
+vào hidden state cuối cùng (vốn dễ mất thông tin khi chuỗi dài),
+attention tạo ra một trọng số cho từng hidden state của encoder, cho
+biết mức độ liên quan của nó đối với bước giải mã hiện tại. Sau đó, mô
+hình tạo ra context vector bằng cách nhân các hidden state với trọng số
+attention này. Nhờ đó, RNN có thể ``nhìn lại'' toàn bộ chuỗi đầu vào và
+chọn lọc thông tin quan trọng, giúp cải thiện đáng kể chất lượng dịch,
+tóm tắt văn bản và các tác vụ seq2seq khác.
+
+\includegraphics[width=6.26772in,height=2.91667in]{media/image6.png}
+
+\emph{\textbf{Hình 3.1.6. Attention Mechanism.}}
+
+\emph{Nguồn: ``The Attention Mechanism Before Transformers'', The
+AIedge. Trích từ :
+https://newsletter.theaiedge.io/p/the-attention-mechanism-before-transformers}
+
+\subsection{Nghiên cứu LLM}\label{nghiuxean-cux1ee9u-llm}
+
+\subsubsection{Nghiên cứu cách máy tính hiểu ngôn ngữ tự
+nhiên}\label{nghiuxean-cux1ee9u-cuxe1ch-muxe1y-tuxednh-hiux1ec3u-nguxf4n-ngux1eef-tux1ef1-nhiuxean}
+
+\paragraph{Tokenization}\label{tokenization}
+
+Tokenization là quá trình chuyển đổi văn bản tự nhiên thành các đơn vị
+nhỏ hơn gọi là token. Một token có thể là một từ, một ký tự, hoặc một
+đoạn văn bản phụ thuộc vào phương pháp tokenization được sử dụng.
+
+Trong các mô hình ngôn ngữ lớn (LLM), token thường là các phần từ con
+(subword) nhờ vào các kỹ thuật như Byte Pair Encoding (BPE) hoặc
+SentencePiece.
+
+Quá trình này giúp mô hình hiểu và xử lý ngôn ngữ hiệu quả hơn, đồng
+thời giảm số lượng từ vựng cần thiết để huấn luyện, đặc biệt hữu ích khi
+làm việc với nhiều ngôn ngữ hoặc từ ngữ hiếm.
+
+\includegraphics[width=3.97344in,height=2.23438in]{media/image7.png}
+
+\emph{\textbf{Hình 3.2.2.1. Chuyển một câu thành các token nhỏ hơn.}}
+
+\emph{Nguồn: ``Tokenization --- A complete guide'', Medium. Trích từ :
+https://medium.com/@utkarsh.kant/tokenization-a-complete-guide-3f2dd56c0682}
+
+\paragraph{Embedding}\label{embedding}
+
+Embedding là quá trình chuyển các token sau khi tokenization thành các
+vector số trong không gian nhiều chiều, nhằm giúp mô hình xử lý được
+ngôn ngữ tự nhiên dưới dạng dữ liệu số.
+
+Mỗi token sẽ được ánh xạ thành một vector có giá trị thực, thể hiện ngữ
+nghĩa và mối quan hệ giữa các từ trong ngữ cảnh. Các phương pháp phổ
+biến như Word2Vec, GloVe, hay embedding học được từ các mô hình
+transformer như BERT hoặc GPT giúp mô hình hiểu được sự tương đồng ngữ
+nghĩa và ngữ cảnh của từ ngữ. Embedding là bước quan trọng để máy tính
+``hiểu'' được ngôn ngữ con người.
+
+\includegraphics[width=5.64678in,height=3.07665in]{media/image8.png}
+
+\emph{\textbf{Hình 3.2.1.2. Chuyển một câu thành một vector.}}
+
+\emph{Nguồn: A Complete Guide to Embedding For NLP \& Generative AI/LLM,
+Toward AI. Trích từ:
+https://pub.towardsai.net/a-complete-guide-to-embedding-for-nlp-generative-ai-llm-4a24301aba97}
+
+\subsubsection{Nghiên cứu quy trình huấn luyện mô hình ngôn ngữ lớn
+(LLM) từ
+đầu}\label{nghiuxean-cux1ee9u-quy-truxecnh-huux1ea5n-luyux1ec7n-muxf4-huxecnh-nguxf4n-ngux1eef-lux1edbn-llm-tux1eeb-ux111ux1ea7u}
+
+Huấn luyện một mô hình ngôn ngữ lớn (LLM) từ đầu là một quá trình phức
+tạp và tốn nhiều tài nguyên, bao gồm ba bước chính: chuẩn bị dữ liệu,
+chuẩn bị phần cứng, và thực hiện huấn luyện mô hình.
+
+\paragraph{Chuẩn bị dữ liệu}\label{chuux1ea9n-bux1ecb-dux1eef-liux1ec7u}
+
+Việc huấn luyện LLM đòi hỏi một lượng lớn dữ liệu văn bản đa dạng và
+chất lượng cao. Dữ liệu có thể được thu thập từ các nguồn như sách,
+trang web, tài liệu kỹ thuật,... Sau đó, dữ liệu cần được làm sạch, loại
+bỏ các nội dung không phù hợp và chuẩn hóa định dạng để phù hợp với quá
+trình tokenization.
+
+\includegraphics[width=4.08233in,height=3.06175in]{media/image9.png}
+
+\emph{\textbf{Hình 3.2.2.1. Sử dụng dữ liệu từ internet để huấn luyện
+LLM.}}
+
+\emph{Nguồn: Làm thế nào để đào tạo Large Language Models, VinBigData.
+Trích từ:
+https://vinbigdata.com/cong-nghe-giong-noi/lam-the-nao-de-dao-tao-large-language-models.html}
+
+\paragraph{Chuẩn bị hardware}\label{chuux1ea9n-bux1ecb-hardware}
+
+Huấn luyện LLM yêu cầu phần cứng mạnh, đặc biệt là các GPU hiệu năng cao
+hoặc cụm máy tính phân tán. Ngoài ra, cần cân nhắc bộ nhớ GPU, băng
+thông I/O và khả năng lưu trữ lớn để xử lý hàng tỷ token trong quá trình
+huấn luyện.
+
+\includegraphics[width=4.35573in,height=2.45282in]{media/image10.png}
+
+\emph{\textbf{Hình 3.2.2.2. NVIDIA GPU 4090\\
+}Nguồn: GeForce RTX 4090, Nvidia. Trích từ:
+https://www.nvidia.com/en-gb/geforce/graphics-cards/40-series/rtx-4090/}
+
+\paragraph{Training LLM}\label{training-llm}
+
+Quá trình huấn luyện bao gồm việc truyền dữ liệu qua mạng neural
+transformer, điều chỉnh trọng số qua các bước lan truyền ngược
+(backpropagation) nhằm tối ưu hóa hàm mất mát. Thời gian huấn luyện có
+thể kéo dài từ vài ngày đến vài tuần tùy vào kích thước mô hình và tài
+nguyên phần cứng. Trong giai đoạn này, việc giám sát quá trình huấn
+luyện và điều chỉnh siêu tham số là rất quan trọng để đạt được hiệu quả
+tối ưu.
+
+\includegraphics[width=4.81128in,height=2.62143in]{media/image11.png}
+
+\emph{\textbf{Hình 3.2.2.3. Mô hình Transformer.}}
+
+\emph{Nguồn: Foundation Models, Transformers, BERT and GPT, Niklas
+Heidloff. Trích từ:
+https://heidloff.net/article/foundation-models-transformers-bert-and-gpt/}
+
+\subsubsection{Nghiên cứu quy trình fine tune LLM với kiến thức
+mới}\label{nghiuxean-cux1ee9u-quy-truxecnh-fine-tune-llm-vux1edbi-kiux1ebfn-thux1ee9c-mux1edbi}
+
+Fine-tuning là quá trình điều chỉnh một mô hình ngôn ngữ lớn (LLM) đã
+được huấn luyện trước để học thêm các kiến thức mới hoặc thích nghi với
+một tác vụ cụ thể. Quá trình này giúp tiết kiệm thời gian và tài nguyên
+so với việc huấn luyện từ đầu, đồng thời tận dụng được khả năng hiểu
+ngôn ngữ đã có sẵn của mô hình.
+
+\paragraph{Chuẩn bị dữ
+liệu}\label{chuux1ea9n-bux1ecb-dux1eef-liux1ec7u-1}
+
+Dữ liệu fine-tune cần phù hợp với mục tiêu ứng dụng: có thể là hội
+thoại, câu hỏi--trả lời, dữ liệu kỹ thuật, hoặc tài liệu chuyên ngành.
+Dữ liệu cần được định dạng đúng chuẩn (thường theo dạng
+prompt--response) và có chất lượng cao để đảm bảo hiệu quả fine-tune.
+
+\includegraphics[width=4.97396in,height=2.62247in]{media/image12.png}
+
+\emph{\textbf{Hình 3.2.3.1. Dữ liệu dạng hỏi/trả lời để fine tune LLM}}
+
+\emph{Nguồn: A Dataset for LLM Question Answering with External Tools,
+Yuchen Zhuang. Trích từ: https://neurips.cc/virtual/2023/poster/73466}
+
+\paragraph{Chuẩn bị hardware}\label{chuux1ea9n-bux1ecb-hardware-1}
+
+Fine-tune yêu cầu phần cứng nhẹ hơn so với huấn luyện từ đầu nhưng vẫn
+cần GPU có dung lượng bộ nhớ lớn (tối thiểu 16GB VRAM cho mô hình vài tỷ
+tham số). Các kỹ thuật như LoRA (Low-Rank Adaptation) giúp giảm chi phí
+phần cứng khi fine-tune.
+
+\includegraphics[width=4.35573in,height=2.45282in]{media/image10.png}
+
+\emph{\textbf{Hình 3.2.3.2. NVIDIA GPU 4090}}
+
+\emph{Nguồn: GeForce RTX 4090, Nvidia. Trích từ:
+https://www.nvidia.com/en-gb/geforce/graphics-cards/40-series/rtx-4090/}
+
+\paragraph{Lựa chọn mô hình
+LLM}\label{lux1ef1a-chux1ecdn-muxf4-huxecnh-llm}
+
+Chọn mô hình pre-trained phù hợp với kích thước và yêu cầu ứng dụng. Các
+mô hình phổ biến để fine-tune hiện nay gồm: LLaMA 3, Mistral, hoặc
+Phi-2. Việc lựa chọn mô hình phụ thuộc vào tài nguyên sẵn có, và độ hiệu
+quả trên tác vụ mục tiêu.
+
+\includegraphics[width=4.14063in,height=1.91974in]{media/image13.png}
+
+\emph{\textbf{Hình 3.2.3.3. Mô hình Llama của Meta rất phổ biến khi fine
+tune LLM.}}
+
+\emph{Nguồn: LLaMA: Meta's Open-Source Rival to Google and OpenAI,
+Ankur. Trích từ:
+https://www.ankursnewsletter.com/p/llama-metas-open-source-rival-to}
+
+\paragraph{Fine tune LLM}\label{fine-tune-llm}
+
+Thực hiện fine-tune mô hình bằng phương pháp LoRA (Low-Rank Adaptation)
+thông qua các thư viện như Hugging Face Transformers, PEFT, hoặc tích
+hợp với DeepSpeed để tối ưu hiệu suất. Trong quá trình huấn luyện, theo
+dõi các chỉ số như loss và perplexity nhằm đánh giá mức độ học của mô
+hình. Có thể áp dụng thêm các kỹ thuật kiểm soát như early stopping và
+gradient checkpointing để tiết kiệm tài nguyên và ngăn hiện tượng
+overfitting.
+
+\includegraphics[width=4.92576in,height=2.26563in]{media/image14.png}
+
+\emph{\textbf{Hình 3.2.3.4. Sử dụng LoRA khi fine tune LLM.}}
+
+\emph{Nguồn: Low Rank Adaptation (LoRA): Efficient Fine-Tuning for
+Real-World AI Applications, Pranjal Khadka. Trích từ:
+https://pub.towardsai.net/low-rank-adaptation-lora-fedf37b92026}
+
+\subsection{Nghiên cứu AI Agent}\label{nghiuxean-cux1ee9u-ai-agent}
+
+AI Agent là hệ thống trí tuệ nhân tạo có khả năng tương tác với con
+người và môi trường một cách linh hoạt, chủ động, và có mục tiêu rõ
+ràng. Trong bối cảnh LLM, AI Agent được thiết kế để mở rộng khả năng của
+mô hình ngôn ngữ bằng cách thêm kiến thức mới, tương tác với phần mềm,
+và thực hiện chuỗi hành động phức tạp.
+
+\includegraphics[width=3.27877in,height=3.46297in]{media/image15.png}
+
+\emph{\textbf{Hình 3.3. Kiến trúc tổng quan của AI Agent}}
+
+\emph{Nguồn: Agent 101 hơ to build your first ai agent in 30 minutes,
+Anmol Baranwal.Trích từ:
+https://www.copilotkit.ai/blog/agents-101-how-to-build-your-first-ai-agent-in-30-minutes}
+
+\subsubsection{\texorpdfstring{\textbf{Nghiên cứu cách thêm kiến thức
+mới vào cho
+LLM}}{Nghiên cứu cách thêm kiến thức mới vào cho LLM}}\label{nghiuxean-cux1ee9u-cuxe1ch-thuxeam-kiux1ebfn-thux1ee9c-mux1edbi-vuxe0o-cho-llm}
+
+\paragraph{Retrieval Augmented Generation
+(RAG)}\label{retrieval-augmented-generation-rag}
+
+RAG là kỹ thuật giúp LLM truy cập kiến thức bên ngoài thông qua truy vấn
+tìm kiếm tài liệu, sau đó kết hợp nội dung đó để tạo câu trả lời. Thay
+vì ``nhồi'' tất cả kiến thức vào mô hình qua fine-tune, RAG cho phép giữ
+mô hình gọn nhẹ, dễ cập nhật kiến thức. Các thành phần chính trong RAG
+gồm: vector store, retriever, và mô hình LLM.
+
+\includegraphics[width=5.99479in,height=2.89in]{media/image16.png}
+
+\emph{\textbf{Hình 3.3.1.1. Lấy những dữ liệu bên ngoài đưa vào trong
+prompt}}
+
+\emph{Nguồn: RAG from scratch. Trích từ:
+https://github.com/langchain-ai/rag-from-scratch}
+
+\subsubsection{\texorpdfstring{\textbf{Nghiên cứu cách giúp LLM tương
+tác với các phần mềm khác theo thời gian
+thực}}{Nghiên cứu cách giúp LLM tương tác với các phần mềm khác theo thời gian thực}}\label{nghiuxean-cux1ee9u-cuxe1ch-giuxfap-llm-tux1b0ux1a1ng-tuxe1c-vux1edbi-cuxe1c-phux1ea7n-mux1ec1m-khuxe1c-theo-thux1eddi-gian-thux1ef1c}
+
+\paragraph{AI use tools}\label{ai-use-tools}
+
+Để giúp LLM không chỉ ``nói'' mà còn ``hành động'', một AI Agent cần khả
+năng gọi và sử dụng công cụ (tool usage). Ví dụ: gọi API, truy xuất cơ
+sở dữ liệu, gửi email, thực hiện tìm kiếm,... Điều này thường được tích
+hợp qua các ``tool executor'' trong hệ thống, cho phép LLM viết và gọi
+lệnh Python, HTTP request hoặc các đoạn mã shell để đạt mục tiêu cụ thể.
+
+\includegraphics[width=5.77541in,height=3.46332in]{media/image17.png}
+
+\emph{\textbf{Hình 3.3.2.1. AI Agent sử dụng tool ngoài để đăng bài lên
+twitter.}}
+
+\emph{Nguồn: AI agentic workflows: a practical guide for n8n automation,
+Yulia Dmitrievna. Trích từ: https://blog.n8n.io/ai-agentic-workflows/}
+
+\subsubsection{\texorpdfstring{\textbf{Khảo sát các AI Agent opensource
+hiện
+có}}{Khảo sát các AI Agent opensource hiện có}}\label{khux1ea3o-suxe1t-cuxe1c-ai-agent-opensource-hiux1ec7n-cuxf3}
+
+\paragraph{Langchain}\label{langchain}
+
+LangChain là framework mã nguồn mở giúp xây dựng AI Agent sử dụng LLM,
+hỗ trợ kết nối dữ liệu, công cụ, bộ nhớ, và thực hiện tác vụ đa bước.
+LangChain phổ biến vì cấu trúc rõ ràng, thư viện phong phú và dễ mở
+rộng.
+
+\includegraphics[width=3.75145in,height=1.89947in]{media/image18.png}
+
+\emph{\textbf{Hình 3.3.3.1. Langchain logo}}
+
+\emph{Nguồn: Empowering LLMs with LangChain Framework, Debaprasann
+Bhroi. Trích từ:
+https://blog.gopenai.com/empowering-llms-with-langchain-framework-16c7a0785c2f}
+
+\paragraph{Langgraph}\label{langgraph}
+
+LangGraph là một thư viện mở rộng của LangChain, cho phép xây dựng các
+quy trình logic phức tạp theo mô hình đồ thị trạng thái (stateful
+graph). Rất phù hợp với các AI Agent cần luồng xử lý rõ ràng, có thể
+tuần tự hoặc song song.
+
+\includegraphics[width=3.41302in,height=3.42077in]{media/image19.png}
+
+\emph{\textbf{Hình 2.13. LangGraph logo.}}
+
+\emph{Nguồn: Building graphs for chatbots. Trích từ:
+https://campus.datacamp.com/courses/designing-agentic-systems-with-langchain/building-chatbots-with-langgraph?ex=1}
+
+\paragraph{AutoGen}\label{autogen}
+
+AutoGen được phát triển bởi Microsoft, cho phép tạo AI Agent có thể phối
+hợp nhiều LLM với nhau theo cách đa tác vụ. Hệ thống này hỗ trợ
+``multi-agent collaboration'', nơi các agent đóng vai trò khác nhau
+(planner, executor, researcher) để cùng giải quyết một nhiệm vụ.
+
+\includegraphics[width=2.34375in,height=2.34375in]{media/image20.png}
+
+\emph{\textbf{Hình 3.3.3.3. AutoGen logo.}}
+
+\emph{Nguồn: Microsoft's Agentic Frameworks: AutoGen and Semantic
+Kernel, Friederike Niedtner. Trích từ:
+https://devblogs.microsoft.com/autogen/microsofts-agentic-frameworks-autogen-and-semantic-kernel/}
+
+\paragraph{Semantic Kernel}\label{semantic-kernel}
+
+Semantic Kernel là framework từ Microsoft giúp tích hợp LLM với các công
+cụ và tác vụ trong ứng dụng thực tế. Nó hỗ trợ memory (ghi nhớ ngữ
+cảnh), planning, và tích hợp công cụ theo mô hình plugin, rất phù hợp để
+xây dựng AI Agent doanh nghiệp.
+
+\includegraphics[width=2.34375in,height=2.34375in]{media/image21.png}
+
+\emph{\textbf{Hình 3.3.3.4. Semantic Kernel logo.}}
+
+\emph{Nguồn: Semantic Kernel's new icon and the art of teamwork,
+Veronica. Nguồn:
+https://devblogs.microsoft.com/semantic-kernel/semantic-kernels-new-icon-and-the-art-of-teamwork/}
+
+\paragraph{CrewAI}\label{crewai}
+
+CrewAI là một thư viện tập trung vào việc xây dựng các AI Agent hoạt
+động theo nhóm (crew), mỗi agent có vai trò riêng biệt và phối hợp để
+hoàn thành một tác vụ lớn. Mô hình này mô phỏng tổ chức nhóm người làm
+việc, với khả năng lập kế hoạch và cộng tác.
+
+\includegraphics[width=3.56927in,height=1.12366in]{media/image22.png}
+
+\emph{\textbf{Hình 3.3.3.5. Crewai logo.}}
+
+\emph{Nguồn: CrewAI Launches Multi-Agentic Platform to Deliver on the
+Promise of Generative AI for Enterprise, Daniel D. Gutinerrez. Trích từ:
+https://radicaldatascience.wordpress.com/2024/10/22/crewai-launches-multi-agentic-platform-to-deliver-on-the-promise-of-generative-ai-for-enterprise/}
+
+\paragraph{Langflow}\label{langflow}
+
+Langflow là công cụ giao diện trực quan dạng kéo-thả (no-code/low-code)
+giúp thiết kế AI Agent dựa trên LangChain. Người dùng có thể xây dựng
+pipeline logic với LLM, công cụ, bộ nhớ,... mà không cần viết quá nhiều
+mã.
+
+\includegraphics[width=4.25677in,height=1.26904in]{media/image23.png}
+
+\emph{\textbf{Hình 3.3.3.6.1. Langfow logo.}}
+
+\emph{Nguồn: Langflow Reimagined: Streamlined for Even More
+Productivity. Trích từ:
+https://www.datastax.com/blog/langflow-brand-and-ui-reimagined-with-1-1-release}
+
+\includegraphics[width=6.26772in,height=3.63889in]{media/image24.png}
+
+\emph{\textbf{Hình 3.3.3.6.2. Drag \& drop để tạo workflow trong
+langflow.}}
+
+\emph{Nguồn: A Beginner's Guide to Building Agents in Langfloư. Trích từ
+: https://www.datastax.com/blog/guide-to-building-agents-in-langflow}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{6}
+\item
+  \textbf{n8n}
+\end{enumerate}
+
+n8n là một công cụ workflow automation mã nguồn mở, cho phép xây dựng
+quy trình tự động hóa bằng giao diện kéo--thả. Trong bối cảnh AI Agent,
+n8n có thể được sử dụng như một ``orchestrator'' -- giúp kết nối LLM với
+các API, hệ thống backend, hoặc dịch vụ bên ngoài. n8n hỗ trợ nhiều tích
+hợp sẵn như Google Sheets, Slack, Webhook, HTTP Request,\ldots, giúp AI
+Agent thực hiện hành động thật ngoài môi trường LLM như gửi email, truy
+xuất dữ liệu, hoặc báo cáo kết quả.
+
+\includegraphics[width=3.61419in,height=1.45733in]{media/image25.png}
+
+\emph{\textbf{Hình 3.3.3.7.1. n8n logo.}}
+
+\emph{Nguồn: Khám Phá N8n Workflow và Ứng Dụng Trong Tự Động Hóa AI
+2025. Trích từ:
+https://kb.pavietnam.vn/n8n-workflow-ung-dung-ai-2025.html}
+
+\includegraphics[width=4.93906in,height=2.53235in]{media/image26.png}
+
+\emph{\textbf{Hình 3.3.3.7.2. Drag \& drop để tạo flow trong n8n.}}
+
+\emph{Nguồn: Building AI Agents with n8n: Low-Code approach to AI
+workflows. Trích từ:
+https://www.pondhouse-data.com/blog/ai-agents-with-n8n}
+
+\paragraph{RAGFlow}\label{ragflow}
+
+Ragflow là một framework mới nổi tập trung vào việc xây dựng pipeline
+RAG (Retrieval-Augmented Generation) dễ dàng hơn, thông qua cấu trúc
+mô-đun và có thể cắm thêm công cụ. Ragflow hỗ trợ các thành phần như:
+document loaders, vector stores, retriever, chunker và LLM. Nó giúp xây
+dựng AI Agent có khả năng truy cập tài liệu bên ngoài, cập nhật kiến
+thức liên tục, và tương tác với cơ sở tri thức của doanh nghiệp một cách
+trực quan và dễ cấu hình.
+
+\includegraphics[width=2.30885in,height=1.47801in]{media/image27.png}
+
+\emph{\textbf{Hình 3.3.3.8.1. RAGFlow logo.}}
+
+\emph{Nguồn: Meet RAGFlow: An Open-Source RAG (Retrieval-Augmented
+Generation) Engine Based on Deep Document Understanding. Trích từ:
+https://www.marktechpost.com/2024/04/06/meet-ragflow-an-open-source-rag-retrieval-augmented-generation-engine-based-on-deep-document-understanding/}
+
+\includegraphics[width=4.26198in,height=2.55355in]{media/image28.png}
+
+\emph{\textbf{Hình 3.3.3.8.2. Drag \& drop để tạo flow trong RAGflow.}}
+
+\emph{Nguồn: RAGFlow Enters Agentic Era, Yingfeng Zhang. Trích từ:
+\href{https://ragflow.io/blog/ragflow-enters-agentic-era}{\ul{https://ragflow.io/blog/ragflow-enters-agentic-era}}}
+
+\subsection{Agentic system}\label{agentic-system}
+
+\subsubsection{Orchestration}\label{orchestration}
+
+Agentic Orchestration là khái niệm trong lĩnh vực trí tuệ nhân tạo và hệ
+thống đa tác tử (multi-agent systems), chỉ việc điều phối và quản lý
+nhiều tác nhân (agents) tự chủ để đạt được các mục tiêu phức tạp. Trong
+cơ chế này:
+
+\begin{itemize}
+\item
+  Agents là các thực thể có khả năng ra quyết định độc lập, thực hiện
+  hành động dựa trên quan sát và mục tiêu riêng.
+\item
+  Orchestration là quá trình kiểm soát, phối hợp hoặc tối ưu hóa hành vi
+  của các agents để đạt hiệu quả chung, tránh xung đột và khai thác tốt
+  khả năng của từng agent.
+\item
+  Agentic Orchestration nhấn mạnh vào tính tự chủ có điều hướng, tức mỗi
+  agent vẫn duy trì quyền ra quyết định riêng nhưng được điều chỉnh theo
+  chiến lược tổng thể.
+\end{itemize}
+
+\begin{itemize}
+\item
+  AI Agents trong doanh nghiệp tự động hóa các quy trình phức tạp.
+\item
+  Các hệ thống đa tác vụ như trợ lý ảo thông minh, nơi nhiều agents phối
+  hợp để hoàn thành các nhiệm vụ khác nhau.
+\item
+  Robot swarm, game AI, hoặc các hệ thống phân tán cần hợp tác và điều
+  phối động.
+\end{itemize}
+
+\includegraphics[width=6.26772in,height=3.19444in]{media/image29.png}
+
+\emph{\textbf{Hình 3.4.1. Agentic Orchestration.}}
+
+\emph{Nguồn: ``Think Big, Act Small: What Is Agentic AI and AI
+Distillation?'', concentrix. Trích từ :
+\href{https://www.concentrix.com/insights/blog/what-is-agentic-ai-and-ai-distillation/}{\ul{https://www.concentrix.com/insights/blog/what-is-agentic-ai-and-ai-distillation/}}}
+
+\subsubsection{Planning Agent}\label{planning-agent}
+
+Planning Agent là một loại tác nhân (agent) trong trí tuệ nhân tạo có
+khả năng lập kế hoạch hành động trước khi thực hiện, thay vì chỉ phản
+ứng tức thời với môi trường. Điểm đặc trưng của Planning Agent là nó sử
+dụng thông tin về trạng thái hiện tại, mục tiêu và các hành động khả thi
+để tính toán một chuỗi hành động tối ưu nhằm đạt được mục tiêu cuối
+cùng.
+
+Các thành phần chính:
+
+\begin{itemize}
+\item
+  Môi trường (Environment): nơi agent thực hiện hành động và nhận phản
+  hồi.
+\item
+  Trạng thái (State): mô tả thông tin hiện tại của môi trường.
+\item
+  Hành động (Action): tập các hành động mà agent có thể thực hiện.
+\item
+  Kế hoạch (Plan): chuỗi hành động được lập trước để đạt mục tiêu.
+\item
+  Mục tiêu (Goal): trạng thái mà agent muốn đạt tới.
+\end{itemize}
+
+Ứng dụng:
+
+\begin{itemize}
+\item
+  Robot di chuyển hoặc thực hiện nhiệm vụ phức tạp.\\
+  AI trong game để đưa ra chiến lược tối ưu.
+\item
+  Hệ thống trợ lý thông minh thực hiện đa tác vụ (multi-tasking AI
+  Agent).
+\end{itemize}
+
+\includegraphics[width=6.26772in,height=4.19444in]{media/image30.png}
+
+\emph{\textbf{Hình 2.1.2. Planning agent.}}
+
+\emph{Nguồn: ``Plan-and-Execute Agents'', Langchain. Trích từ :
+https://blog.langchain.com/planning-agents/}
+
+\subsubsection{Specialist AI Agent}\label{specialist-ai-agent}
+
+Specialist Agent là một loại tác nhân (agent) trong trí tuệ nhân tạo
+được thiết kế tập trung vào một lĩnh vực hoặc nhiệm vụ cụ thể, với khả
+năng thực hiện chuyên sâu hơn so với các agent tổng quát. Thay vì cố
+gắng xử lý nhiều loại nhiệm vụ khác nhau, Specialist Agent được tối ưu
+để hoàn thành hiệu quả một hoặc vài loại công việc chuyên biệt.
+
+Đặc điểm chính:
+
+\begin{itemize}
+\item
+  Chuyên môn hóa: agent được huấn luyện hoặc lập trình để xử lý một loại
+  dữ liệu, nhiệm vụ, hoặc domain cụ thể.
+\item
+  Hiệu quả cao: nhờ tập trung vào phạm vi hẹp, agent thường đưa ra quyết
+  định chính xác và nhanh hơn.
+\item
+  Tương tác với các agent khác: trong các hệ thống đa-agent, Specialist
+  Agents có thể phối hợp với Planning Agents hoặc Generalist Agents để
+  thực hiện các nhiệm vụ phức tạp.
+\end{itemize}
+
+Ứng dụng:
+
+\begin{itemize}
+\item
+  AI phân tích văn bản y tế chuyên sâu.
+\item
+  Chatbot chuyên trả lời về luật pháp hoặc tài chính.
+\item
+  Hệ thống robot thực hiện một nhiệm vụ cụ thể như hàn hoặc lắp ráp
+  trong dây chuyền sản xuất.
+\end{itemize}
+
+\includegraphics[width=2.86458in,height=1.90625in]{media/image31.png}
+
+\emph{\textbf{Hình 3.4.3. Specialist Agent.}}
+
+\emph{Nguồn: ``What is a SEO Specialist?'', Analytics Vidhya. Trích từ :
+https://relevanceai.com/agent-templates-roles/seo-specialist-ai-agents}

@@ -1,0 +1,61 @@
+\chapter{Cơ sở lý thuyết và công nghệ}\label{chap:co-so-ly-thuyet}
+
+Chương này hệ thống hóa các lý thuyết và công nghệ dùng cho Marketing Agent: mô hình ngôn ngữ hiện đại, chiến lược fine-tuning (LoRA/QLoRA, GRPO), RAG phục vụ menu và brand voice, cùng khung đánh giá chất lượng đa lớp. Phần nền tảng NLP cổ điển (BoW, TF--IDF, RNN, attention) được giữ ở mức tóm tắt vì đã được thay thế bởi Transformer trong các LLM thương mại và mã nguồn mở hiện nay; chi tiết có thể tham khảo \texttt{latex\_old/chuong\_3\_kien\_thuc\_nen\_tang.tex}.
+
+\section{Từ biểu diễn văn bản cổ điển đến chú ý đa đầu}\label{sec:nlp-legacy}
+
+\subsection{Biểu diễn thưa và phân loại}
+Bag-of-Words và TF--IDF biểu diễn văn bản bằng vector thưa dựa trên tần suất từ, phù hợp tìm kiếm và phân loại truyền thống nhưng hạn chế trong nắm ngữ cảnh dài.
+
+\subsection{Embedding và mạng chuỗi}
+Word embedding và các kiến trúc RNN/LSTM/GRU mở đường cho học biểu diễn dày đặc theo chuỗi. Cơ chế attention trong seq2seq giúp mô hình trọng số hóa các phần đầu vào liên quan khi sinh từng token đầu ra, là tiền đề trực tiếp của self-attention trong Transformer.
+
+\section{Transformer, LLM hiện đại và các cải tiến kiến trúc}\label{sec:transformer-llm}
+
+\subsection{Self-attention và Transformer}
+Transformer dựa trên cơ chế self-attention song song trên toàn chuỗi, cho phép học phụ thuộc xa hiệu quả hơn RNN tuần tự. Khối encoder--decoder ban đầu phục vụ dịch máy; các LLM sinh văn bản (GPT-like) chủ yếu dùng khối decoder với masked self-attention.
+
+\subsection{Grouped-Query Attention (GQA)}
+Trong multi-head attention, mỗi ``đầu'' có bộ chiếu query--key--value riêng. GQA nhóm nhiều đầu query chung một nhóm key--value, giảm chi phí bộ nhớ và suy luận (inference) khi chiều dài ngữ cảnh và số đầu lớn, trong khi vẫn duy trì chất lượng gần với multi-head đầy đủ.
+
+\subsection{RoPE (Rotary Positional Embedding)}
+RoPE mã hóa vị trí token bằng phép quay trong không gian embedding, giúp mô hình tổng quát hóa tốt hơn đối với độ dài ngữ cảnh và tương đối vị trí, được nhiều kiến trúc LLM mở hiện đại áp dụng.
+
+\subsection{Mixture of Experts (MoE)}
+MoE thay cho một feed-forward duy nhất bằng tập ``chuyên gia'' (mạng con) và một router học được chọn tập con chuyên gia kích hoạt cho mỗi token. Nhờ vậy tổng số tham số có thể rất lớn nhưng \emph{tham số kích hoạt} mỗi bước nhỏ hơn, cân bằn giữa năng lực biểu diễn và chi phí suy luận.
+
+\section{Chiến lược fine-tuning cho Agent marketing}\label{sec:fine-tuning}
+
+\subsection{Huấn luyện trước và thích nghi tác vụ}
+LLM nền học từ dữ liệu văn bản rộng; để phục vụ SME F\&B cần thích nghi theo phong cách thương hiệu, định dạng caption/kịch bản ngắn, và từ vựng tiếng Việt đặc thù. Fine-tuning có giám sát trên tập cặp chỉ dẫn--đầu ra chất lượng cao giúp giảm phụ thuộc prompt dài và tăng ổn định đầu ra.
+
+\subsection{PEFT: LoRA và QLoRA}
+LoRA (Low-Rank Adaptation) giả định cập nhật trọng số $\Delta W$ của một lớp tuyến tính có hạng thấp: $\Delta W = B A$ với $B \in \mathbb{R}^{d \times r}$, $A \in \mathbb{R}^{r \times k}$, $r \ll \min(d,k)$. Huấn luyện chỉ $A,B$ giữ $W_0$ cố định, giảm bộ nhớ và thời gian cập nhật.
+
+QLoRA kết hợp lượng tử hóa trọng số nền (ví dụ 4-bit) với adapter LoRA trong không gian tính toán được khử lượng tử hóa tạm thời, cho phép fine-tune các mô hình lớn trên GPU hạn chế.
+
+\subsection{GRPO (Group Relative Policy Optimization)}
+Trong tinh chỉnh theo phản hồi (RLHF/RLAIF), việc duy trì reward model riêng thường tốn chi phí. GRPO là hướng tối ưu hóa chính sách sinh token dựa trên \emph{nhóm} mẫu sinh cho cùng một prompt: phần thưởng được chuẩn hóa tương đối trong nhóm, giảm phụ thuộc vào một scalar reward model cồng kềnh và phù hợp kịch bản định hình phong cách marketing khi có tiêu chí so sánh (ví dụ điểm từ pipeline hoặc từ người gán nhãn).
+
+\section{Retrieval-Augmented Generation (RAG)}\label{sec:rag}
+
+\subsection{Luồng RAG}
+Tài liệu được phân đoạn (chunking), nhúng (embedding) và lưu trong vector store. Khi sinh nội dung, truy vấn của người dùng được nhúng, tìm $k$ đoạn gần nhất theo cosine hoặc tương đương, ghép vào prompt làm ngữ cảnh có kiểm soát. Cách tiếp cận này giảm ``bịa'' thông tin cố định về menu, giá, chính sách và giúp cập nhật tri thức mà không cần huấn luyện lại toàn bộ mô hình.
+
+\subsection{Chunking và vector search cho F\&B}
+Với menu và brand guideline, ngưỡng độ dài chunk cần cân bằng: chunk quá nhỏ mất ngữ cảnh món combo; chunk quá lớn làm nhiễu truy vấn. Có thể áp dụng chia theo tiêu đề mục, overlap có kiểm soát, hoặc metadata (danh mục món, chi nhánh). Bước re-ranking (mô hình chéo hoặc điểm tương thích thứ hai) cải thiện chất lượng đoạn được đưa vào prompt.
+
+\section{Đánh giá chất lượng nội dung marketing}\label{sec:evaluation}
+
+\subsection{Quy tắc cứng (rule-based)}
+Danh mục từ cấm và regex theo chính sách; kiểm tra thực thể bắt buộc (tên quán, địa chỉ, mã khuyến mãi nếu có); kiểm tra cấu trúc hook--body--CTA và độ dài phù hợp kênh (ví dụ TikTok ngắn hơn Facebook).
+
+\subsection{Chỉ số xác suất và logprobs}
+Từ phân phối token tiếp theo, perplexity liên quan đến độ tự tin trung bình của mô hình trên đoạn văn bản. Logprobs có thể dùng để phát hiện đoạn lệch pha hoặc câu chữ quá ``an toàn''/mơ hồ; đây là tín hiệu bổ sung, không thay thế kiểm định ngữ nghĩa.
+
+\subsection{LLM-as-a-Judge và G-Eval}
+Một LLM (có thể mạnh hơn hoặc chuyên trách) chấm điểm theo rubric: phù hợp thương hiệu, độ thuyết phục, đúng ngữ pháp tiếng Việt, tuân chính sách. G-Eval đề xuất chuẩn hóa prompt chấm điểm và tận dụng chuỗi suy luật ngắn trước khi xuất số điểm. Có thể kết hợp persona khách hàng (ví dụ ``khách trẻ thích trend'') để đa góc nhìn.
+
+\section{Agent, công cụ và điều phối luồng}\label{sec:agent-tooling}
+
+Marketing Agent trong đề tài kết hợp LLM (có thể đã fine-tune), RAG, và các công cụ (truy vấn cơ sở dữ liệu, gọi API lịch đăng, module chấm điểm). Các framework như LangChain/LangGraph hỗ trợ biểu diễn đồ thị trạng thái và điều phối bước; phần hiện thực cụ thể thuộc Chương 4. Nguyên tắc thiết kế: tách bước \emph{sinh} và \emph{đánh giá}, lưu vết phiên bản nội dung và điểm pipeline để phục vụ phân tích tương quan với đánh giá con người.

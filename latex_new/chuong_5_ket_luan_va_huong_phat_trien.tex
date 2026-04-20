@@ -1,0 +1,35 @@
+\chapter{Kết luận và hướng phát triển}\label{chap:ket-luan}
+
+\section{Khả năng ứng dụng thực tế và auto-approval}\label{sec:auto-approval}
+
+Kết quả khảo sát ở Chương 2 cho thấy SME F\&B vừa đòi hỏi tự động hóa cao vừa không từ bỏ bước kiểm soát trước khi đăng. Pipeline đánh giá đa lớp ở Chương 3--4 đóng vai trò cầu nối: lớp quy tắc đảm bảo các ràng buộc cứng (từ cấm, thực thể, cấu trúc), lớp xác suất gắn cờ bản nháp yếu hoặc bất thường, lớp G-Eval mô phỏng tiêu chí chất lượng marketing.
+
+Trên cơ sở điểm tổng hợp $S_{\mathrm{pipe}}$ và tương quan với đánh giá con người (Chương 4), có thể triển khai \textbf{auto-approval có ngưỡng}: các bài có điểm cao, không vi phạm rule và ổn định trên các biến thể nhỏ (nhiệt độ sinh) được phép đi thẳng tới lịch đăng; các bài còn lại vào hàng đợi duyệt rút gọn. Cơ chế này giải quyết mâu thuẫn thời gian--an toàn đã nêu ở Chương 2 mà không loại bỏ vai trò con người hoàn toàn.
+
+\section{Đóng góp của đề tài}\label{sec:dong-gop}
+
+\begin{itemize}
+  \item \textbf{Thiết kế Marketing Agent chuyên biệt F\&B:} kết hợp RAG trên tài liệu thương hiệu/menu với luồng sinh nội dung đa dạng (caption, kịch bản ngắn) phù hợp Facebook/TikTok.
+  \item \textbf{Ứng dụng fine-tuning hiệu quả tham số:} LoRA/QLoRA và (khi triển khai) GRPO nhằm củng cố phong cách và giảm phụ thuộc prompt dài.
+  \item \textbf{Pipeline đánh giá đa lớp production-oriented:} tích hợp rule-based, tín hiệu logprobs/perplexity, và LLM-as-a-Judge (G-Eval), có thể tái lập cho bộ dữ liệu mới.
+  \item \textbf{Phương pháp kiểm định:} đối chiếu điểm pipeline với đánh giá con người để biện minh mức độ tin cậy trước khi mở rộng auto-approval.
+\end{itemize}
+
+\section{Hạn chế và hướng phát triển}\label{sec:han-che}
+
+\subsection{Hạn chế}
+\begin{itemize}
+  \item Chất lượng phụ thuộc dữ liệu huấn luyện và tài liệu RAG; SME nhỏ có thể thiếu văn bản chuẩn hóa.
+  \item LLM-as-a-Judge tiêu tốn chi phí API và có thể lệch nếu rubric không hiệu chỉnh định kỳ.
+  \item Đa phương thức (sinh/ chỉnh sửa ảnh và video thực tế quán) chưa được đề tài đi sâu triển khai đầy đủ trong phạm vi hiện tại.
+\end{itemize}
+
+\subsection{Hướng phát triển}
+\begin{itemize}
+  \item Mở rộng \textbf{đa phương thức}: gợi ý khung hình, storyboard, hoặc liên kết công cụ chỉnh sửa ảnh có kiểm soát từ ảnh chụp thực tế tại quán.
+  \item \textbf{Cá nhân hóa theo chi nhánh:} không gian embedding và chính sách giọng điệu riêng cho từng cửa hàng trong cùng chuỗi.
+  \item \textbf{Vòng lặp học từ phản hồi người dùng:} lưu thích/không thích và chỉnh sửa sau đăng để làm giàu tập tinh chỉnh và hiệu chỉnh reward nhóm trong GRPO.
+  \item \textbf{Giám sát drift xu hướng:} cập nhật module Trend và kiểm tra định kỳ độ lệch giữa nội dung sinh và xu hướng địa phương.
+\end{itemize}
+
+Tổng kết, luận văn đặt nền cho một hướng triển khai thực tế: Agent không chỉ ``viết được'' mà còn ``đo được'' và ``lọc được'' trước khi chạm tới khách hàng trên mạng xã hội---đúng trọng tâm đề tài về Marketing Agent, fine-tuning và đánh giá đa lớp cho SME F\&B Việt Nam.

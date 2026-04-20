@@ -1,0 +1,31 @@
+\documentclass[12pt,a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T5]{fontenc}
+\usepackage[vietnamese]{babel}
+\usepackage{graphicx}
+\usepackage{amsmath, amssymb}
+\usepackage{hyperref}
+
+\begin{document}
+
+% Trang bìa: titlepage reset \thepage về 1 sau trang đầu, gây trùng anchor
+% ``page.1'' với hyperref (ảnh hưởng bookmark / đôi khi mục lục PDF).
+\hypersetup{pageanchor=false}
+\input{trang_bia}
+\hypersetup{pageanchor=true}
+
+% Mục lục (cần ít nhất hai lần pdflatex sau khi đổi cấu trúc chương)
+\tableofcontents
+
+% Các chương thành phần
+\include{chuong_1_gioi_thieu_de_tai}
+\include{chuong_2_tim_hieu_va_nghien_cuu_thi_truong}
+\include{chuong_3_co_so_ly_thuyet_va_cong_nghe}
+\include{chuong_4_thuc_nghiem_va_phan_tich_ket_qua}
+\include{chuong_5_ket_luan_va_huong_phat_trien}
+
+% Tài liệu tham khảo (đặt trước các chương theo yêu cầu)
+\input{tai_lieu_tham_khao}
+
+\end{document}

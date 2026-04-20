@@ -1,0 +1,94 @@
+\chapter{Thực nghiệm và phân tích kết quả}\label{chap:thuc-nghiem}
+
+Chương này trình bày thiết kế hệ thống Marketing Agent, pipeline đánh giá đa lớp, quy trình fine-tuning mô hình mã nguồn mở, và phân tích tương quan giữa điểm tự động với đánh giá con người. Các bảng số và biểu đồ mang tính \emph{khung báo cáo}---cần được thay bằng kết quả đo thực tế sau khi chạy thí nghiệm.
+
+\section{Thiết kế hệ thống Marketing Agent}\label{sec:thiet-ke-he-thong}
+
+\subsection{Kiến trúc tổng quan}
+Hệ thống được tổ chức theo hướng dịch vụ (microservices hoặc module tách biệt trong một monolith có ranh giới rõ): API gateway hoặc lớp backend thống nhất nhận yêu cầu từ giao diện web; dịch vụ xử lý tài liệu (ingestion, OCR tùy chọn, chunking, embedding); dịch vụ sinh nội dung (RAG + LLM, có nhánh gọi mô hình đã fine-tune); module đánh giá đa lớp; lưu trữ vector và cơ sở dữ liệu quan hệ cho metadata.
+
+Luồng nạp tri thức: upload/URL $\rightarrow$ trích văn bản $\rightarrow$ chunking $\rightarrow$ embedding $\rightarrow$ vector store + bản ghi \texttt{Document}/\texttt{Chunk}.
+
+Luồng sinh nội dung: yêu cầu người dùng $\rightarrow$ truy vấn vector + (tuỳ chọn) lọc metadata $\rightarrow$ ghép prompt $\rightarrow$ LLM sinh bản nháp $\rightarrow$ pipeline chấm điểm $\rightarrow$ trả về cho người dùng hoặc hàng đợi duyệt.
+
+\subsection{Cơ sở dữ liệu logic}
+Theo thiết kế tham khảo trong \texttt{latex\_old}, các thực thể chính gồm:
+
+\begin{itemize}
+  \item \textbf{User, Group, Permission:} xác thực và phân quyền RBAC.
+  \item \textbf{Workspace:} không gian làm việc theo thương hiệu/chi nhánh.
+  \item \textbf{Document, Chunk, Embedding:} tài liệu nguồn, đoạn nhỏ, vector tương ứng.
+  \item \textbf{Content:} bản ghi nội dung đã sinh (caption, kịch bản, phiên bản chỉnh sửa).
+  \item \textbf{Trend:} dữ liệu xu hướng/hashtag/âm thanh phục vụ gợi ý.
+  \item \textbf{Chat\_Group, Chat\_Message:} lịch sử tương tác với Agent.
+\end{itemize}
+
+\textit{Ghi chú: Sơ đồ kiến trúc và ERD đầy đủ có thể chèn từ phiên bản thiết kế hình ảnh trong báo cáo cuối.}
+
+\subsection{Phạm vi hiện thực trong đề tài}
+Các yêu cầu chức năng chi tiết (upload đa định dạng, RAG, sinh caption/kịch bản, thông báo trạng thái, phân quyền) được kế thừa từ \texttt{latex\_old/chuong\_4\_phan\_tich\_va\_thiet\_ke.tex}. Phạm vi luận văn mở rộng thêm nhánh \textbf{đánh giá chất lượng tự động} và \textbf{fine-tuning} như các mục sau.
+
+\section{Hiện thực pipeline đánh giá đa lớp}\label{sec:pipeline-danh-gia}
+
+Pipeline được mô tả theo các module logic (tham chiếu notebook thí nghiệm \texttt{10\_Marketing\_Agent\_Evaluation\_Pipeline.ipynb} trong kho mã nguồn dự án---đường dẫn chính xác sẽ được thống nhất trong bản cuối):
+
+\subsection{Lớp 1 -- Quy tắc và ràng buộc nghiệp vụ}
+Kiểm tra từ cấm, độ dài, số lượng hashtag, có CTA hay không, trùng khớp thực thể với menu (nếu có bảng món). Đầu ra: nhị phân đạt/không đạt và danh sách vi phạm.
+
+\subsection{Lớp 2 -- Tín hiệu xác suất}
+Tính perplexity hoặc thống kê logprobs trên câu sinh; gắn cờ các đoạn có xác suất thấp bất thường. Tham số ngưỡng do hiệu chỉnh trên tập phát triển.
+
+\subsection{Lớp 3 -- LLM-as-a-Judge (G-Eval)}
+Prompt rubric đa tiêu chí (ví dụ: đúng giọng điệu, hấp dẫn, phù hợp TikTok/Facebook, không phát ngôn nhạy cảm). Xuất điểm thang 1--5 hoặc 1--10 và lý do ngắn.
+
+\subsection{Tổng hợp điểm}
+Các lớp có thể kết hợp theo điểm trọng số hoặc quy tắc cascade (vi phạm cứng loại ngay). Điểm tổng hợp $S_{\mathrm{pipe}}$ dùng cho mục 4.4.
+
+\section{Thực nghiệm fine-tuning}\label{sec:thuc-nghiem-ft}
+
+\subsection{Thiết lập}
+Mô hình nền mã nguồn mở (ví dụ họ Qwen/Llama/Gemma---\emph{chốt trong thí nghiệm thực tế}). Dữ liệu: cặp chỉ dẫn--đầu ra marketing tiếng Việt thu thập từ SME F\&B (đã khử thông tin nhạy cảm). Phương pháp: LoRA hoặc QLoRA; tùy cấu hình, bổ sung giai đoạn GRPO khi có tín hiệu thưởng nhóm.
+
+\subsection{So sánh Base và Fine-tuned}
+Tiêu chí định lượng: điểm trung bình $S_{\mathrm{pipe}}$ trên tập kiểm định; tỷ lệ vượt ngưỡng auto-approval; độ dài và tỷ lệ vi phạm rule.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Minh họa bảng so sánh Base vs Fine-tuned (số liệu thay thế)}
+  \label{tab:so-sanh-base-ft}
+  \begin{tabular}{|l|c|c|}
+    \hline
+    \textbf{Chỉ số} & \textbf{Base} & \textbf{Fine-tuned} \\
+    \hline
+    Điểm pipeline trung bình & \textit{[cập nhật]} & \textit{[cập nhật]} \\
+    \hline
+    Tỷ lệ đạt rule cứng (\%) & \textit{[cập nhật]} & \textit{[cập nhật]} \\
+    \hline
+    Điểm G-Eval trung bình & \textit{[cập nhật]} & \textit{[cập nhật]} \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\subsection{Trực quan hóa}
+\textit{[Chèn biểu đồ cột hoặc boxplot so sánh phân phối điểm sau khi có dữ liệu.]}
+
+\section{Kiểm định tương quan với đánh giá con người}\label{sec:tuong-quan}
+
+Thu thập điểm/ xếp hạng từ ít nhất hai annotator trên tập con cố định (ví dụ $N$ mẫu---ghi rõ sau). Chuẩn hóa thang điểm nếu cần. Tính hệ số tương quan Pearson/Spearman giữa $S_{\mathrm{pipe}}$ và điểm trung bình người $S_{\mathrm{human}}$; báo cáo khoảng tin cậy bootstrap nếu $N$ nhỏ.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Minh họa tương quan (số liệu thay thế)}
+  \label{tab:tuong-quan}
+  \begin{tabular}{|l|c|}
+    \hline
+    \textbf{Đại lượng} & \textbf{Giá trị} \\
+    \hline
+    Pearson($S_{\mathrm{pipe}}, S_{\mathrm{human}}$) & \textit{[cập nhật]} \\
+    \hline
+    Spearman & \textit{[cập nhật]} \\
+    \hline
+  \end{tabular}
+\end{table}
+
+Kết luận sơ bộ mong đợi: khi pipeline hiệu chỉnh tốt, tương quan trung bình đến cao cho phép dùng $S_{\mathrm{pipe}}$ làm bộ lọc trước, giảm khối lượng duyệt tay mà vẫn giữ an toàn thương hiệu.
