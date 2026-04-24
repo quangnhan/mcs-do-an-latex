@@ -1,63 +1,306 @@
-\chapter{Giới thiệu đề tài}\label{chap:gioi-thieu-de-tai}
+\chapter{Giới thiệu đề tài}\label{chap:gioi-thieu}
 
 \section{Đặt vấn đề}\label{sec:dat-van-de}
 
-Trong bối cảnh bùng nổ của mạng xã hội, đặc biệt là TikTok và Facebook tại thị trường Việt Nam, hoạt động marketing đóng vai trò sống còn đối với các doanh nghiệp vừa và nhỏ (SME) ngành Thực phẩm \& Đồ uống (F\&B). Tuy nhiên, các chủ doanh nghiệp F\&B thường là chuyên gia trong lĩnh vực ẩm thực nhưng lại thiếu kiến thức, kỹ năng và thời gian để xây dựng, triển khai một chiến lược marketing số nhất quán và hiệu quả. Nhiều đơn vị còn thiếu hụt nhân sự marketing chuyên môn, khiến việc duy trì tần suất đăng bài, bắt kịp xu hướng và tương tác kịp thời với khách hàng trở nên quá tải.
+Trong bối cảnh bùng nổ của mạng xã hội, đặc biệt là \textbf{Facebook} tại
+thị trường Việt Nam, hoạt động marketing đóng vai trò sống còn đối với
+các doanh nghiệp vừa và nhỏ (SME) ngành Thực phẩm \& Đồ uống (F\&B).
+Tuy nhiên, các chủ doanh nghiệp F\&B thường là chuyên gia trong lĩnh vực
+ẩm thực nhưng lại thiếu kiến thức, kỹ năng và thời gian để xây dựng,
+triển khai một chiến lược marketing số nhất quán và hiệu quả. Họ gặp khó
+khăn trong việc sáng tạo nội dung hấp dẫn, quản lý lịch đăng bài đa
+kênh, và tương tác kịp thời với khách hàng.
 
-Các giải pháp thuê agency truyền thống thường tốn kém; trong khi đó, việc chỉ dựa vào mô hình ngôn ngữ lớn (LLM) dạng tổng quát hoặc các công cụ quản lý mạng xã hội điển hình vẫn bắt buộc người dùng tự sáng tạo ý tưởng, tự kiểm duyệt và tự điều phối quy trình. Điều này không giải quyết trọn vẹn hai vấn đề cốt lõi: (i) nội dung cần mang phong cách phù hợp ngành F\&B và thương hiệu; (ii) trước khi đăng tải, cần một cơ chế đánh giá chất lượng có thể lặp lại, gần với tiêu chuẩn vận hành thực tế (production-ready) thay vì duyệt thủ công kéo dài.
+Các giải pháp marketing agency truyền thống quá tốn kém, trong khi các
+công cụ quản lý mạng xã hội hiện tại thường yêu cầu người dùng phải tự
+tạo nội dung và quản lý workflow thủ công, gây tốn kém thời gian và
+không giải quyết được vấn đề thiếu ý tưởng sáng tạo. Sự thiếu nhất quán
+trong nội dung và quản lý chiến dịch dẫn đến việc bỏ lỡ cơ hội thu hút
+khách hàng mới và giữ chân khách hàng hiện tại.
 
-Ứng dụng AI Agent chuyên biệt, kết hợp kỹ thuật tinh chỉnh mô hình (fine-tuning)---ví dụ các phương pháp hiệu quả tham số như LoRA/QLoRA và tối ưu hóa theo phần thưởng nhóm như GRPO---cùng pipeline đánh giá đa lớp (quy tắc cứng, chỉ số xác suất từ logprobs, và đánh giá định tính kiểu LLM-as-a-Judge) mở ra hướng tiếp cận mới: vừa định hình phong cách marketing, vừa tự động hóa bước ``chấm điểm'' và gợi ý cải thiện trước khi nội dung được đưa lên kênh. Vì vậy, việc nghiên cứu phát triển và tối ưu hóa Marketing Agent cho SME F\&B trong khuôn khổ đề tài này có ý nghĩa thực tiễn rõ rệt: giảm thời gian và chi phí, nâng tính nhất quán nội dung, đồng thời tăng độ tin cậy của khâu kiểm soát chất lượng trước khi đăng bài.
+Trong bối cảnh đó, việc ứng dụng công nghệ AI Agent dựa trên các mô hình
+ngôn ngữ lớn (LLM) mở ra một hướng giải quyết đột phá. Một AI Agent
+chuyên biệt có thể hoạt động như một ``bộ não thứ hai'' (second brain), tự
+động thu thập cảm hứng từ các nguồn bên ngoài (YouTube, blog), biến
+chúng thành các chiến lược và nội dung marketing chuẩn chỉnh, đồng thời
+hỗ trợ đăng tải lên các kênh mạng xã hội (trong phạm vi luận văn, trọng
+tâm là \textbf{Facebook Page} và định dạng nội dung trên Facebook).
 
-\section{Mục tiêu nghiên cứu}\label{sec:muc-tieu-nghien-cuu}
+Vì vậy, việc nghiên cứu và phát triển một AI Agent tự động hóa marketing
+chuyên biệt cho SME ngành F\&B là vô cùng cần thiết và có ý nghĩa thực
+tiễn. Hệ thống này không chỉ giúp chủ doanh nghiệp tiết kiệm thời gian,
+tối ưu hóa nguồn lực mà còn nâng cao hiệu quả chiến dịch marketing, thúc
+đẩy doanh thu và tăng cường sự gắn kết của khách hàng đối với thương
+hiệu. Luận văn bổ sung hướng \textbf{tinh chỉnh mô hình} (LoRA, GRPO) và
+\textbf{đánh giá chất lượng đa lớp} trước khi đăng bài, phù hợp đề tài
+thạc sĩ.
 
-\subsection{Mục đích của đề tài}\label{subsec:muc-dich-de-tai}
+\section{Mục tiêu nghiên cứu}\label{sec:muc-tieu}
 
-Đề tài hướng tới xây dựng một Marketing Agent chuyên biệt cho SME ngành F\&B, không dừng ở việc gọi LLM tổng quát, mà tích hợp tinh chỉnh mô hình theo dữ liệu và mục tiêu phong cách, kèm quy trình đánh giá chất lượng tự động nhiều lớp nhằm hỗ trợ quyết định đăng tải an toàn và hiệu quả hơn.
+\subsection{Mục tiêu theo định hướng luận văn thạc sĩ}
 
-Cụ thể, hệ thống cần hỗ trợ người dùng không chuyên sâu về marketing trong việc biến các nguồn thông tin và tài liệu (văn bản, URL, tài liệu nội bộ, dữ liệu thực tế ngành F\&B) thành nội dung có cấu trúc: caption, kịch bản ngắn, gợi ý hook--thân bài--kêu gọi hành động (CTA), phù hợp kênh Facebook/TikTok. Đồng thời, đề tài hướng tới chứng minh tính khả thi của pipeline chấm điểm và lọc nội dung trước khi đăng, làm cơ sở cho cơ chế tự động hóa mức độ cao (ví dụ auto-approval có ngưỡng) trong bối cảnh vận hành thực tế.
-
-\subsection{Mục tiêu cụ thể}\label{subsec:muc-tieu-cu-the}
-
-Nhằm đạt mục đích trên, đề tài đặt các mục tiêu cụ thể sau:
+Luận văn hướng tới các mục tiêu sau:
 
 \begin{itemize}
-  \item \textbf{Xây dựng Agent chuyên biệt:} Thiết kế luồng xử lý kết hợp truy xuất tri thức (RAG) với tinh chỉnh mô hình mã nguồn mở, tối ưu theo phong cách marketing F\&B và brand voice.
-  \item \textbf{Nghiên cứu và áp dụng fine-tuning:} Triển khai các kỹ thuật PEFT (LoRA/QLoRA) và thuật toán tối ưu hóa theo nhóm (GRPO) nhằm định hình phong cách nội dung, giảm phụ thuộc vào prompt dài và biến động.
-  \item \textbf{Thiết lập hệ thống đánh giá đa lớp:} Xây dựng pipeline gồm các lớp kiểm tra (quy tắc cứng, chỉ số xác suất dựa trên perplexity/logprobs, đánh giá định tính với LLM-as-a-Judge/G-Eval) để tự động chấm điểm và hỗ trợ quyết định trước khi đăng bài.
-  \item \textbf{Thực nghiệm và đối chiếu:} So sánh mô hình nền và mô hình sau fine-tuning, đối soát điểm số pipeline với đánh giá của con người nhằm kiểm định độ tin cậy.
-  \item \textbf{Đánh giá trải nghiệm người dùng:} Đảm bảo hướng tới người dùng SME không chuyên công nghệ: giao diện và quy trình đơn giản, giảm cấu hình thủ công.
+\item
+  \textbf{Xây dựng Agent chuyên biệt:} Thay vì chỉ sử dụng LLM tổng quát,
+  hướng tới một tác nhân (Agent) có kiến trúc và huấn luyện phù hợp
+  bối cảnh marketing F\&B trên Facebook, có khả năng tận dụng tri thức
+  thương hiệu và dữ liệu nội bộ.
+\item
+  \textbf{Nghiên cứu kỹ thuật fine-tuning (LoRA, GRPO):} Áp dụng các
+  phương pháp tinh chỉnh hiệu quả nhằm định hình phong cách marketing và
+  hành vi sinh nội dung; chi tiết trình bày ở các chương sau.
+\item
+  \textbf{Thiết lập hệ thống đánh giá chất lượng tự động trước khi đăng
+  (production-ready):} Xây dựng pipeline kiểm tra và chấm điểm đa lớp
+  để hỗ trợ quyết định đăng bài, giảm rủi ro nội dung kém chất lượng
+  hoặc không phù hợp thương hiệu.
 \end{itemize}
 
-\section{Đối tượng và phạm vi nghiên cứu}\label{sec:doi-tuong-va-pham-vi}
+\subsection{Mục đích và mục tiêu cụ thể của hệ thống (kế thừa báo cáo thực tập)}
 
-\textbf{Đối tượng nghiên cứu} là quy trình tự động hóa marketing số cho SME ngành F\&B, trong đó Marketing Agent đóng vai trò trung tâm trong sinh nội dung, truy xuất tri thức thương hiệu/menu và đánh giá chất lượng đầu ra.
+\textit{Phần sau giữ nguyên định hướng chức năng đã nêu trong báo cáo thực tập,
+làm cơ sở triển khai Agent và dữ liệu nghiên cứu.}
 
-\textbf{Phạm vi nghiên cứu} được giới hạn như sau:
+\paragraph{Mục đích của đề tài.}
+Phát triển một AI Agent nhằm hỗ trợ các chủ doanh nghiệp F\&B tự động
+hóa quy trình tạo nội dung marketing từ các nguồn cảm hứng thu thập được
+trên Internet.
+
+Hệ thống giúp người dùng, những người không chuyên về marketing, chuyển
+đổi các nguồn cảm hứng như video, bài viết và hình ảnh thành các nội
+dung marketing chuyên nghiệp, bao gồm caption, kịch bản bài đăng và kế
+hoạch nội dung có cấu trúc.
+
+Hệ thống cung cấp các nội dung hoàn chỉnh dưới dạng văn bản và hình ảnh
+để chủ doanh nghiệp có thể xem xét, chỉnh sửa và tự đăng tải lên các nền
+tảng mạng xã hội theo nhu cầu của mình.
+
+Mục tiêu là giúp các chủ doanh nghiệp F\&B tạo ra các nội dung marketing
+nhất quán, có chất lượng cao mà không cần phải tự xây dựng ý tưởng hoặc
+viết nội dung một cách thủ công.
+
+\paragraph{Mục tiêu cụ thể.}
+Xây dựng và chứng minh tính khả thi của hệ thống AI Agent có khả năng:
+
 \begin{itemize}
-  \item \textbf{Đối tượng doanh nghiệp:} SME F\&B tại Việt Nam, phản ánh nhu cầu vận hành thực tế và dữ liệu khảo sát trong khuôn khổ đề tài.
-  \item \textbf{Kênh truyền thông:} Ưu tiên nội dung ngắn, viral và tương tác trên Facebook và TikTok; không mở rộng đầy đủ sang đa kênh quảng cáo trả phí hay CRM nếu không được đề cập trong phần thực nghiệm.
-  \item \textbf{Phạm vi kỹ thuật:} Tập trung vào mô hình ngôn ngữ mã nguồn mở, RAG, fine-tuning (LoRA/GRPO) và pipeline đánh giá đa lớp; các hướng đa phương thức (sinh ảnh/video tự động) chỉ được nhắc trong phần hạn chế và hướng phát triển nếu chưa hiện thực đầy đủ.
+\item
+  Thu thập và xử lý thông tin:
+
+  \begin{itemize}
+  \item
+    Cho phép người dùng tải lên và lưu trữ các nguồn cảm hứng bao gồm
+    văn bản, tài liệu, URL và các nội dung thu thập từ Internet.
+  \item
+    Sử dụng các kỹ thuật xử lý dữ liệu để trích xuất, phân tích và tổ
+    chức thông tin từ các nguồn phi cấu trúc này, tạo thành cơ sở tri
+    thức có thể truy xuất.
+  \end{itemize}
+\item
+  Tạo nội dung marketing:
+
+  \begin{itemize}
+  \item
+    Tự động tổng hợp và chuyển đổi các thông tin đã lưu trữ thành các
+    nội dung marketing cụ thể bao gồm caption, kịch bản bài đăng và kế
+    hoạch nội dung.
+  \item
+    Đảm bảo các nội dung được tạo ra có ngữ pháp chính xác, giọng văn
+    phù hợp với đặc điểm thương hiệu và phù hợp với thị trường Việt Nam.
+  \end{itemize}
+\item
+  Cung cấp và quản lý nội dung:
+
+  \begin{itemize}
+  \item
+    Cung cấp các nội dung marketing hoàn chỉnh dưới dạng văn bản có cấu
+    trúc, cho phép người dùng xem xét, chỉnh sửa và sử dụng theo nhu
+    cầu.
+  \item
+    Cho phép người dùng quản lý các nội dung đã được tạo ra, bao gồm
+    việc xem lại, chỉnh sửa và tổ chức các nội dung theo các chiến dịch
+    hoặc thời gian cụ thể.
+  \end{itemize}
+\item
+  Đánh giá và cải thiện:
+
+  \begin{itemize}
+  \item
+    Đánh giá trải nghiệm người dùng để đảm bảo hệ thống dễ sử dụng đối
+    với các chủ doanh nghiệp F\&B không có chuyên môn về công nghệ.
+  \item
+    Thiết lập cơ chế thu thập phản hồi từ người dùng về chất lượng nội
+    dung được tạo ra, nhằm cải thiện khả năng sinh nội dung của hệ
+    thống.
+  \end{itemize}
 \end{itemize}
 
-\section{Phương pháp nghiên cứu}\label{sec:phuong-phap-nghien-cuu}
+\section{Đối tượng và phạm vi nghiên cứu}\label{sec:doi-tuong-pham-vi}
 
-Đề tài sử dụng các phương pháp sau:
+\textbf{Đối tượng:} Doanh nghiệp SME ngành F\&B tại Việt Nam; người dùng
+mục tiêu là chủ quán, người quản lý hoặc nhân sự phụ trách marketing
+khi có.
+
+\textbf{Phạm vi nội dung và kênh:} Luận văn \textbf{tập trung nội dung
+marketing trên Facebook} (Facebook Page, bài đăng, hình ảnh và video/Reels
+trên Facebook). Các nền tảng khác không đặt trong phạm vi đề tài nhằm
+thống nhất đánh giá và triển khai thực nghiệm.
+
+\textbf{Phạm vi kỹ thuật:} Mô hình ngôn ngữ mã nguồn mở; tinh chỉnh
+(LoRA/GRPO); cơ chế truy xuất tri thức (RAG) phục vụ brand voice và menu;
+pipeline đánh giá chất lượng nội dung. Không mở rộng sang toàn bộ hạ
+tầng sản phẩm thương mại ngoài phạm vi luận văn.
+
+\section{Phương pháp nghiên cứu}\label{sec:phuong-phap}
+
+Theo dàn ý đề tài, phương pháp gồm ba nhóm hoạt động chính:
+
+\begin{enumerate}
+\item
+  \textbf{Thực nghiệm so sánh (benchmarking):} So sánh các cấu hình mô
+  hình và/hoặc các chiến lược sinh--đánh giá nội dung trên bộ kịch bản
+  và chỉ số thống nhất, nhằm xác định phương án phù hợp SME F\&B.
+\item
+  \textbf{Tinh chỉnh mô hình mã nguồn mở:} Huấn luyện bổ sung trên dữ
+  liệu và mục tiêu đề tài (fine-tuning với LoRA/GRPO), sử dụng mô hình
+  có thể tái lập được trong nghiên cứu.
+\item
+  \textbf{Kiểm định:} Đánh giá độ tin cậy và chất lượng đầu ra của hệ
+  thống. Mục \emph{kiểm định} được cụ thể hóa bằng \textbf{pipeline đánh
+  giá đa lớp} (multi-layered evaluation): kết hợp quy tắc cứng, chỉ số
+  xác suất (ví dụ perplexity từ logprobs) và đánh giá định tính
+  (LLM-as-a-Judge, G-Eval); trình bày chi tiết ở chương cơ sở lý thuyết
+  và chương thực nghiệm.
+\end{enumerate}
+
+\section{Thách thức và phương pháp tiếp cận}\label{sec:thach-thuc}
+
+\subsection{Thách thức}
 
 \begin{itemize}
-  \item \textbf{Khảo sát và phân tích tài liệu:} Hệ thống hóa lý thuyết về kiến trúc mô hình hiện đại (Transformer, MoE\ldots), fine-tuning hiệu quả tham số, RAG và metrics đánh giá; đồng thời phân tích thực trạng SME F\&B và nhu cầu người dùng.
-  \item \textbf{Thực nghiệm so sánh (benchmarking):} So sánh chất lượng đầu ra giữa mô hình gốc và mô hình đã tinh chỉnh trên cùng bộ tác vụ và tiêu chí đánh giá.
-  \item \textbf{Hiện thực pipeline đánh giá đa lớp:} Xây dựng và chạy thử pipeline gồm các module kiểm tra theo quy tắc, đo lường xác suất/ngôn ngữ, và đánh giá bằng mô hình trung gian (LLM-as-a-Judge), nhằm đạt chuẩn kiểm soát trước khi đăng.
-  \item \textbf{Đối chiếu với đánh giá con người:} Thu thập điểm số/ nhận xét từ người đánh giá để phân tích tương quan với điểm pipeline, làm cơ sở cho kết luận về độ tin cậy của hệ thống tự động chấm điểm.
+\item
+  Thiếu kỹ năng và thời gian của chủ quán F\&B:
+
+  \begin{itemize}
+  \item
+    Chủ quán là người không chuyên về marketing và công nghệ, yêu cầu
+    giao diện cực kỳ đơn giản, ``zero-config'' (không cần cấu hình phức
+    tạp).
+  \item
+    Họ rất bận rộn, cần một giải pháp tự động hóa cao độ, giảm thiểu tối
+    đa sự can thiệp thủ công hàng ngày.
+  \end{itemize}
+\item
+  Chất lượng nội dung và tính xác thực (Authenticity):
+
+  \begin{itemize}
+  \item
+    Nội dung marketing F\&B đòi hỏi sự chân thực (authentic footage),
+    trong khi AI tạo sinh hình ảnh/video thường kém chân thực hoặc tốn
+    kém.
+  \item
+    Thách thức là làm sao nâng cao chất lượng nội dung từ nguồn đầu vào
+    không chuyên nghiệp của chủ quán (ảnh chụp bằng điện thoại thiếu
+    sáng) và đảm bảo giọng văn (tone of voice) phù hợp, không bị ``máy
+    móc''.
+  \end{itemize}
+\item
+  Bắt kịp xu hướng và tính địa phương hóa (Localization):
+
+  \begin{itemize}
+  \item
+    Xu hướng F\&B và nội dung viral trên mạng xã hội (hashtag, chủ đề
+    trending---trong phạm vi luận văn: chủ yếu trên \textbf{Facebook})
+    thay đổi liên tục, đặc biệt tại thị trường Việt Nam.
+  \item
+    Hệ thống cần liên tục cập nhật dữ liệu xu hướng để đề xuất nội dung
+    phù hợp, tránh tạo ra nội dung lỗi thời hoặc không liên quan đến văn
+    hóa địa phương.
+  \end{itemize}
 \end{itemize}
 
-\section{Bố cục báo cáo}\label{sec:bo-cuc-bao-cao}
-
-Báo cáo gồm năm chương:
+\subsection{Phương pháp tiếp cận}
 
 \begin{itemize}
-  \item \textbf{Chương 1 -- Giới thiệu đề tài:} Trình bày vấn đề, mục tiêu, đối tượng và phạm vi, phương pháp nghiên cứu.
-  \item \textbf{Chương 2 -- Tìm hiểu và nghiên cứu thị trường:} Phân tích thực trạng marketing SME F\&B, nhu cầu người dùng và lý giải sự cần thiết của bước kiểm soát chất lượng (approval) cùng hướng tự động hóa đánh giá.
-  \item \textbf{Chương 3 -- Cơ sở lý thuyết và công nghệ:} Trình bày nền tảng về mô hình ngôn ngữ, chiến lược fine-tuning (LoRA, GRPO), RAG và lý thuyết đánh giá chất lượng đa lớp.
-  \item \textbf{Chương 4 -- Thực nghiệm và phân tích kết quả:} Mô tả thiết kế hệ thống Agent, hiện thực pipeline đánh giá, thực nghiệm fine-tuning và phân tích tương quan giữa điểm tự động và đánh giá con người.
-  \item \textbf{Chương 5 -- Kết luận và hướng phát triển:} Tổng kết đóng góp, khả năng ứng dụng auto-approval, hạn chế và định hướng mở rộng.
+\item
+  Sử dụng AI Agent dựa trên LLM để xây dựng chiến lược và sáng tạo nội
+  dung:
+
+  \begin{itemize}
+  \item
+    LLM đóng vai trò cốt lõi trong việc phân tích nội dung cảm hứng đã
+    lưu (YouTube, blog), hiểu ngữ cảnh F\&B và chuyển hóa thành các ý
+    tưởng bài viết/kịch bản video có cấu trúc.
+  \item
+    Áp dụng kỹ thuật Prompt Engineering để định hình các ``personas''
+    (giọng văn) marketing chuyên nghiệp, giúp chủ quán dễ dàng lựa chọn
+    mà không cần cấu hình phức tạp.
+  \end{itemize}
+\item
+  Thiết kế luồng công việc tinh gọn, lấy người dùng làm trung tâm:
+
+  \begin{itemize}
+  \item
+    Xây dựng giao diện người dùng đơn giản, tập trung vào việc cho phép
+    người dùng tải lên và quản lý các nguồn cảm hứng, sau đó xem xét,
+    chỉnh sửa và sử dụng các nội dung đã được hệ thống tạo ra.
+  \item
+    Tối ưu hóa quy trình làm việc để giảm thiểu các thao tác thủ công,
+    cho phép người dùng dễ dàng chuyển đổi từ việc thu thập nguồn cảm
+    hứng sang việc nhận được các nội dung marketing hoàn chỉnh.
+  \end{itemize}
+\item
+  Xây dựng và quản lý cơ sở dữ liệu nội dung:
+
+  \begin{itemize}
+  \item
+    Thiết kế hệ thống lưu trữ dựa trên cơ sở dữ liệu vector (Vector
+    Database) để tổ chức và quản lý hiệu quả các nguồn cảm hứng và nội
+    dung đã được xử lý.
+  \item
+    Cho phép người dùng quản lý tập hợp các tài liệu và nội dung đã được
+    tạo ra, bao gồm việc thêm mới, xem lại và tổ chức các nội dung theo
+    các chiến dịch hoặc thời gian cụ thể.
+  \end{itemize}
+\item
+  Triển khai và đánh giá prototype:
+
+  \begin{itemize}
+  \item
+    Xây dựng và triển khai một prototype hoàn chỉnh bao gồm các chức
+    năng thu thập, xử lý, phân tích nguồn cảm hứng và tạo nội dung
+    marketing.
+  \item
+    Tiến hành thử nghiệm prototype với người dùng thực tế, chủ yếu là
+    các chủ doanh nghiệp F\&B, để đánh giá hiệu quả của hệ thống trong
+    việc tạo ra các nội dung marketing có chất lượng và phù hợp với nhu
+    cầu của họ.
+  \item
+    Thu thập phản hồi từ người dùng để đánh giá tính khả dụng của hệ
+    thống và hiệu quả của các nội dung được tạo ra, từ đó cải thiện chất
+    lượng và trải nghiệm người dùng.
+  \end{itemize}
+\end{itemize}
+
+\section{Bố cục luận văn}\label{sec:bo-cuc}
+
+Luận văn gồm năm chương:
+
+\begin{itemize}
+\item
+  \textbf{Chương 1} giới thiệu vấn đề, mục tiêu, phạm vi, phương pháp
+  nghiên cứu và phương pháp tiếp cận kế thừa từ báo cáo thực tập.
+\item
+  \textbf{Chương 2} trình bày thực trạng thị trường, phân tích giải pháp
+  hiện có, khảo sát nhu cầu và lý do cần quy trình kiểm duyệt (Approval
+  Step).
+\item
+  \textbf{Chương 3} trình bày cơ sở lý thuyết và công nghệ (kiến trúc
+  mô hình, fine-tuning, RAG, metrics đánh giá).
+\item
+  \textbf{Chương 4} trình bày thiết kế hệ thống, pipeline đánh giá, thực
+  nghiệm fine-tuning và phân tích kết quả.
+\item
+  \textbf{Chương 5} kết luận, đóng góp, hạn chế và hướng phát triển.
 \end{itemize}

@@ -1,0 +1,53 @@
+\documentclass[12pt,a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T5]{fontenc}
+\usepackage[vietnamese]{babel}
+\usepackage{titlesec}          % cho subsubsection ra số 3.2.1.1
+\setcounter{secnumdepth}{5}    % bật đánh số 5 mức
+\setcounter{tocdepth}{4}       % (tùy chọn) hiện 4 mức trong mục lục
+\usepackage{graphicx}
+\usepackage{amsmath, amssymb}
+\usepackage{hyperref}
+\usepackage{setspace}
+\usepackage{float}
+\usepackage{array}     
+\usepackage{soul}
+\usepackage{booktabs}
+\usepackage{makecell}   
+\usepackage{xurl}
+
+\begin{document}
+
+% --- Trang bìa riêng ---
+\input{trang_bia}
+
+% --- Mục lục ---
+\tableofcontents
+
+% --- Danh mục các hình (List of Figures) ---
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{Danh mục các hình}
+\listoffigures
+\newpage
+
+% --- Danh mục các bảng (List of Tables) ---
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{Danh mục các bảng}
+\renewcommand{\listtablename}{Danh mục các bảng}
+\listoftables
+\newpage
+
+% --- Nội dung ---
+\include{chuong_1_gioi_thieu_de_tai}
+\include{chuong_2_tim_hieu}
+\include{chuong_3_kien_thuc_nen_tang}
+\include{chuong_4_phan_tich_va_thiet_ke}
+\include{chuong_5_ket_luan}
+
+% --- Tài liệu tham khảo ---
+\include{tai_lieu_tham_khao}
+
+\end{document}

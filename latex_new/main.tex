@@ -5,6 +5,9 @@
 \usepackage[vietnamese]{babel}
 \usepackage{graphicx}
 \usepackage{amsmath, amssymb}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{xurl}
 \usepackage{hyperref}
 
 \begin{document}
@@ -25,7 +28,11 @@
 \include{chuong_4_thuc_nghiem_va_phan_tich_ket_qua}
 \include{chuong_5_ket_luan_va_huong_phat_trien}
 
-% Tài liệu tham khảo (đặt trước các chương theo yêu cầu)
+% Tài liệu tham khảo
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{Tài liệu tham khảo}
+\chapter*{Tài liệu tham khảo}\label{chap:tai-lieu-tham-khao}
 \input{tai_lieu_tham_khao}
 
 \end{document}

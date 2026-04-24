@@ -1,61 +1,313 @@
-\chapter{Cơ sở lý thuyết và công nghệ}\label{chap:co-so-ly-thuyet}
+\chapter{Cơ sở lý thuyết và công nghệ}\label{chap:ly-thuyet}
 
-Chương này hệ thống hóa các lý thuyết và công nghệ dùng cho Marketing Agent: mô hình ngôn ngữ hiện đại, chiến lược fine-tuning (LoRA/QLoRA, GRPO), RAG phục vụ menu và brand voice, cùng khung đánh giá chất lượng đa lớp. Phần nền tảng NLP cổ điển (BoW, TF--IDF, RNN, attention) được giữ ở mức tóm tắt vì đã được thay thế bởi Transformer trong các LLM thương mại và mã nguồn mở hiện nay; chi tiết có thể tham khảo \texttt{latex\_old/chuong\_3\_kien\_thuc\_nen\_tang.tex}.
+Chương này trình bày nền tảng lý thuyết và công nghệ phục vụ mục tiêu luận
+văn: xây dựng tác nhân (Agent) hỗ trợ tạo nội dung marketing cho doanh
+nghiệp F\&B quy mô nhỏ trên nền tảng \textbf{Facebook}, đồng thời áp
+dụng các kỹ thuật \textbf{tinh chỉnh mô hình} (PEFT, GRPO) và
+\textbf{đánh giá chất lượng đa lớp} trước khi đăng bài. Các mục được sắp
+xếp theo luồng ``từ kiến trúc mô hình → thích ứng tác vụ → bổ sung tri
+thức bên ngoài → chuẩn hóa chất lượng đầu ra'', ăn khớp với thiết kế tổng
+thể hệ thống và nội dung thực nghiệm ở Chương \ref{chap:thuc-nghiem}.
+Luận văn không mở rộng lịch sử NLP theo hướng từ mô hình túi từ
+(Bag-of-Words) hay RNN, mà tập trung vào mô hình ngôn ngữ lớn dạng
+Transformer cải tiến hiện đang được sử dụng rộng rãi trong cả nghiên cứu
+và triển khai.
 
-\section{Từ biểu diễn văn bản cổ điển đến chú ý đa đầu}\label{sec:nlp-legacy}
+\section{Kiến trúc mô hình ngôn ngữ hiện đại}\label{sec:llm-kiem-truc}
 
-\subsection{Biểu diễn thưa và phân loại}
-Bag-of-Words và TF--IDF biểu diễn văn bản bằng vector thưa dựa trên tần suất từ, phù hợp tìm kiếm và phân loại truyền thống nhưng hạn chế trong nắm ngữ cảnh dài.
+\subsection{Từ cơ chế tự tập trung đến Transformer}
 
-\subsection{Embedding và mạng chuỗi}
-Word embedding và các kiến trúc RNN/LSTM/GRU mở đường cho học biểu diễn dày đặc theo chuỗi. Cơ chế attention trong seq2seq giúp mô hình trọng số hóa các phần đầu vào liên quan khi sinh từng token đầu ra, là tiền đề trực tiếp của self-attention trong Transformer.
+Các mô hình ngôn ngữ lớn (LLM) thế hệ gần đây dựa trên kiến trúc
+\emph{Transformer} với cơ chế \emph{self-attention}, cho phép mỗi token
+tại thời điểm $t$ tính tương tác với mọi token trước đó (trong chế độ
+tạo văn bản) hoặc cả trước/sau (trong huấn luyện), thay vì dựa hoàn toàn
+vào trạng thái nén tuần tự như RNN. Ở mức tổng quan, cơ chế này giúp mô
+hình bắt mối phụ thuộc dài, phù hợp tạo bài quảng cáo, mô tả sản phẩm
+hay kịch bản bài đăng có độ dài vừa phải trên mạng xã hội. Trên nền tảng
+chung này, nhiều cải tiến (GQA, RoPE, MoE) hướng tới tăng tốc suy diễn,
+giảm bộ nhớ, hoặc mở rộng quy mô mà vẫn kiểm soát chi phí vận hành,
+phù hợp tình huống triển khai thực tế tại doanh nghiệp vừa và nhỏ nơi
+tài nguyên tính toán còn hạn chế.
 
-\section{Transformer, LLM hiện đại và các cải tiến kiến trúc}\label{sec:transformer-llm}
-
-\subsection{Self-attention và Transformer}
-Transformer dựa trên cơ chế self-attention song song trên toàn chuỗi, cho phép học phụ thuộc xa hiệu quả hơn RNN tuần tự. Khối encoder--decoder ban đầu phục vụ dịch máy; các LLM sinh văn bản (GPT-like) chủ yếu dùng khối decoder với masked self-attention.
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.72\textwidth]{images/transformer.png}
+    \caption{Mô tả tổng quan cơ chế attention trong kiến trúc Transformer
+    (minh hoạ; chi tiết triển khai có nhiều biến thể). Nguồn: tài liệu
+    tham khảo tổng hợp, \url{https://heidloff.net/article/foundation-models-transformers-bert-and-gpt/}.}
+    \label{fig:transformer}
+\end{figure}
 
 \subsection{Grouped-Query Attention (GQA)}
-Trong multi-head attention, mỗi ``đầu'' có bộ chiếu query--key--value riêng. GQA nhóm nhiều đầu query chung một nhóm key--value, giảm chi phí bộ nhớ và suy luận (inference) khi chiều dài ngữ cảnh và số đầu lớn, trong khi vẫn duy trì chất lượng gần với multi-head đầy đủ.
 
-\subsection{RoPE (Rotary Positional Embedding)}
-RoPE mã hóa vị trí token bằng phép quay trong không gian embedding, giúp mô hình tổng quát hóa tốt hơn đối với độ dài ngữ cảnh và tương đối vị trí, được nhiều kiến trúc LLM mở hiện đại áp dụng.
+Trong cơ chế chú ý nhiều đầu (multi-head attention), mỗi \emph{head} thường
+có cặp ma trận truy vấn (Query) và cặp khóa--giá trị (Key--Value) riêng.
+\emph{Grouped-Query Attention} (GQA) gom nhiều head truy vấn để \textbf{dùng
+chung} một tập hợp head Key--Value (theo nhóm), giảm số lần tính toán
+và tải bộ nhớ liên quan tới bản sao KV, đặc biệt hữu ích với số lượng
+head lớn khi tạo văn bản từng bước. Về mặt thực tiễn, GQA cân bằng giữa
+chất lượng biểu diễn (so với Multi-Query Attention còn mạnh hơn) và hiệu
+năng suy diễn (tốt hơn mô hình mỗi head một KV riêng). Luận văn cần bối
+cảnh này khi mô tả lựa chọn hoặc so sánh các mô hình mã nguồn mở: nhiều
+biến thể tên gọi (ví dụ dòng mô hình tối ưu suy diễn) tích hợp GQA ở
+các tầng attention.
+
+\subsection{Rotary Position Embedding (RoPE)}
+
+Thay vì cộng vector vị trí tuyệt đối cố định vào embedding token theo
+kiểu sin/cos từng chiều, \emph{Rotary Position Embedding} (RoPE) mã
+hoá thông tin vị trí bằng phép \textbf{xoay} biểu diễn (trong nhóm
+vector hai chiều) tuỳ theo tương đối vị trí $m-n$ giữa query và key.
+Kết quả là mô hình học mối quan hệ tương đối giữa các token, thường
+phù hợp tạo văn dài và ổn định hơn ở một số tác vụ. Ở mức trình bày
+thạc sĩ, có thể ghi nhận dạng tóm tắt: với cặp chiều $(2i, 2i+1)$,
+phép tương tự chú ý sử dụng biến thể dạng
+$\mathrm{RoPE}(q_m, k_n, m-n)$ thay cho tích vô hướng thuần trên
+vector gốc, đảm bảo tính tương đối vị trí. RoPE trở thành thành phần
+phổ biến trong nhiều LLM công khai, gồm cả những mô hình nghiên cứu
+có dùng làm tác nhân sinh nội dung marketing trong thực nghiệm.
 
 \subsection{Mixture of Experts (MoE)}
-MoE thay cho một feed-forward duy nhất bằng tập ``chuyên gia'' (mạng con) và một router học được chọn tập con chuyên gia kích hoạt cho mỗi token. Nhờ vậy tổng số tham số có thể rất lớn nhưng \emph{tham số kích hoạt} mỗi bước nhỏ hơn, cân bằn giữa năng lực biểu diễn và chi phí suy luận.
 
-\section{Chiến lược fine-tuning cho Agent marketing}\label{sec:fine-tuning}
+\emph{Mixture of Experts} mở rộng tầng feed-forward: thay vì một mạng
+truyền thuận duy nhất, mô hình có tập nhiều mạnh con
+(\textbf{expert}) và một mạng \textbf{router} (học được) ước lượng
+trọng số hoặc lựa chọn top--$K$ expert cần kích hoạt tại từng vị trí
+token. Kết quả là \textbf{tham số tổng} có thể rất lớn nhưng
+\textbf{tham số kích hoạt} trong một lần truyền thuận hạn chế, giúp
+cân bằng dung lượng mô hình với \textbf{chi phí suy diễn} (FLOPs, độ
+trễ). Điều này liên quan trực tiếp tới tối ưu vận hành: doanh
+nghiệp có thể cân nhắc mô hình MoE khi cần dung lượng tri thức
+phong phú nhưng vẫn phải giới hạn GPU/VRAM. Phần nghiên cứu ở các
+chương sau có thể tham chiếu các mô hình mã nguồn mở có tầng MoE (nếu
+được dùng trong thực nghiệm) hoặc phân tích ở mức tương quan, không
+bắt buộc mọi cấu hình đều dùng MoE.
 
-\subsection{Huấn luyện trước và thích nghi tác vụ}
-LLM nền học từ dữ liệu văn bản rộng; để phục vụ SME F\&B cần thích nghi theo phong cách thương hiệu, định dạng caption/kịch bản ngắn, và từ vựng tiếng Việt đặc thù. Fine-tuning có giám sát trên tập cặp chỉ dẫn--đầu ra chất lượng cao giúp giảm phụ thuộc prompt dài và tăng ổn định đầu ra.
+\section{Chiến lược tinh chỉnh mô hình}\label{sec:fine-tuning}
 
-\subsection{PEFT: LoRA và QLoRA}
-LoRA (Low-Rank Adaptation) giả định cập nhật trọng số $\Delta W$ của một lớp tuyến tính có hạng thấp: $\Delta W = B A$ với $B \in \mathbb{R}^{d \times r}$, $A \in \mathbb{R}^{r \times k}$, $r \ll \min(d,k)$. Huấn luyện chỉ $A,B$ giữ $W_0$ cố định, giảm bộ nhớ và thời gian cập nhật.
+Mục này dùng thuật ngữ \textit{fine-tuning} theo tài liệu quốc tế để chỉ
+quá trình điều chỉnh mô hình ngôn ngữ đã tiền huấn luyện trên tập
+dữ liệu tác vụ.
 
-QLoRA kết hợp lượng tử hóa trọng số nền (ví dụ 4-bit) với adapter LoRA trong không gian tính toán được khử lượng tử hóa tạm thời, cho phép fine-tune các mô hình lớn trên GPU hạn chế.
+\subsection{Giới hạn tinh chỉnh toàn bộ tham số và vai trò của PEFT}
 
-\subsection{GRPO (Group Relative Policy Optimization)}
-Trong tinh chỉnh theo phản hồi (RLHF/RLAIF), việc duy trì reward model riêng thường tốn chi phí. GRPO là hướng tối ưu hóa chính sách sinh token dựa trên \emph{nhóm} mẫu sinh cho cùng một prompt: phần thưởng được chuẩn hóa tương đối trong nhóm, giảm phụ thuộc vào một scalar reward model cồng kềnh và phù hợp kịch bản định hình phong cách marketing khi có tiêu chí so sánh (ví dụ điểm từ pipeline hoặc từ người gán nhãn).
+Khi tài nguyên hạn chế, \textbf{huấn luyện lại} toàn bộ tham số LLM
+thường không khả thi. Các kỹ thuật \textbf{tinh chỉnh hiệu quả tham
+số} (Parameter-Efficient Fine-Tuning, PEFT) chỉ cập nhật (hoặc thêm)
+một phần nhỏ tham số, giảm bộ nhớ GPU và thời gian huấn luyện, đồng
+thời giúp hạn chế ghi đè nhanh lên tri thức từ giai đoạn tiền huấn
+luyện. Điều này phù hợp bài toán định hướng phong cách marketing F\&B
+(tông giọng, cấu trúc câu, ràng buộc từ vựng) từ một tập mẫu hữu
+hạn, thay vì mô hình hoá lại toàn bộ thống kê ngôn ngữ.
+
+\subsection{LoRA và QLoRA}
+
+\emph{Low-Rank Adaptation} (LoRA) bổ sung cập nhật có hạng thấp lên
+một tầng tuyến tính đã cố định trọng số trước. Với ma trận trọng số
+gốc $W_0 \in \mathbb{R}^{d_{\mathrm{out}} \times d_{\mathrm{in}}}$,
+cập nhật được tham số hoá bởi
+\begin{equation}
+    W = W_0 + \Delta W, \qquad
+    \Delta W = B A,
+\end{equation}
+với $B \in \mathbb{R}^{d_{\mathrm{out}} \times r}$,
+$A \in \mathbb{R}^{r \times d_{\mathrm{in}}}$ và
+$r \ll \min(d_{\mathrm{in}}, d_{\mathrm{out}})$. Chỉ $A$ và $B$ được
+học (và tùy cấu hình thêm hệ số scale), nên số tham số huấn luyện
+giảm mạnh so với cập nhật trực tiếp $W_0$. Tác vụ tạo nội dung
+marketing từ prompt có cấu trúc ổn định đặc biệt hưởng lợi từ cách
+``uốn'' nhẹ lớp tuyến tính mà không cần sao chép cả tỷ tham số.
+
+\emph{QLoRA} kết hợp lượng tử hoá mô hình cơ sở ở dạng độ chính xác
+thấp (4-bit) khi tải/huấn luyện, đồng thời duy trì LoRA ở vài bit
+cao hơn cho phép nhảy gradient, giúp giảm bộ nhớ vật lý tới mức
+huấn luyện trên thiết bị tầm trung — phù hợp tình huống nghiên cứu
+thực tế có một GPU. Luận văn ưu tiên trình bày bản chất toán--kỹ
+thuật: hạng thấp thay thế cập nhật đầy đủ, và lượng tử khi cần tối
+ưu tài nguyên, thay vì mô tả từng công cụ phần mềm cụ thể.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/LoRA.png}
+    \caption{Ý tưởng tách cập nhật hạng thấp (LoRA) tách khỏi trọng số
+    gốc, tiết kiệm tham số huấn luyện. Nguồn: \url{https://pub.towardsai.net/low-rank-adaptation-lora-fedf37b92026}.}
+    \label{fig:lora}
+\end{figure}
+
+\subsection{Group Relative Policy Optimization (GRPO)}
+
+Ngoài tinh chỉnh có giám sát theo cặp câu lệnh--đáp án, một hướng
+khác là tối ưu theo tín hiệu \textbf{thưởng} (ví dụ: độ tương thích
+nội dung, độ ``chuẩn'' marketing) để hướng mô hình tới cách tạo văn
+mang phong cách đề tài cần. Các cách dựa PPO, RLHF thường cầm một
+\emph{reward model} tách biệt huấn luyện trước, phát sinh chi phí cỡ
+bậc tương tự mô hình chính.
+
+\emph{Group Relative Policy Optimization} (GRPO) tối ưu theo
+\textbf{chênh lệch thưởng tương đối trong từng nhóm} mẫu sinh (cùng
+bối cảnh, nhiều ứng viên đầu ra), thay vì ước lượng giá trị tuyệt
+đối ổn định trên từng bước. Trực giác: khi cần so sánh bốn mẫu nội
+dung bài viết từ cùng một lời nhắc, dễ hơn khi bảo mô hình học
+\emph{ưu thế} của ứng viên tốt so với các ứng viên tệ trong cùng lô
+hơn là gắn một số thưởng tuyệt đối chính xác. Cơ chế này giảm
+phụ thuộc vận hành vào \textbf{reward model} cỡ lớn, phù hợp
+phạm vi luận văn tập trung \textbf{định hình phong cách} và
+\textbf{hành vi} của Agent mà vẫn an toàn về tài nguyên. Chi
+tiết thuật toán, siêu tham số, và tích hợp thực nghiệm được
+trình bày gọn ở Chương \ref{chap:thuc-nghiem} kèm cấu hình
+huấn luyện/đối sánh theo từng mô hình mã nguồn mở.
 
 \section{Retrieval-Augmented Generation (RAG)}\label{sec:rag}
 
-\subsection{Luồng RAG}
-Tài liệu được phân đoạn (chunking), nhúng (embedding) và lưu trong vector store. Khi sinh nội dung, truy vấn của người dùng được nhúng, tìm $k$ đoạn gần nhất theo cosine hoặc tương đương, ghép vào prompt làm ngữ cảnh có kiểm soát. Cách tiếp cận này giảm ``bịa'' thông tin cố định về menu, giá, chính sách và giúp cập nhật tri thức mà không cần huấn luyện lại toàn bộ mô hình.
+\subsection{Nền tảng pipeline}
 
-\subsection{Chunking và vector search cho F\&B}
-Với menu và brand guideline, ngưỡng độ dài chunk cần cân bằng: chunk quá nhỏ mất ngữ cảnh món combo; chunk quá lớn làm nhiễu truy vấn. Có thể áp dụng chia theo tiêu đề mục, overlap có kiểm soát, hoặc metadata (danh mục món, chi nhánh). Bước re-ranking (mô hình chéo hoặc điểm tương thích thứ hai) cải thiện chất lượng đoạn được đưa vào prompt.
+\emph{Retrieval-Augmented Generation} (RAG) bổ sung bước
+\textbf{truy hồi} từ tập tài liệu (hoặc cơ sở tri thức) bên
+ngoài trước khi mô hình sinh câu trả lời. Luồng tổng quát: (1)
+mã hóa truy vấn và (một phần) tài liệu thành vector; (2) tìm
+các đoạn gần nhất trong không gian embedding; (3) ghép
+ngữ cảnh thuần văn vào lời nhắc (prompt) cho LLM. Nhờ vậy,
+cập nhật menu, giá, chính sách khuyến mãi hay ``giọng
+thương hiệu'' không nhất thiết qua từng vòng lặp fine-tune
+lớn, mà bằng cập nhật kho tài liệu và cơ sở truy hồi.
 
-\section{Đánh giá chất lượng nội dung marketing}\label{sec:evaluation}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.72\textwidth]{images/rag.png}
+    \caption{Mô tả tổng quan: truy hồi tài liệu ngoài, kết
+    hợp ngữ cảnh vào prompt, rồi sinh. Nguồn: \url{https://github.com/langchain-ai/rag-from-scratch}.}
+    \label{fig:rag}
+\end{figure}
 
-\subsection{Quy tắc cứng (rule-based)}
-Danh mục từ cấm và regex theo chính sách; kiểm tra thực thể bắt buộc (tên quán, địa chỉ, mã khuyến mãi nếu có); kiểm tra cấu trúc hook--body--CTA và độ dài phù hợp kênh (ví dụ TikTok ngắn hơn Facebook).
+\subsection{Chunking và tối ưu theo tài liệu F\&B}
 
-\subsection{Chỉ số xác suất và logprobs}
-Từ phân phối token tiếp theo, perplexity liên quan đến độ tự tin trung bình của mô hình trên đoạn văn bản. Logprobs có thể dùng để phát hiện đoạn lệch pha hoặc câu chữ quá ``an toàn''/mơ hồ; đây là tín hiệu bổ sung, không thay thế kiểm định ngữ nghĩa.
+Chất lượng RAG phụ thuộc mạnh \textbf{đơn vị tài liệu} đưa vào
+chỉ mục. Thông thường mỗi mục là một \emph{chunk} (đoạn) văn
+bản: phải đủ dài để giữ ý, đủ ngắn để khớp truy hồi chính
+xác. Các cách tách phổ biến: theo số ký tự (hoặc token) cố
+định, có bước \textbf{chồng lấn} (overlap) giữa hai chunk liền
+kề để không mất câu/đoạn dở, hoặc tách theo cấu trúc bảng
+(\emph{ví dụ: từng mục menu, từng món, từng khối mô tả}).
+Với bối cảnh SME F\&B, tài liệu điển hình gồm: menu, bảng
+giá, mô tả món, quy ước tên thương hiệu, ``brand voice'',
+chính sách đã duyệt. Việc thiết kế chunk tương ứng cấp độ
+nghiệp vụ (món, nhóm, ngày áp dụng khuyến mãi) giúp truy
+hồi đúng cảnh, tránh cắt nửa câu gây sai lệch nội dung
+hiển thị lên bài \textbf{Facebook} (bài viết, chú thích,
+mô tả tài nguyên theo từng dịp đăng).
 
-\subsection{LLM-as-a-Judge và G-Eval}
-Một LLM (có thể mạnh hơn hoặc chuyên trách) chấm điểm theo rubric: phù hợp thương hiệu, độ thuyết phục, đúng ngữ pháp tiếng Việt, tuân chính sách. G-Eval đề xuất chuẩn hóa prompt chấm điểm và tận dụng chuỗi suy luật ngắn trước khi xuất số điểm. Có thể kết hợp persona khách hàng (ví dụ ``khách trẻ thích trend'') để đa góc nhìn.
+\subsection{Vector search và embedding}
 
-\section{Agent, công cụ và điều phối luồng}\label{sec:agent-tooling}
+Các bản ghi (chunk) được ánh xạ sang vector bằng bộ
+\emph{embedding} (mô hình bảng, độc lập với LLM sinh, hoặc
+dùng chung họ nếu cấu hình cho phép). Truy vấn từ
+người dùng/Agent cũng được cùng không gian vector; việc
+tìm kiếm tương tự theo tích vô hướng hoặc khoảng cách
+cosine, kèm \textbf{top--$k$} ứng viên, là lớp nền
+của vector store. Ứng dụng cho luận văn: bảo đảm nội
+dung sinh còn \textbf{khớp thực thể} (tên món, địa
+danh, tên thương hiệu) bằng cách ưu tiên cung cấp ngữ
+cảnh từ kho tài liệu đã lập chỉ mục, bổ sung cho phần
+tinh chỉnh phong cách ở mục
+\ref{sec:fine-tuning}. Phần triển khai cơ sở dữ liệu
+bảng \texttt{Document}, \texttt{Embedding} nằm ở
+Chương \ref{chap:thuc-nghiem}.
 
-Marketing Agent trong đề tài kết hợp LLM (có thể đã fine-tune), RAG, và các công cụ (truy vấn cơ sở dữ liệu, gọi API lịch đăng, module chấm điểm). Các framework như LangChain/LangGraph hỗ trợ biểu diễn đồ thị trạng thái và điều phối bước; phần hiện thực cụ thể thuộc Chương 4. Nguyên tắc thiết kế: tách bước \emph{sinh} và \emph{đánh giá}, lưu vết phiên bản nội dung và điểm pipeline để phục vụ phân tích tương quan với đánh giá con người.
+\section{Lý thuyết đánh giá chất lượng đa lớp}\label{sec:eval-metrics}
+
+Việc đăng nội dung tự động lên kênh Facebook yêu cầu
+một tầng \textbf{chấm điểm / lọc} trước bước phê
+duyệt cuối, phù hợp bối cảnh ``approval step'' đã
+phân tích ở chương nghiên cứu thị trường. Chương
+này tách ba lớp: quy tắc tường minh, chỉ số xác
+suất từ mô hình, và thẩm định theo bước
+tương tự thẩm phán bằng LLM, để Chương
+\ref{chap:thuc-nghiem} mô tả pipeline cụ
+thể (module, tham số, tương quan với
+đánh giá con người).
+
+\subsection{Quy tắc cứng (Rule-based)}
+
+Các bộ lọc theo từ vựng, mẫu, hoặc biểu thức
+(regular expression) dùng để loại tức thì các
+bài vi phạm \textbf{danh sách từ cấm} (hình ảnh
+không phù hợp, cạnh tranh, danh từ cần tránh theo
+chính sách thương hiệu). Tầng \textbf{thực thể}
+(entities): kiểm tra tên món, giá, chương trình
+khuyến mãi có nằm trong tập sự kiện/tài
+liệu nội bộ mà bài cần nhắc tới, hoặc
+có tên quán, địa điểm trùng với
+dữ liệu đã chuẩn hoá. Tầng
+\textbf{cấu trúc} phổ biến trên
+mạng xã hội: \textbf{Hook} (câu
+khai thác chú ý) -- \textbf{Body}
+(phần thân thuyết phục, mô tả) --
+\textbf{CTA} (kêu gọi hành động, ví
+dụ đặt bàn, dùng mã, ghé quán) có
+thể mô tả bằng tập mẫu cấu trúc
+hoặc bộ kiểm tra thứ tự đoạn;
+những khoảng còn thiếu tạo
+cảnh báo trước khi tới các lớp
+mềm hơn.
+
+\subsection{Chỉ số xác suất: perplexity từ logprobs}
+
+Khi mô hình cung cấp xác suất theo từng bước
+(log-probability) cho các token đã sinh, có
+thể ước lượng \textbf{perplexity} (PPL) là thước
+đo trung bình ``mức bất ngờ'' của mô hình
+trước văn bản, thường dùng để so sánh tương
+đối giữa hai phiên bản mô hình cùng một
+bài. Với dãy token $x_1,\ldots,x_N$:
+\begin{equation}
+    \mathrm{PPL}
+    = \exp\!\left(
+    -\frac{1}{N}
+    \sum_{i=1}^{N}
+    \log p_\theta(
+    x_i \mid
+    x_{<i}
+    ) \right).
+\end{equation}
+PPL thấp hơn không đồng nghĩa
+``marketing tốt hơn''; tuy nhiên chỉ
+số hữu dụng khi kết hợp với tiêu
+chí tác vụ (chất lượng nội dung)
+để phát hiện đoạn rỗng, lặp, hoặc
+lệch phân phối so với tập chuẩn.
+Trong khuôn khổ luận văn, lớp này
+đóng vai trò tín hiệu bổ trợ, không
+thay thế toàn bộ thẩm định nội
+dung.
+
+\subsection{G-Eval và mô phỏng Persona bằng LLM (LLM-as-a-Judge)}
+
+\emph{G-Eval} đề xuất dùng chính LLM làm
+thẩm phán: cung cấp rubric (các
+tiêu chí, thang điểm) và câu lệnh
+có cấu trúc, có thể kèm
+Chain-of-Thought ngắn, để gán điểm
+chất lượng (ví dụ: sát bối cảnh, kịch
+tính, mức độ ``chuẩn marketing'').
+Trong bối cảnh nghiên cứu, hướng
+tương tự có thể tích hợp thư
+viện đánh giá tự động (ví dụ
+DeepEval) với một \emph{judge} mạnh
+hơn mô hình sinh cục bộ, đồng
+bộ bộ metric nghiệp vụ (ví
+dụ Faithfulness, Expansion, bản
+mô tả ``Marketing Vibe'' nếu
+cấu hình) với từng bài sinh. Ngoài rubric tổng
+hợp, có thể thiết kế \emph{persona} khách
+hàng (bối cảnh F\&B, độ tuổi, khu vực) để
+đặt câu hỏi dạng ``bài này có thu hút
+bạn không?'' rồi chuẩn hóa điểm, bổ
+sung góc thực tế bên cạnh các tiêu chí
+kỹ thuật.
+
+Quy trình kết hợp các lớp đánh giá và số
+hóa kết quả (ghi theo lô chạy và theo mô
+hình) được làm rõ trong Chương
+\ref{chap:thuc-nghiem}, đồng thời hỗ trợ
+phân tích tương quan với điểm của
+chuyên gia khi có dữ liệu khảo sát.
