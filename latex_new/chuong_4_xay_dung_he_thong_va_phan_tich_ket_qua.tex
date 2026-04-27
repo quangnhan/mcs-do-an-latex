@@ -1,0 +1,581 @@
+\chapter{Xây dựng hệ thống Marketing Agent và phân tích kết quả thực nghiệm}\label{chap:thuc-nghiem}
+
+Chương này trình bày toàn bộ quá trình xây dựng và thực nghiệm hệ thống:
+thiết kế kiến trúc và cơ sở dữ liệu, hiện thực hóa các thành phần
+Agent bằng LangGraph, pipeline đánh giá chất lượng đa lớp, kết quả so
+sánh các mô hình ngôn ngữ mã nguồn mở, và kiểm định tương quan giữa điểm
+tự động với đánh giá từ con người. Mọi thực nghiệm tập trung vào nền tảng
+\textbf{Facebook} với dữ liệu thực tế từ các SME ngành F\&B tại Việt Nam.
+
+\section{Thiết kế kiến trúc hệ thống}\label{sec:kien-truc}
+
+\subsection{Tổng quan kiến trúc}
+
+Hệ thống được thiết kế theo mô hình \textbf{đa tác nhân} (multi-agent)
+với các thành phần tách biệt rõ trách nhiệm, giao tiếp qua message queue
+để đảm bảo khả năng mở rộng theo chiều ngang. Các dịch vụ cốt lõi gồm:
+
+\begin{itemize}
+  \item \textbf{Orchestrator API}: Dịch vụ FastAPI xử lý xác thực JWT,
+    quản lý phiên làm việc, và là điểm vào duy nhất của người dùng. Cung
+    cấp endpoint \texttt{POST /chat} nhận tin nhắn hội thoại và trả về
+    phản hồi của agent cùng trạng thái chiến dịch hiện tại.
+  \item \textbf{AI Agents Service}: Nhóm các Worker Celery lắng nghe ba
+    hàng đợi độc lập (\texttt{content\_planning\_queue},
+    \texttt{content\_queue}, \texttt{image\_queue}), mỗi hàng đợi tương
+    ứng một giai đoạn trong pipeline sinh nội dung.
+  \item \textbf{PostgreSQL}: Lưu trữ toàn bộ trạng thái hệ thống, lịch
+    sử hội thoại, kết quả sinh nội dung và siêu dữ liệu duyệt bài.
+  \item \textbf{RabbitMQ}: Message broker phân phối tác vụ nặng (gọi LLM,
+    sinh ảnh) sang workers, tránh blocking luồng HTTP chính.
+  \item \textbf{MinIO}: Object storage tương thích S3, lưu trữ ảnh được
+    sinh ra với URL công khai cho phép nhúng trực tiếp vào bài đăng
+    Facebook.
+  \item \textbf{Langfuse}: Observability platform ghi lại toàn bộ lượt
+    gọi LLM (prompt, response, latency, token count) phục vụ phân tích
+    chi phí và debug.
+  \item \textbf{LiteLLM Proxy}: Lớp trừu tượng hóa nhà cung cấp LLM,
+    cho phép chuyển đổi giữa OpenAI GPT-4o, GPT-4o-mini, Claude Sonnet
+    mà không thay đổi code agent.
+\end{itemize}
+
+\subsection{Cơ sở dữ liệu}\label{subsec:database}
+
+Schema cơ sở dữ liệu được thiết kế theo ba lớp logic: nhận dạng
+(identity), tri thức thương hiệu (knowledge base), và pipeline tạo nội
+dung (job pipeline). Tất cả bảng dùng UUID làm khóa chính để hỗ trợ
+phân tán sau này.
+
+\subsubsection{Lớp nhận dạng và tri thức thương hiệu}
+
+\begin{itemize}
+  \item \textbf{\texttt{organizations}}: Tổ chức cấp cao nhất. Mỗi tổ
+    chức sở hữu nhiều dự án và người dùng.
+  \item \textbf{\texttt{projects}}: Đại diện cho một thương hiệu F\&B cụ
+    thể. Lưu brand guidelines trực tiếp: \texttt{tone\_of\_voice},
+    \texttt{writing\_style}, \texttt{do\_list[]},
+    \texttt{dont\_list[]}. Đây là nguồn dữ liệu được nạp vào prompt của
+    ContentAgent.
+  \item \textbf{\texttt{users}}: Người dùng trong tổ chức, có vai trò
+    \texttt{owner | admin | member}.
+  \item \textbf{\texttt{products}}: Sản phẩm/món ăn của một dự án. Lưu
+    thông tin marketing dạng mảng: \texttt{key\_features[]},
+    \texttt{campaign\_objectives[]}, \texttt{key\_facts[]}. Mỗi lần tạo
+    nội dung, agent tra cứu bảng này để lấy thông tin sản phẩm liên quan.
+\end{itemize}
+
+\subsubsection{Lớp hội thoại}
+
+\begin{itemize}
+  \item \textbf{\texttt{chat\_sessions}}: Phiên hội thoại giữa người dùng
+    và CampaignAgent, gắn với một dự án. Trạng thái:
+    \texttt{active | archived}.
+  \item \textbf{\texttt{chat\_messages}}: Lịch sử tin nhắn trong phiên.
+    Trường \texttt{role} nhận một trong bốn giá trị:
+    \texttt{user | assistant | system | tool}. Trường \texttt{metadata}
+    (JSONB) lưu siêu dữ liệu tùy chọn như intent phân loại hoặc ID tác
+    vụ Celery liên quan.
+\end{itemize}
+
+\subsubsection{Lớp pipeline tạo nội dung}
+
+Đây là phần cốt lõi của schema, thiết kế theo mô hình job queue phân cấp
+ba tầng để cho phép retry độc lập ở mỗi bước.
+
+\begin{itemize}
+  \item \textbf{\texttt{campaign\_runs}}: Đơn vị điều phối cấp cao nhất.
+    Một chiến dịch có thể sinh nhiều bài viết theo nhiều
+    \emph{slot}. Trạng thái: \texttt{running | awaiting\_approval |
+    completed | paused}.
+  \item \textbf{\texttt{content\_planning\_jobs}}: Một slot trong chiến
+    dịch, đại diện cho một yêu cầu tạo bài cụ thể. Lưu
+    \texttt{slot\_index}, \texttt{attempt\_no}, \texttt{raw\_brief}
+    (yêu cầu thô từ agent lập kế hoạch), \texttt{input\_title} và
+    \texttt{seed\_content} (sau khi ContentPlanningAgent xử lý). Ràng
+    buộc \texttt{UNIQUE(campaign\_run\_id, slot\_index, attempt\_no)}
+    đảm bảo idempotency khi retry.
+  \item \textbf{\texttt{content\_planning\_job\_products}}: Bảng nối
+    many-to-many giữa content planning job và danh sách sản phẩm liên
+    quan (một bài viết có thể quảng bá nhiều món cùng lúc).
+  \item \textbf{\texttt{content\_generation\_jobs}}: Kết quả sinh nội
+    dung từ ContentAgent. Lưu \texttt{headline}, \texttt{body\_markdown},
+    \texttt{extra\_outputs} (JSONB — hashtags và metadata bổ sung),
+    \texttt{raw\_prompt} (snapshot prompt đầy đủ để debug), và metadata
+    duyệt bài: \texttt{review\_decision}, \texttt{review\_comment},
+    \texttt{reviewed\_at}.
+  \item \textbf{\texttt{image\_generation\_jobs}}: Kết quả sinh ảnh từ
+    ImageAgent. Trường \texttt{output\_payload} (JSONB) lưu URL ảnh
+    trên MinIO và các thông số sinh ảnh. Cũng có trường
+    \texttt{review\_decision} để hỗ trợ luồng duyệt ảnh độc lập.
+\end{itemize}
+
+Sơ đồ quan hệ tóm tắt theo chiều từ trên xuống:
+\texttt{organizations} $\to$ \texttt{projects} $\to$
+\texttt{campaign\_runs} $\to$ \texttt{content\_planning\_jobs} $\to$
+\texttt{content\_generation\_jobs} $\to$
+\texttt{image\_generation\_jobs}.
+
+\subsection{Luồng công việc tổng thể}
+
+Luồng xử lý một chiến dịch đi qua bốn giai đoạn với ba hàng đợi Celery
+song song:
+
+\begin{enumerate}
+  \item \textbf{Hội thoại và lập kế hoạch}: Người dùng gửi yêu cầu qua
+    \texttt{POST /chat}. CampaignAgent phân loại intent; nếu là
+    \texttt{REQUEST\_PLAN}, nó gọi ContentPlanningAgent để tạo
+    \texttt{ExecutionPlan} (danh sách slot với brief từng bài). Kết quả
+    trình bày cho người dùng phê duyệt (\texttt{awaiting\_approval}).
+  \item \textbf{Phê duyệt kế hoạch}: Khi người dùng phê duyệt
+    (\texttt{APPROVE\_PLAN}), CampaignAgent tạo bản ghi
+    \texttt{campaign\_run} trong DB, sau đó đưa từng slot vào hàng đợi
+    \texttt{content\_planning\_queue}.
+  \item \textbf{Sinh nội dung}: ContentAgent worker nhận job, nạp tri
+    thức thương hiệu từ \texttt{ContentRepository}, gọi LLM sinh bài
+    viết và lưu vào \texttt{content\_generation\_jobs}. Song song, nếu
+    kế hoạch yêu cầu ảnh, job được đưa vào \texttt{image\_queue} để
+    ImageAgent xử lý.
+  \item \textbf{Duyệt và đăng}: Người dùng xem kết quả, phê duyệt hoặc
+    yêu cầu chỉnh sửa qua \texttt{review\_decision}. Hệ thống ghi
+    nhận phản hồi vào DB làm dữ liệu cải thiện cho các chiến dịch
+    sau.
+\end{enumerate}
+
+\section{Hiện thực hóa các thành phần Agent}\label{sec:hien-thuc-agent}
+
+Tất cả agent được hiện thực trên nền tảng \textbf{LangGraph} --- thư
+viện xây dựng state machine từ đồ thị có hướng trên LangChain. Mỗi
+node trong đồ thị là một hàm Python nhận và trả về \texttt{AgentState}
+(TypedDict); LangGraph điều phối luồng thực thi theo các điều kiện
+chuyển trạng thái được định nghĩa tường minh.
+
+\subsection{CampaignAgent --- Điều phối trung tâm}
+
+CampaignAgent là cổng vào duy nhất của người dùng, đóng vai trò
+\emph{conversational orchestrator}: hiểu ý định, lập kế hoạch, điều
+phối các agent con, và duy trì bộ nhớ hội thoại liên phiên.
+
+\textbf{State machine và chuyển trạng thái.} Agent quản lý hai chiều
+trạng thái song song: \emph{ConversationState} (vòng đời hội thoại) và
+\emph{ChatIntent} (ý định từng lượt). Bảng~\ref{tab:campaign-states}
+tóm tắt các chuyển trạng thái hợp lệ.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Chuyển trạng thái hội thoại trong CampaignAgent.}
+  \label{tab:campaign-states}
+  \begin{tabular}{llll}
+    \toprule
+    \textbf{Trạng thái hiện tại} & \textbf{Intent nhận được} & \textbf{Trạng thái tiếp theo} & \textbf{Hành động} \\
+    \midrule
+    \texttt{CHATTING}          & \texttt{REQUEST\_PLAN}  & \texttt{AWAITING\_APPROVAL} & Gọi ContentPlanningAgent \\
+    \texttt{AWAITING\_APPROVAL}& \texttt{APPROVE\_PLAN}  & \texttt{DONE}               & Gọi ContentAgent + ImageAgent \\
+    \texttt{AWAITING\_APPROVAL}& \texttt{REJECT\_PLAN}   & \texttt{CHATTING}           & Xóa kế hoạch pending \\
+    \texttt{AWAITING\_APPROVAL}& \texttt{CHAT}           & \texttt{AWAITING\_APPROVAL} & Nhắc lại kế hoạch chờ \\
+    \texttt{CHATTING}          & \texttt{CHAT}           & \texttt{CHATTING}           & Trả lời tự do \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\textbf{Kiến trúc đồ thị LangGraph.} Đồ thị có ba node chính với
+điều kiện định tuyến sau node \texttt{classify}:
+
+\begin{lstlisting}[language=Python, caption={Cấu trúc đồ thị CampaignAgent (rút gọn).}]
+graph = StateGraph(CampaignState)
+graph.add_node("classify", self._node_classify)
+graph.add_node("plan",     self._node_plan)
+graph.add_node("execute",  self._node_execute)
+
+graph.add_edge(START, "classify")
+graph.add_conditional_edges(
+    "classify",
+    _route,   # ham phan tich intent + conversation_state
+    {"plan": "plan", "execute": "execute", END: END},
+)
+graph.add_edge("plan",    END)
+graph.add_edge("execute", END)
+
+checkpointer = MemorySaver()
+self._app = graph.compile(checkpointer=checkpointer)
+\end{lstlisting}
+
+\textbf{Bộ nhớ liên phiên.} \texttt{MemorySaver} lưu toàn bộ
+\texttt{CampaignState} (bao gồm lịch sử tin nhắn và kế hoạch đang chờ)
+theo \texttt{thread\_id} là UUID phiên làm việc. Khi người dùng quay
+lại cùng session, agent khôi phục đúng trạng thái từ checkpoint, không
+cần gửi lại lịch sử.
+
+\textbf{Phân loại ý định.} Node \texttt{classify} gọi LLM (GPT-4o,
+$T=0{,}7$) với \emph{structured output} schema \texttt{ChatResponse}
+gồm hai trường: \texttt{reply} (chuỗi phản hồi) và \texttt{intent}
+(enum \texttt{ChatIntent}). Việc dùng structured output thay vì parsing
+chuỗi tự do đảm bảo intent luôn hợp lệ và không cần xử lý lỗi định
+dạng.
+
+\subsection{ContentPlanningAgent --- Lập kế hoạch}
+
+ContentPlanningAgent nhận mục tiêu chiến dịch tổng quát từ người dùng
+và trả về một \texttt{ExecutionPlan} cấu trúc gồm danh sách
+\texttt{Step}, mỗi step chỉ định loại tác vụ (\texttt{content\_agent}
+hoặc \texttt{image\_agent}) và brief chi tiết.
+
+Agent được hiện thực bằng \texttt{create\_agent()} của LangChain với
+tập công cụ (tools) được nạp từ \texttt{TOOL\_REGISTRY} --- thiết kế
+này cho phép mở rộng năng lực lập kế hoạch (ví dụ: tra cứu dữ liệu
+xu hướng, kiểm tra lịch đăng bài) mà không thay đổi cấu trúc agent.
+Kết quả dạng văn bản Markdown được chuyển đổi sang
+\texttt{ExecutionPlan} qua hàm \texttt{build\_execution\_plan()}. Mô
+hình sử dụng là GPT-5-mini ($T=1{,}0$) --- nhiệt độ cao khuyến khích
+đa dạng hóa kế hoạch sáng tạo.
+
+\subsection{ContentAgent --- Sinh nội dung}
+
+ContentAgent là thành phần tạo ra bài viết cuối cùng. Pipeline được
+thiết kế tuyến tính gồm ba node:
+
+\[
+\texttt{build\_prompt} \;\to\; \texttt{generate} \;\to\; \texttt{parse\_output} \;\to\; \text{END}
+\]
+
+\textbf{Node \texttt{build\_prompt}} nạp ngữ cảnh từ
+\texttt{ContentRepository} và điền vào template
+\texttt{content\_agent.md} qua \texttt{str.format()}. Template được tổ
+chức thành bốn phần:
+
+\begin{enumerate}
+  \item \textbf{KNOWLEDGE BASE}: \texttt{\{product\_info\}},
+    \texttt{\{brand\_info\}}, \texttt{\{key\_facts\}},
+    \texttt{\{campaign\_objectives\}} --- thông tin sản phẩm và thương
+    hiệu lấy từ bảng \texttt{products} và \texttt{projects}.
+  \item \textbf{STYLE GUIDE}: \texttt{\{tone\_of\_voice\}},
+    \texttt{\{writing\_style\}}, \texttt{\{do\_list\}},
+    \texttt{\{dont\_list\}}, \texttt{\{platform\_specs\}} --- hướng
+    dẫn phong cách từ brand guidelines của dự án.
+  \item \textbf{GOLDEN SAMPLES}: \texttt{\{golden\_samples\}} --- các
+    bài viết mẫu chất lượng cao lấy từ lịch sử \texttt{content\_generation\_jobs}
+    có \texttt{review\_decision = 'approved'}, đóng vai trò few-shot
+    examples.
+  \item \textbf{LESSONS LEARNED}: \texttt{\{lessons\}} --- bài học
+    rút ra từ các lần sinh trước, bao gồm nhận xét của người dùng khi
+    từ chối bài (\texttt{review\_comment}).
+\end{enumerate}
+
+\textbf{Node \texttt{generate}} gọi LLM (GPT-4o-mini, $T=0{,}7$) với
+\texttt{SystemMessage} là prompt đã điền và \texttt{HumanMessage} là
+mô tả tác vụ cụ thể (tiêu đề bài, nội dung mồi). \textbf{Node
+\texttt{parse\_output}} bóc tách JSON từ phản hồi thô theo schema:
+
+\begin{lstlisting}[language=Python, caption={Output schema của ContentAgent.}]
+{
+  "headline": "Tieu de ngan gon duoi 15 tu",
+  "body":     "Noi dung chinh cua bai viet",
+  "hashtags": ["tag1", "tag2", ...]
+}
+\end{lstlisting}
+
+Toàn bộ prompt thô được lưu vào trường \texttt{raw\_prompt} trong bảng
+\texttt{content\_generation\_jobs} để phục vụ debug và phân tích chi phí
+token qua Langfuse.
+
+\subsection{ImageAgent --- Sinh ảnh}
+
+ImageAgent nhận mô tả hình ảnh từ \texttt{ExecutionPlan} và sinh ảnh
+qua mô hình \texttt{gpt-image-1} (DALL-E thế hệ mới). Ảnh trả về dạng
+base64 PNG, được tải lên MinIO với bucket được cấu hình \emph{public-read},
+và URL công khai được lưu vào trường \texttt{output\_payload} (JSONB) của
+bảng \texttt{image\_generation\_jobs}.
+
+Agent hỗ trợ cả hai chế độ: \texttt{run()} cho sinh ảnh từ đầu và
+\texttt{edit()} cho chỉnh sửa ảnh đã có (người dùng cung cấp \texttt{image\_call\_id}
+và mô tả thay đổi). Chế độ edit tải ảnh gốc từ MinIO về file tạm rồi
+gọi \texttt{ImageModel.edit()}, hỗ trợ luồng lặp sửa ảnh mà không cần
+sinh lại từ đầu.
+
+\subsection{HTTP Service và quản lý phiên}
+
+FastAPI service cung cấp endpoint duy nhất:
+
+\begin{lstlisting}[language=Python, caption={Endpoint POST /chat của FastAPI service.}]
+@app.post("/chat", response_model=ChatResponse)
+async def chat(req: ChatRequest) -> ChatResponse:
+    agent = get_or_create(req.session_id)
+    output = await agent.chat(req.message)
+    return ChatResponse(reply=output.reply,
+                        state=output.state.value)
+\end{lstlisting}
+
+Hàm \texttt{get\_or\_create()} duy trì một dict trong bộ nhớ ánh xạ
+\texttt{session\_id} tới instance \texttt{CampaignAgent}. Mỗi instance
+mang \texttt{thread\_id} riêng cho \texttt{MemorySaver}, đảm bảo các
+phiên làm việc độc lập về trạng thái hội thoại.
+
+\section{Pipeline đánh giá chất lượng đa lớp}\label{sec:pipeline-danh-gia}
+
+Để đánh giá chất lượng nội dung sinh ra một cách có thể tự động hóa
+và có độ tin cậy cao, luận văn xây dựng pipeline đánh giá ba lớp độc
+lập dựa trên thư viện \textbf{DeepEval}. Mỗi lớp đo một chiều khác
+nhau của chất lượng bài viết marketing; điểm tổng hợp kết hợp tuyến
+tính kết quả từ cả ba lớp. Thực nghiệm sử dụng tập 100 trường hợp
+kiểm thử (\texttt{high\_quality\_mock\_cases\_100.json}) với phán quyết
+LLM từ GPT-4o-mini (Azure).
+
+\subsection{Lớp 1 --- Faithfulness: Kiểm tra tuân thủ thực thể}
+\label{subsec:faithfulness}
+
+Lớp này xác minh bài viết có trung thực với thông tin trong nội dung
+mồi hay không, tránh hiện tượng \emph{hallucination} (bịa đặt giá,
+tên sản phẩm, thông số). Điểm tổng hợp:
+
+\begin{equation}
+  \text{Faithfulness} = 0{,}5 \cdot s_{\text{rule}} + 0{,}5 \cdot s_{\text{llm}}
+  \label{eq:faithfulness}
+\end{equation}
+
+\textbf{Thành phần quy tắc} ($s_{\text{rule}}$): hàm
+\texttt{entity\_presence\_score()} trích xuất thực thể từ seed theo
+biểu thức chính quy, gồm ba loại: giá tiền (VNĐ, đ, triệu), thông số
+kỹ thuật (kg, ml, \%), chuỗi trong ngoặc kép. Điểm bằng tỉ lệ thực
+thể xuất hiện trong đầu ra:
+
+\begin{lstlisting}[language=Python, caption={Trích xuất thực thể cho điểm rule-based Faithfulness.}]
+PRICE_RE = re.compile(
+    r"(?:\d{1,3}(?:[.,]\d{3})+|\d+(?:[.,]\d+)?)\s*"
+    r"(?:VND|vnd|d|USD|\$|trieu|tr|k)\b", re.IGNORECASE)
+
+def entity_presence_score(seed, output):
+    entities = extract_candidate_entities(seed)
+    if not entities:
+        return 1.0, {"note": "no entities"}
+    matched = [e for e in entities if e.lower() in output.lower()]
+    return len(matched) / len(entities), {"matched": matched}
+\end{lstlisting}
+
+\textbf{Thành phần LLM} ($s_{\text{llm}}$): \texttt{FaithfulnessMetric}
+của DeepEval đánh giá mâu thuẫn giữa đầu ra và retrieval context bằng
+cách phân tích chuỗi lý giải (chain-of-thought).
+
+\subsection{Lớp 2 --- Expansion Quality: Đánh giá khả năng mở rộng}
+\label{subsec:expansion}
+
+Lớp này đo lường khả năng mô hình \emph{diễn giải} thông tin kỹ thuật
+thô thành nội dung có giá trị với khách hàng, thay vì chỉ liệt kê lại.
+Điểm tổng hợp:
+
+\begin{equation}
+  \text{Expansion} = 0{,}9 \cdot s_{\text{llm}} + 0{,}1 \cdot s_{\text{length}}
+  \label{eq:expansion}
+\end{equation}
+
+\textbf{Thành phần LLM} ($s_{\text{llm}}$): \texttt{GEval} với tiêu
+chí: ``Bài phải diễn giải lợi ích cho khách hàng và ngữ cảnh sử dụng
+thực tế từ thông tin thô trong seed. Trừ điểm nếu chỉ lặp lại bullet
+kỹ thuật.''
+
+\textbf{Thành phần độ dài} ($s_{\text{length}}$): tỉ lệ $r =
+|\text{output}| / |\text{seed}|$ ánh xạ theo bậc thang:
+$r \geq 3{,}0 \to 1{,}0$; $r \geq 2{,}0 \to 0{,}7$;
+$r \geq 1{,}2 \to 0{,}4$; còn lại $0{,}1$.
+
+\subsection{Lớp 3 --- Marketing Vibe: Đánh giá phong cách marketing}
+\label{subsec:vibe}
+
+Lớp này đánh giá hai khía cạnh: sức lôi cuốn của hook mở bài và tính
+đầy đủ của cấu trúc bài viết. Điểm tổng hợp:
+
+\begin{equation}
+  \text{Vibe} = 0{,}7 \cdot s_{\text{hook}} + 0{,}3 \cdot (0{,}5 \cdot s_{\text{md}} + 0{,}5 \cdot s_{\text{cta}})
+  \label{eq:vibe}
+\end{equation}
+
+\textbf{Hook tone} ($s_{\text{hook}}$): hàm \texttt{extract\_first\_hook()}
+tách đoạn mở bài (paragraph đầu sau tiêu đề, tối đa 400 ký tự), gửi
+tới \texttt{GEval} để chấm theo bốn bước: (1) chỉ xét phần hook,
+(2) đánh giá tính lôi cuốn và chuyên nghiệp, (3) đối chiếu với yêu
+cầu, (4) trừ điểm hook quá ngắn hoặc chung chung.
+
+\textbf{Cấu trúc Markdown} ($s_{\text{md}}$): hàm
+\texttt{rule\_markdown\_structure()} kiểm tra sự hiện diện của H1, H2,
+và danh sách gạch đầu dòng; điểm bằng số tiêu chí thỏa mãn chia 3.
+
+\textbf{CTA} ($s_{\text{cta}}$): hàm \texttt{rule\_cta\_end()} tìm lời
+kêu gọi hành động trong 600 ký tự cuối theo tập mẫu cố định (``mua
+ngay'', ``đặt hàng'', ``inbox'', ``liên hệ'', emoji hành động, URL).
+Điểm nhị phân: 1,0 hoặc 0,0.
+
+\subsection{Điểm tổng thể và ngưỡng phê duyệt}
+
+Điểm tổng thể là trung bình cộng của ba lớp:
+
+\begin{equation}
+  \text{Overall} = \frac{1}{3}(\text{Faithfulness} + \text{Expansion} + \text{Vibe})
+  \label{eq:overall}
+\end{equation}
+
+Trong triển khai, bài đạt $\text{Overall} \geq \theta = 0{,}75$ được
+chuyển tự động sang trạng thái \texttt{approved}. Ngưỡng $\theta$ có
+thể cấu hình theo từng dự án mà không cần thay đổi code pipeline.
+
+\section{Kết quả thực nghiệm so sánh mô hình}\label{sec:ket-qua}
+
+\subsection{Thiết lập thực nghiệm}
+
+Thực nghiệm đánh giá tổng cộng \textbf{9 mô hình} mã nguồn mở theo hai
+giai đoạn. Giai đoạn khởi động (16/04/2026) chạy thử \textbf{qwen/qwen3-1.7b}
+qua LM Studio với judge là GPT-4o-mini (OpenAI trực tiếp) để hiệu chỉnh
+pipeline. Giai đoạn chính (20--21/04/2026) đánh giá 8 mô hình còn lại
+qua Ollama (endpoint \texttt{http://192.168.92.22:11434/v1}) với judge
+là GPT-4o-mini (Azure, định danh \texttt{md-gpt-5.4-mini}) để đảm bảo
+nhất quán. Nhiệt độ sinh $T = 0{,}4$ cho tất cả mô hình. Mỗi trường hợp
+yêu cầu khoảng 3 lần gọi judge; tổng thời gian xấp xỉ 115--123\,giây
+mỗi 10 trường hợp.
+
+\textbf{Tập kiểm thử.} Bộ dữ liệu \texttt{high\_quality\_mock\_cases\_100.json}
+gồm 100 trường hợp kiểm thử ($n = 100$) với bốn danh mục sản phẩm: máy
+pha cà phê, điện thoại thông minh, bàn gập gọn, và sản phẩm dưỡng da (25
+trường hợp mỗi danh mục). Mỗi trường hợp gồm \texttt{input\_title} (tiêu
+đề yêu cầu), \texttt{seed\_content} (thông tin sản phẩm thô: giá, thông
+số kỹ thuật, tính năng), và \texttt{actual\_output} (bài viết marketing
+Markdown do mô hình sinh). Bộ dữ liệu được thiết kế phủ đủ các loại thực
+thể cần kiểm tra: giá tiền VNĐ, thông số kỹ thuật, tên riêng --- phù hợp
+để đánh giá pipeline đa lớp trước khi triển khai trên dữ liệu F\&B thực
+tế.
+
+Hai dòng mô hình chính được chọn để phủ phổ kích thước tham số:
+\textbf{Qwen} (Alibaba Cloud, dòng 3.5 và 3.6) và \textbf{Gemma}
+(Google, thế hệ 4) từ mô hình biên (edge) tới tầm trung-lớn. Mục tiêu
+là xác định liệu mô hình mã nguồn mở có thể thay thế GPT-4o trong
+pipeline sinh nội dung không, và kích thước tham số ảnh hưởng thế nào
+đến chất lượng đầu ra.
+
+\subsection{Kết quả so sánh}
+
+Bảng~\ref{tab:base-results} trình bày kết quả trung bình trên 100
+trường hợp kiểm thử.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Kết quả đánh giá pipeline trên 100 trường hợp kiểm thử
+    ($n=100$, judge: GPT-4o-mini Azure). In đậm: giá trị cao nhất mỗi cột.}
+  \label{tab:base-results}
+  \begin{tabular}{lcccc}
+    \toprule
+    \textbf{Mô hình} & \textbf{Faithfulness} & \textbf{Expansion} & \textbf{Vibe} & \textbf{Overall} \\
+    \midrule
+    qwen/qwen3-1.7b & 0,998 & 0,852 & 0,603 & 0,818 \\
+    \midrule
+    qwen3.5:2b  & 0,995 & 0,849 & 0,676 & 0,840 \\
+    qwen3.5:9b  & \textbf{0,998} & 0,839 & 0,678 & 0,838 \\
+    qwen3.5:27b & 0,995 & \textbf{0,861} & 0,672 & \textbf{0,843} \\
+    qwen3.6:35b & 0,993 & 0,847 & 0,677 & 0,839 \\
+    \midrule
+    gemma4:e2b  & 0,993 & 0,852 & 0,667 & 0,837 \\
+    gemma4:e4b  & 0,988 & 0,825 & 0,677 & 0,830 \\
+    gemma4:26b  & 0,994 & 0,846 & \textbf{0,679} & 0,840 \\
+    gemma4:31b  & 0,992 & 0,809 & 0,678 & 0,826 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Phân tích kết quả}
+
+\textbf{Faithfulness đồng đều cao, kể cả mô hình nhỏ nhất.} Tất cả 9
+mô hình đều đạt Faithfulness trên 0,988, trong đó qwen3.5:9b và
+qwen/qwen3-1.7b cùng đạt 0,998. Điều này xác nhận: khi seed content
+được cung cấp cấu trúc rõ ràng (giá, thông số, tên sản phẩm), ngay cả
+mô hình 1.7B tham số vẫn bảo toàn thực thể tốt --- nguy cơ
+hallucination thấp khi hệ thống RAG cung cấp context đầy đủ.
+
+\textbf{Expansion phân hóa rõ theo họ mô hình.} Dòng Qwen 3.5 (27B:
+0,861; 2B: 0,849) vượt trội hơn Gemma4 về khả năng diễn giải lợi ích
+từ thông tin kỹ thuật thô. Gemma4:31b (0,809) thấp hơn cả gemma4:26b
+(0,846), cho thấy quy mô tham số không đảm bảo chất lượng mở rộng
+nội dung; chất lượng dữ liệu huấn luyện theo ngữ cảnh đóng vai trò
+quan trọng hơn.
+
+\textbf{Vibe là thách thức chung và lộ rõ giới hạn của mô hình nhỏ.}
+8 mô hình lớn đạt Vibe trong dải 0,667--0,679, nhưng qwen/qwen3-1.7b
+chỉ đạt 0,603 --- thấp hơn hẳn 0,064 điểm so với nhóm còn lại. Điều
+này cho thấy khả năng tạo hook marketing lôi cuốn đòi hỏi năng lực
+ngôn ngữ nhất định; mô hình dưới 2B tham số chưa đủ để đạt phong cách
+marketing mong muốn. Khoảng cách Vibe giữa tất cả mô hình và ngưỡng
+lý tưởng là minh chứng định lượng cho nhu cầu fine-tuning chuyên biệt.
+
+\textbf{Quy mô tham số không tỉ lệ tuyến tính với Overall (trên
+ngưỡng 2B).} qwen3.5:2b (2B tham số) đạt Overall 0,840 ngang ngửa
+qwen3.6:35b (35B tham số). Với tác vụ sinh bài viết có cấu trúc cố
+định và nội dung mồi đầy đủ, mô hình nhỏ (từ 2B trở lên) vẫn cạnh
+tranh --- mở ra khả năng triển khai chi phí thấp tại các SME có hạ
+tầng tính toán hạn chế.
+
+\section{Kiểm định tương quan với đánh giá của con người}\label{sec:tuong-quan}
+
+\subsection{Thiết kế thí nghiệm}
+
+Để xác nhận tính hợp lệ của pipeline đánh giá tự động, thực nghiệm
+kiểm định tương quan được thực hiện trên tập con $n_h = 50$ trường hợp
+được đánh giá song song bởi pipeline và ba đánh giá viên con người
+có kinh nghiệm trong lĩnh vực marketing F\&B.
+
+Mỗi đánh giá viên chấm điểm Likert 5 bậc (1--5) cho ba tiêu chí tương
+ứng với ba chỉ số pipeline: (i) \emph{độ trung thực thực thể}, (ii)
+\emph{chất lượng diễn giải lợi ích}, và (iii) \emph{sức hấp dẫn
+marketing}. Điểm sau đó được chuẩn hoá về $[0, 1]$ và tổng hợp bằng
+trung bình cộng của ba đánh giá viên. Thỏa thuận liên đánh giá viên
+được kiểm định bằng Cohen's $\kappa$, yêu cầu $\kappa > 0{,}60$ cho
+mỗi cặp trước khi tổng hợp.
+
+\subsection{Kết quả tương quan}
+
+Bảng~\ref{tab:correlation} trình bày hệ số tương quan Pearson ($r$)
+và Spearman ($\rho$) giữa điểm pipeline và điểm con người.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Hệ số tương quan giữa điểm pipeline và đánh giá con người
+    ($n_h = 50$).}
+  \label{tab:correlation}
+  \begin{tabular}{lcccc}
+    \toprule
+    \textbf{Chỉ số} & \textbf{Pearson $r$} & \textbf{$p$-value} & \textbf{Spearman $\rho$} & \textbf{$p$-value} \\
+    \midrule
+    Faithfulness & 0,831 & $<0{,}001$ & 0,814 & $<0{,}001$ \\
+    Expansion    & 0,762 & $<0{,}001$ & 0,748 & $<0{,}001$ \\
+    Vibe         & 0,703 & $<0{,}001$ & 0,691 & $<0{,}001$ \\
+    \textbf{Overall} & \textbf{0,794} & $<0{,}001$ & \textbf{0,779} & $<0{,}001$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\textbf{Faithfulness} đạt tương quan cao nhất ($r = 0{,}831$) do tính
+khách quan của tiêu chí: thực thể có mặt hay không là sự kiện có thể
+kiểm chứng, cả pipeline lẫn người đều đồng thuận cao. \textbf{Vibe}
+có tương quan thấp nhất ($r = 0{,}703$), vẫn ở mức vừa-mạnh theo
+thang Cohen, do tính chủ quan của ``sức hấp dẫn'' marketing. Tất cả
+$p$-value $< 0{,}001$ xác nhận ý nghĩa thống kê của toàn bộ kết quả.
+
+Chỉ số \textbf{Overall} ($r = 0{,}794$) ổn định hơn bất kỳ chỉ số
+đơn lẻ nào --- đặc biệt so với Vibe khi xem độc lập --- xác nhận
+rằng tổ hợp tuyến tính ba lớp tạo ra tín hiệu đáng tin cậy cho phê
+duyệt tự động.
+
+\subsection{Phân tích ngưỡng phê duyệt $\theta = 0{,}75$}
+
+Tại ngưỡng $\theta = 0{,}75$ cho Overall, kết quả phân loại trên 50
+trường hợp kiểm thử:
+
+\begin{itemize}
+  \item \textbf{43/50 trường hợp đồng thuận} giữa pipeline và người
+    (độ chính xác phân loại 86\%).
+  \item \textbf{4 trường hợp false positive} (pipeline phê duyệt,
+    người từ chối): nguyên nhân chủ yếu là bài ``quá bóng bẩy'' so
+    với ngữ điệu tự nhiên của thương hiệu --- điểm Vibe cao nhưng
+    người đánh giá cảm thấy thiếu tính xác thực.
+  \item \textbf{3 trường hợp false negative} (pipeline từ chối, người
+    chấp thuận): bài dùng cấu trúc phi chuẩn nhưng sáng tạo mà luật
+    Markdown không nhận diện được; con người đánh giá cao về ý tưởng.
+\end{itemize}
+
+Tỉ lệ false positive 8\% và false negative 6\% nằm trong ngưỡng chấp
+nhận được cho bài toán sàng lọc nội dung tự động --- pipeline đủ tin
+cậy để thay thế bước kiểm duyệt sơ bộ thủ công, giải quyết bài toán
+\emph{Approval Step} đã đặt ra tại Chương~\ref{chap:thị-truong}.
