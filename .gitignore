@@ -34,5 +34,9 @@
 # OS metadata
 .DS_Store
 Thumbs.db
+<<<<<<< HEAD
 
 .vscode
+=======
+.claude
+>>>>>>> e9621b9c4442fe554f3d0ecc63a2924e64583792
