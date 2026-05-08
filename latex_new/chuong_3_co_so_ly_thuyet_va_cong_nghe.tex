@@ -158,6 +158,21 @@ tiết thuật toán, siêu tham số, và tích hợp thực nghiệm được
 trình bày gọn ở Chương \ref{chap:thuc-nghiem} kèm cấu hình
 huấn luyện/đối sánh theo từng mô hình mã nguồn mở.
 
+\subsection{Khung huấn luyện thực tế}
+
+Về mặt thực thi, các kỹ thuật trình bày ở mục này đã được
+hiện thực hóa trong nhiều khung mã nguồn mở. Thư viện TRL
+(Transformer Reinforcement Learning) của HuggingFace cung
+cấp các bộ huấn luyện sẵn dùng như \texttt{SFTTrainer} cho
+tinh chỉnh có giám sát và \texttt{GRPOTrainer} cho tối ưu
+theo thưởng tương đối; thư viện Unsloth tối ưu kernel
+huấn luyện LoRA giúp giảm thời gian và bộ nhớ đáng kể trên
+một GPU đơn. Các khung này thường tích hợp PEFT của HuggingFace
+để quản lý adapter và lượng tử hóa, đưa quy trình tinh chỉnh
+một mô hình mã nguồn mở cỡ vài tỷ tham số vào tầm tài nguyên
+nghiên cứu thực tế. Cấu hình cụ thể được trình bày ở Chương
+\ref{chap:thuc-nghiem}.
+
 \section{Retrieval-Augmented Generation (RAG)}\label{sec:rag}
 
 \subsection{Nền tảng pipeline}
@@ -312,3 +327,170 @@ hình) được làm rõ trong Chương
 \ref{chap:thuc-nghiem}, đồng thời hỗ trợ
 phân tích tương quan với điểm của
 chuyên gia khi có dữ liệu khảo sát.
+
+\section{Tác nhân (Agent) dựa trên mô hình ngôn ngữ lớn}\label{sec:agent}
+
+\subsection{Khái niệm Agent và vòng lặp suy diễn}
+
+Trong khuôn khổ luận văn, tác nhân (Agent) được hiểu là hệ
+thống gồm một mô hình ngôn ngữ lớn đóng vai bộ điều khiển,
+kèm tập công cụ (tool) bên ngoài, một dạng bộ nhớ ngắn hoặc
+dài hạn, và một vòng lặp suy diễn xen kẽ giữa quan sát --
+suy luận -- hành động. Khác với cách gọi LLM một lần để
+sinh đầu ra cho một prompt cố định, Agent có thể đọc kết
+quả mà công cụ trả về (ví dụ: kết quả truy hồi tài liệu,
+bản ghi sản phẩm trong cơ sở dữ liệu), suy luận lại trên
+thông tin mới, rồi quyết định tiếp tục gọi công cụ khác
+hoặc sinh phản hồi cuối.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/ai_agent.png}
+    \caption{Cấu trúc tổng quát của một tác nhân dựa trên LLM:
+    bộ điều khiển (LLM), tập công cụ ngoài, bộ nhớ và vòng
+    lặp suy diễn quan sát -- suy luận -- hành động.}
+    \label{fig:ai-agent}
+\end{figure}
+
+Bài toán tạo nội dung marketing cho SME ngành F\&B đặc
+biệt phù hợp với mô hình Agent: một lượt yêu cầu thường
+phải tra menu và sản phẩm, đọc hướng dẫn thương hiệu,
+sinh nội dung văn bản, sau đó sinh ảnh minh họa. Việc gói
+toàn bộ quy trình này vào một prompt duy nhất khó kiểm
+soát chất lượng và khó tinh chỉnh từng bước, trong khi
+cấu trúc Agent cho phép tách bạch và can thiệp ở từng giai
+đoạn.
+
+\subsection{Một số mẫu thiết kế phổ biến}
+
+ReAct (Reason + Act) là mẫu phổ biến: ở mỗi bước, mô hình
+sinh ra một đoạn suy luận ngắn (Thought), quyết định một
+hành động (Action), nhận kết quả quan sát (Observation),
+rồi tiếp tục lặp đến khi đạt điều kiện kết thúc. Cách bố
+trí này giúp ghi vết quá trình ra quyết định và thuận lợi
+cho việc gỡ lỗi khi đầu ra không đạt yêu cầu.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.55\textwidth]{images/react_agent.png}
+    \caption{Vòng lặp ReAct: Agent phát đi hành động lên công
+    cụ ngoài và đọc lại quan sát trước khi quyết định bước
+    tiếp theo hoặc sinh đầu ra.}
+    \label{fig:react-agent}
+\end{figure}
+
+Tool calling (hay function calling) là cơ chế cho phép LLM
+lựa chọn công cụ thông qua một giao diện có cấu trúc, thường
+là JSON schema mô tả tên công cụ và các tham số. Thay vì để
+mô hình tự do sinh chuỗi hành động ở dạng văn bản tự do,
+công cụ được khai báo tường minh, mô hình điền tham số, và
+hệ thống ngoài thực thi rồi trả kết quả lại. Cách này nâng
+độ ổn định khi tích hợp Agent với các hệ thống nghiệp vụ
+có sẵn (cơ sở dữ liệu, API nội bộ).
+
+Mô hình hóa hội thoại bằng máy trạng thái (state machine)
+là cách quản lý các pha khác nhau của một chiến dịch: đang
+trò chuyện thu thập yêu cầu, đang chờ phê duyệt kế hoạch,
+đang sinh nội dung, đã hoàn tất. Việc dịch các pha này
+thành các trạng thái và chuyển trạng thái có điều kiện
+giúp tránh phụ thuộc vào prompt dài để mô hình ``tự nhớ''
+mình đang ở đâu, đồng thời thuận lợi cho lưu trữ và phục
+hồi phiên hội thoại.
+
+\subsection{Kiến trúc đa tác nhân}
+
+Khi một bài toán phức tạp được chia thành nhiều bước có
+tính chất khác nhau, kiến trúc đa tác nhân (multi-agent)
+thường thay thế phương án một LLM duy nhất gánh mọi
+trách nhiệm. Mỗi agent đảm nhiệm một vai trò có ranh
+giới rõ: agent điều phối giao tiếp với người dùng và phân
+loại ý định, agent lập kế hoạch chia chiến dịch thành các
+slot bài viết, agent sinh nội dung văn bản, agent sinh ảnh
+minh họa. Cách phân tách này có ba lợi ích chính: prompt
+mỗi vai gọn và dễ tinh chỉnh, có thể thay mô hình của
+từng vai độc lập (ví dụ dùng mô hình nhỏ cho điều phối và
+mô hình lớn hơn cho sinh nội dung), và việc đánh giá chất
+lượng có thể quy về từng vai thay vì một đầu ra tổng hợp
+khó truy vết.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{images/multiple_agent.png}
+    \caption{Một số mô hình tổ chức kiến trúc đa tác nhân:
+    tập trung qua một agent điều phối (trái), liên lạc ngang
+    hàng giữa các agent (giữa), và phân cấp theo tầng (phải).}
+    \label{fig:multi-agent}
+\end{figure}
+
+Hiện thực hóa cụ thể của các mẫu trên trong luận văn (sơ
+đồ trạng thái, danh mục công cụ, phân chia agent) được
+trình bày ở Chương \ref{chap:thuc-nghiem}.
+
+\section{Vận hành mô hình ngôn ngữ trong hệ thống phân tán}\label{sec:llmops}
+
+Mục này trình bày các khái niệm vận hành (LLMOps) cần
+thiết để đưa tác nhân dựa trên LLM vào sử dụng thực tế ở
+mức tổng quan; lựa chọn công nghệ cụ thể được trình bày ở
+Chương \ref{chap:thuc-nghiem}.
+
+\subsection{Tách bất đồng bộ tác vụ LLM}
+
+Một lượt sinh nội dung marketing có thể yêu cầu nhiều
+lượt gọi LLM kèm một lượt sinh ảnh, tổng thời gian thường
+vượt quá ngưỡng một yêu cầu HTTP đồng bộ thông thường.
+Nếu xử lý trực tiếp trong luồng HTTP, kết nối từ phía
+người dùng có nguy cơ chờ lâu hoặc hết thời gian, đồng
+thời mỗi lỗi tạm thời từ phía mô hình sẽ làm hỏng cả phiên
+giao dịch. Mẫu thiết kế thông dụng là tách phần gọi LLM
+ra khỏi luồng HTTP bằng một hàng đợi tác vụ (task queue):
+API nhận yêu cầu, ghi một bản ghi công việc, đẩy thông
+điệp vào hàng đợi, rồi trả về ngay cho người dùng một
+định danh tham chiếu. Các tiến trình xử lý nền (worker)
+lắng nghe hàng đợi, gọi LLM, ghi kết quả vào cơ sở dữ
+liệu, và phía giao diện hiển thị kết quả khi sẵn sàng. Mô
+hình này cho phép mở rộng theo chiều ngang theo lượng yêu
+cầu, đồng thời cách ly lỗi: một tác vụ thất bại có thể
+thử lại mà không ảnh hưởng các tác vụ khác.
+
+\subsection{Quan trắc và truy vết LLM}
+
+Quan trắc (observability) cho ứng dụng dùng LLM khác với
+log truyền thống ở chỗ cần lưu nội dung của prompt và
+phản hồi, kèm các chỉ số như độ trễ, số token đầu vào và
+đầu ra, ước tính chi phí, và liên kết các lượt gọi cùng
+thuộc về một phiên xử lý. Khi chất lượng đầu ra suy giảm,
+người vận hành cần truy ngược đúng prompt đã được mô hình
+tiêu thụ, vì khác biệt nhỏ trong định dạng nhập (ví dụ
+thiếu một dòng tri thức nền) có thể tạo khác biệt lớn
+trong đầu ra. Trong bối cảnh SME ngân sách hạn chế, dữ
+liệu quan trắc còn giúp thống kê chi phí token theo từng
+agent hoặc theo từng chiến dịch, hỗ trợ quyết định chuyển
+sang mô hình rẻ hơn cho những vai phù hợp.
+
+\subsection{Lớp trừu tượng hóa nhà cung cấp mô hình}
+
+Hệ sinh thái LLM hiện nay gồm nhiều nhà cung cấp dịch vụ
+(OpenAI, Anthropic, Google) và nhiều mô hình mã nguồn mở
+chạy cục bộ. Việc gắn cứng mã nguồn agent với SDK của một
+nhà cung cấp khiến chi phí chuyển đổi tăng cao và khó so
+sánh giữa các mô hình. Mẫu LLM gateway (hoặc proxy) đặt
+một lớp trung gian thống nhất giao diện gọi mô hình:
+agent chỉ làm việc với một API duy nhất, lớp gateway
+chuyển tiếp tới nhà cung cấp tương ứng dựa trên cấu hình.
+Lợi ích phụ là tập trung xử lý giới hạn tốc độ (rate
+limit), thử lại (retry), và chuyển dự phòng (fallback)
+sang nhà cung cấp khác khi mô hình chính gặp sự cố.
+
+\subsection{Lưu trữ tài nguyên sinh ra}
+
+Ngoài văn bản, agent còn sinh ra ảnh minh họa cho bài
+đăng. Lưu ảnh trực tiếp trong cơ sở dữ liệu quan hệ vừa
+làm bảng phình to, vừa khó phục vụ qua URL công khai cho
+các nền tảng mạng xã hội. Mẫu thông dụng là tách hai
+loại lưu trữ: kho lưu trữ đối tượng (object storage)
+tương thích S3 chứa các tệp nhị phân và phục vụ URL trực
+tiếp, còn cơ sở dữ liệu quan hệ chỉ giữ siêu dữ liệu
+(URL, kích thước, mô tả, lượt phê duyệt). Cách tách này
+tận dụng được hạ tầng lưu trữ đối tượng đã trưởng thành
+và tránh thắt nút ở tầng cơ sở dữ liệu khi số lượng tệp
+tăng.

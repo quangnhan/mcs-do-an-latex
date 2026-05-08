@@ -1,4 +1,259 @@
 % !TEX root = main.tex
 \chapter{Kết luận và hướng phát triển}\label{chap:ket-luan}
 
-\textit{Nội dung chương sẽ được bổ sung theo dàn ý luận văn (ứng dụng thực tế, đóng góp, hạn chế và hướng phát triển).}
+Chương này tổng kết toàn bộ quá trình nghiên cứu và thực nghiệm đã
+trình bày trong các chương trước. Nội dung gồm ba phần: (i) thảo luận
+khả năng ứng dụng thực tế của hệ thống --- trọng tâm là cơ chế phê
+duyệt tự động (auto-approval) như lời giải cho bài toán
+\emph{Approval Step} đã đặt ra tại Chương~\ref{chap:thị-truong};
+(ii) tổng hợp các đóng góp về mặt kỹ thuật, quy trình và thực nghiệm;
+(iii) chỉ ra các hạn chế còn tồn tại và đề xuất các hướng phát triển
+tiếp theo.
+
+\section{Khả năng ứng dụng thực tế}\label{sec:ung-dung}
+
+\subsection{Cơ chế phê duyệt tự động dựa trên ngưỡng}
+
+Kết quả khảo sát tại Mục~\ref{sec:khao-sat} cho thấy hai yêu cầu
+tưởng chừng mâu thuẫn của chủ doanh nghiệp SME ngành F\&B: vừa mong
+muốn tự động hóa cao độ (điểm trung bình $4{,}8/5$ cho tính năng tự
+động lên lịch và đăng bài) vừa nhấn mạnh sự cần thiết của bước duyệt
+nội dung trước khi đăng tải để tránh rủi ro thương hiệu. Pipeline
+đánh giá đa lớp được xây dựng tại Chương~\ref{chap:thuc-nghiem} là
+lời giải trực tiếp cho mâu thuẫn đó: thay vì buộc chủ quán đọc thủ
+công từng bài viết, hệ thống tự động sàng lọc và chỉ trình lên người
+dùng những bài có điểm tổng thể $S_{\text{overall}} \geq \theta$, với
+$\theta = 0{,}75$ là ngưỡng đã được kiểm định thực nghiệm.
+
+Trong vận hành thực tế, cơ chế phê duyệt tự động hoạt động theo ba
+nhánh xử lý dựa trên điểm số của pipeline:
+
+\begin{itemize}
+  \item \textbf{Tự động phê duyệt sơ bộ ($S \geq 0{,}85$):} Bài viết
+    đạt điểm cao trên cả ba lớp Faithfulness, Expansion, Vibe được
+    đánh dấu \emph{ready-to-publish}. Người dùng chỉ cần xem nhanh
+    và bấm xác nhận đăng. Đây là đa số trường hợp đối với các mô hình
+    Qwen 3.5 và Gemma4 trên 2B tham số đã thử nghiệm
+    (xem Bảng~\ref{tab:base-results}).
+  \item \textbf{Trình duyệt chuẩn ($0{,}75 \leq S < 0{,}85$):} Bài
+    viết đạt ngưỡng phê duyệt nhưng có ít nhất một lớp điểm dưới
+    trung bình. Hệ thống đính kèm chú thích về lớp yếu (ví dụ:
+    ``Vibe thấp do thiếu hook lôi cuốn'') để hướng người dùng đến
+    điểm cần chỉnh sửa.
+  \item \textbf{Tự động loại và sinh lại ($S < 0{,}75$):} Bài viết
+    không đạt ngưỡng được đưa vào hàng đợi sinh lại với prompt được
+    điều chỉnh theo lớp điểm thấp nhất. Nhờ cơ chế retry độc lập của
+    \texttt{content\_generation\_jobs} (Mục~\ref{subsec:database}),
+    người dùng không bị gián đoạn mà vẫn nhận được bài chất lượng cao
+    sau một vài lần lặp.
+\end{itemize}
+
+\subsection{Tác động về thời gian và nguồn lực}
+
+Với tỉ lệ phân loại đúng $86\%$ tại ngưỡng $\theta = 0{,}75$
+(Mục~\ref{sec:tuong-quan}), pipeline có thể loại bỏ trước phần lớn
+nội dung kém chất lượng và chỉ chuyển khoảng $14\%$ trường hợp biên
+sang giai đoạn duyệt thủ công. Đối với một chiến dịch điển hình tạo
+$30$ bài viết mỗi tuần, ước tính người dùng tiết kiệm khoảng $80\%$
+thời gian duyệt bài so với mô hình duyệt toàn bộ thủ công, đồng thời
+vẫn giữ được quyền kiểm soát cuối cùng đối với các trường hợp nhạy
+cảm. Đây chính là sự cân bằng giữa tự động hóa và kiểm soát con người
+mà đối tượng khảo sát đã yêu cầu (Mục~\ref{sec:approval}).
+
+\subsection{Khả năng triển khai trên hạ tầng SME}
+
+Một phát hiện quan trọng từ thực nghiệm so sánh chín mô hình tại
+Mục~\ref{sec:ket-qua} là quy mô tham số không tỉ lệ tuyến tính với
+chất lượng đầu ra trên ngưỡng $2$B: \texttt{qwen3.5:2b} đạt
+$S_{\text{overall}} = 0{,}840$ tương đương \texttt{qwen3.6:35b}
+($0{,}839$). Điều này có ý nghĩa thực tiễn lớn cho SME: doanh nghiệp
+hoàn toàn có thể triển khai mô hình $2$--$4$B trên hạ tầng tự chủ
+giá rẻ (GPU consumer hoặc thậm chí CPU với lượng tử hóa) thay vì phụ
+thuộc hoàn toàn vào API LLM thương mại có chi phí biến đổi cao theo
+khối lượng. Việc nội bộ hóa LLM còn loại bỏ rủi ro lộ dữ liệu thương
+hiệu và brand voice ra bên thứ ba --- một mối quan tâm lớn của các
+chủ quán đã được nêu trong khảo sát.
+
+\section{Đóng góp của đề tài}\label{sec:dong-gop}
+
+\subsection{Đóng góp về mặt kỹ thuật}
+
+\begin{enumerate}
+  \item \textbf{Kiến trúc đa tác nhân chuyên biệt cho marketing F\&B.}
+    Đề tài đề xuất và hiện thực một hệ thống bốn agent (CampaignAgent,
+    ContentPlanningAgent, ContentAgent, ImageAgent) tách biệt rõ
+    trách nhiệm trên nền LangGraph, giao tiếp qua hàng đợi Celery
+    (Mục~\ref{sec:hien-thuc-agent}). Mô hình này cho phép mở rộng theo
+    chiều ngang và retry độc lập từng giai đoạn của pipeline sinh nội
+    dung, vượt trội về độ ổn định so với kiến trúc đơn agent gọi LLM
+    tổng quát.
+  \item \textbf{Pipeline đánh giá chất lượng đa lớp với công thức
+    rõ ràng.} Đề tài định nghĩa và hiện thực ba chỉ số đánh giá riêng
+    biệt --- Faithfulness, Expansion, Vibe --- với công thức tổ hợp
+    minh bạch giữa quy tắc cứng (rule-based) và đánh giá định tính
+    (LLM-as-a-Judge / G-Eval) như mô tả tại
+    Mục~\ref{sec:pipeline-danh-gia}. Đây là đóng góp mở rộng so với
+    các framework đánh giá tổng quát (DeepEval, Ragas) vốn chưa có
+    bộ chỉ số chuyên biệt cho nội dung marketing tiếng Việt.
+  \item \textbf{Schema cơ sở dữ liệu hỗ trợ vòng cải thiện liên tục.}
+    Thiết kế ba tầng \texttt{campaign\_runs} \(\to\)
+    \texttt{content\_planning\_jobs} \(\to\)
+    \texttt{content\_generation\_jobs} (Mục~\ref{subsec:database})
+    cho phép ghi lại quyết định duyệt bài (\texttt{review\_decision})
+    của người dùng. Các bài đã được phê duyệt trở thành \emph{golden
+    samples} cho các lần sinh tiếp theo, hình thành vòng cải thiện
+    chất lượng đồng thuận với phong cách thương hiệu mà không cần
+    can thiệp kỹ thuật.
+\end{enumerate}
+
+\subsection{Đóng góp về mặt thực nghiệm}
+
+\begin{enumerate}
+  \item \textbf{Báo cáo so sánh chín mô hình mã nguồn mở trên tác vụ
+    sinh nội dung marketing F\&B tiếng Việt.} Bảng~\ref{tab:base-results}
+    cung cấp dữ liệu định lượng có thể tái lập được trên hai họ mô
+    hình Qwen ($1{,}7$B--$35$B) và Gemma4 ($2$B--$31$B), bao trùm
+    dải tham số và kiến trúc (cả dense và Mixture-of-Experts). Đây
+    là tài liệu tham chiếu hữu ích cho các nghiên cứu sau lựa chọn
+    mô hình nền cho tác vụ tương tự.
+  \item \textbf{Phát hiện ngưỡng tham số tối thiểu.} Thực nghiệm chỉ
+    ra rằng dưới $2$B tham số (\texttt{qwen/qwen3-1.7b}) chỉ số Vibe
+    sụt giảm rõ rệt ($0{,}603$ so với mức trung bình $0{,}67$ của
+    nhóm còn lại). Đây là phát hiện mới cho thấy chất lượng hook
+    marketing đặt yêu cầu năng lực ngôn ngữ mà các mô hình quá nhỏ
+    không đáp ứng được, đồng thời định hướng việc lựa chọn mô hình
+    nền cho fine-tuning chuyên biệt.
+  \item \textbf{Kiểm định tương quan với đánh giá con người.}
+    Hệ số tương quan Pearson $r = 0{,}794$ trên Overall và độ chính
+    xác phân loại $86\%$ tại ngưỡng $\theta = 0{,}75$
+    (Mục~\ref{sec:tuong-quan}) là minh chứng định lượng rằng pipeline
+    tự động đủ tin cậy để thay thế phần lớn công việc kiểm duyệt sơ
+    bộ thủ công, hợp pháp hóa cơ chế auto-approval mô tả tại
+    Mục~\ref{sec:ung-dung}.
+\end{enumerate}
+
+\subsection{Đóng góp về mặt quy trình}
+
+Vượt ra khỏi phạm vi kỹ thuật, đề tài đóng góp một \emph{khung quy
+trình từ nghiên cứu thị trường đến triển khai sản xuất} có thể tham
+khảo cho các nghiên cứu ứng dụng AI trong lĩnh vực hẹp:
+
+\begin{itemize}
+  \item Khảo sát người dùng cuối để xác định yêu cầu đối lập (tự động
+    hóa vs. kiểm soát) trước khi quyết định kiến trúc.
+  \item Xây dựng pipeline đánh giá tự động \emph{trước} khi tinh chỉnh
+    mô hình, tránh việc fine-tuning mù (without measurable target).
+  \item Kiểm định pipeline đánh giá bằng tương quan với đánh giá con
+    người để đảm bảo điểm số có ý nghĩa thực tiễn.
+  \item Xây dựng vòng cải thiện liên tục (golden samples) bằng dữ
+    liệu duyệt bài thực tế thay vì tinh chỉnh tách biệt khỏi vận
+    hành.
+\end{itemize}
+
+\section{Hạn chế và hướng phát triển}\label{sec:han-che-huong-phat-trien}
+
+\subsection{Hạn chế của đề tài}
+
+Mặc dù đạt được các kết quả nêu trên, đề tài vẫn còn một số hạn chế
+cần được nhìn nhận thẳng thắn:
+
+\begin{enumerate}
+  \item \textbf{Chưa thực nghiệm fine-tuning trên dữ liệu chuyên
+    biệt.} Toàn bộ kết quả tại Chương~\ref{chap:thuc-nghiem} là đánh
+    giá các mô hình \emph{nền} (base models) chưa qua fine-tuning.
+    Mặc dù cơ sở lý thuyết về LoRA và GRPO đã được trình bày tại
+    Mục~\ref{sec:fine-tuning} và pipeline đánh giá đã sẵn sàng đo
+    cải thiện, việc thực nghiệm fine-tuning thực tế trên dữ liệu
+    F\&B tiếng Việt vẫn nằm ngoài phạm vi luận văn này. Đây là bước
+    tiếp theo tự nhiên nhất để nâng chỉ số Vibe (hiện ở mức $0{,}67$)
+    lên ngưỡng lý tưởng.
+  \item \textbf{Bộ dữ liệu kiểm thử mang tính mô phỏng.} 100 trường
+    hợp kiểm thử (Mục~\ref{sec:ket-qua}) thuộc bốn danh mục mô phỏng
+    (cà phê pha máy, điện thoại, bàn gập, skincare) chứ không phải
+    dữ liệu thực tế từ menu của các quán F\&B. Điều này đảm bảo tính
+    đa dạng của test cases nhưng có thể chưa phản ánh đầy đủ đặc thù
+    của ngữ cảnh F\&B Việt Nam (món ăn truyền thống, từ ngữ ẩm thực
+    địa phương, văn hóa quán xá).
+  \item \textbf{Phạm vi nền tảng giới hạn.} Đề tài chỉ tập trung vào
+    nội dung Facebook (bài đăng văn bản kèm ảnh tĩnh). Các định dạng
+    khác trên Facebook (Reels, Stories) cũng như các nền tảng phổ
+    biến khác chưa được nghiên cứu, dù các nguyên lý kiến trúc và
+    pipeline đánh giá có khả năng tổng quát hóa.
+  \item \textbf{Đánh giá con người ở quy mô nhỏ.} Kiểm định tương
+    quan thực hiện trên $n_h = 50$ trường hợp với ba đánh giá viên
+    (Mục~\ref{sec:tuong-quan}). Quy mô này đủ để chứng minh tương
+    quan có ý nghĩa thống kê nhưng chưa đủ rộng để phân tích các
+    nhóm thương hiệu khác nhau (cao cấp / phổ thông, truyền thống /
+    hiện đại).
+  \item \textbf{Pipeline đánh giá phụ thuộc vào LLM-as-a-Judge.}
+    Lớp Faithfulness và Vibe đều dùng GPT-4o-mini làm judge. Sự thiên
+    lệch tiềm ẩn của judge model (ví dụ: ưu tiên giọng văn ``bóng
+    bẩy'' hơn giọng văn tự nhiên --- chính là nguyên nhân của bốn
+    trường hợp false positive đã ghi nhận) là một rủi ro hệ thống cần
+    được giám sát.
+\end{enumerate}
+
+\subsection{Hướng phát triển tiếp theo}
+
+Trên cơ sở các hạn chế đã chỉ ra, đề tài đề xuất các hướng phát
+triển sau:
+
+\paragraph{Hướng 1 --- Thực nghiệm fine-tuning với LoRA và GRPO.}
+Sử dụng dữ liệu duyệt bài thực tế thu thập được từ vận hành hệ thống
+(\texttt{review\_decision} trong \texttt{content\_generation\_jobs})
+làm tập huấn luyện cho fine-tuning. Áp dụng LoRA trên mô hình nền
+$2$--$9$B (đã được xác định là phân khúc chi phí--hiệu quả tốt nhất)
+để định hình phong cách marketing F\&B tiếng Việt. Sau đó áp dụng
+GRPO với hàm thưởng được thiết kế trực tiếp từ điểm pipeline đánh
+giá đa lớp, tận dụng pipeline hiện có như một reward signal sẵn sàng
+mà không cần huấn luyện reward model riêng. Mục tiêu cụ thể: nâng
+chỉ số Vibe trung bình từ $0{,}67$ lên trên $0{,}80$.
+
+\paragraph{Hướng 2 --- Mở rộng đa phương thức (multi-modal).}
+Hệ thống hiện nay sinh ảnh độc lập với văn bản qua ImageAgent. Hướng
+phát triển là tích hợp đánh giá độ phù hợp giữa ảnh và văn bản (image
+--text alignment) vào pipeline đánh giá; tiến xa hơn là sinh video
+ngắn (Reels) cho Facebook bằng các mô hình text-to-video mã nguồn mở.
+Pipeline đánh giá cần được mở rộng thêm các chỉ số đặc trưng cho
+video (nhịp cắt cảnh, độ dài hook đầu, độ rõ của CTA cuối).
+
+\paragraph{Hướng 3 --- Cá nhân hóa theo chi nhánh.}
+Một thương hiệu F\&B có nhiều chi nhánh thường có sự khác biệt nhỏ
+về menu, giá, đối tượng khách (sinh viên, dân văn phòng, gia đình).
+Schema hiện tại lưu brand voice ở cấp \texttt{projects}; hướng mở
+rộng là tách \texttt{brand\_voice} sang một cấp \texttt{branches} con
+của \texttt{projects}, cho phép mỗi chi nhánh có trọng số tinh chỉnh
+riêng (LoRA adapter cấp chi nhánh) trong khi vẫn chia sẻ mô hình nền
+chung. Cơ chế Mixture-of-Experts trình bày tại
+Mục~\ref{sec:llm-kiem-truc} là một hướng tham khảo về mặt kiến trúc.
+
+\paragraph{Hướng 4 --- Kiểm định trên dữ liệu F\&B thực tế quy mô
+lớn.} Phối hợp với một chuỗi F\&B SME triển khai pilot $3$--$6$
+tháng, thu thập tối thiểu $1\,000$ bài đăng thực tế cùng dữ liệu
+tương tác (likes, comments, shares) để kiểm định mối tương quan
+giữa điểm pipeline và hiệu quả thực sự trên Facebook. Đây sẽ là
+bằng chứng mạnh nhất về giá trị thực tiễn của hệ thống, vượt khỏi
+phạm vi đánh giá trong phòng thí nghiệm.
+
+\paragraph{Hướng 5 --- Giảm rủi ro thiên lệch của judge model.}
+Triển khai cơ chế \emph{multi-judge ensemble}: thay vì một judge
+duy nhất, kết hợp ba judge khác họ mô hình (ví dụ GPT-4o-mini,
+Claude Haiku, một mô hình mã nguồn mở đã fine-tune) và lấy trung
+vị hoặc bỏ phiếu. Đồng thời định kỳ tái kiểm định tương quan giữa
+judge và đánh giá con người mỗi quý để phát hiện sớm hiện tượng
+trôi (drift) chất lượng đánh giá.
+
+\subsection{Lời kết}
+
+Đề tài đã trình bày một hành trình hoàn chỉnh từ khảo sát nhu cầu
+SME ngành F\&B đến thiết kế kiến trúc hệ thống, hiện thực hóa các
+agent, xây dựng pipeline đánh giá đa lớp và kiểm định thực nghiệm
+chín mô hình ngôn ngữ mã nguồn mở. Kết quả thu được --- chỉ số
+Overall cao nhất $0{,}843$ trên \texttt{qwen3.5:27b}, độ chính xác
+phân loại $86\%$ tại ngưỡng phê duyệt --- không chỉ trả lời được
+câu hỏi nghiên cứu ban đầu mà còn mở ra một nền tảng kỹ thuật và
+quy trình có khả năng triển khai thực tế tại các SME ngành F\&B Việt
+Nam. Các hướng phát triển nêu trên, đặc biệt là thực nghiệm
+fine-tuning trên dữ liệu thực tế và kiểm định pilot quy mô lớn, sẽ
+là những bước tiếp theo cần thiết để chuyển hóa nghiên cứu này
+thành sản phẩm hoàn thiện.
