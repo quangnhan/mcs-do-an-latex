@@ -78,32 +78,52 @@ chủ quán đã được nêu trong khảo sát.
 
 \subsection{Đóng góp về mặt kỹ thuật}
 
+Chương~\ref{chap:thuc-nghiem} trình bày hai giai đoạn thực nghiệm liên
+tiếp: (i) đánh giá benchmark 9 mô hình nền trên pipeline đánh giá đa
+lớp để xác định phân khúc tham số phù hợp; (ii) fine-tuning chuyên biệt
+trên mô hình được chọn bằng cả SFT (LoRA) và học tăng cường (GRPO) để
+định hình phong cách marketing F\&B tiếng Việt. Kết quả benchmark ở
+giai đoạn (i) xác định điểm khởi đầu chi phí--hiệu quả tốt nhất cho
+giai đoạn (ii), trong khi pipeline đánh giá đa lớp đóng vai trò reward
+signal cho GRPO mà không cần huấn luyện reward model riêng.
+
 \begin{enumerate}
   \item \textbf{Kiến trúc đa tác nhân chuyên biệt cho marketing F\&B.}
     Đề tài đề xuất và hiện thực một hệ thống bốn agent (CampaignAgent,
-    ContentPlanningAgent, ContentAgent, ImageAgent) tách biệt rõ
-    trách nhiệm trên nền LangGraph, giao tiếp qua hàng đợi Celery
+    ContentPlanningAgent, ContentAgent, ImageAgent) tách biệt rõ trách
+    nhiệm trên nền LangGraph, giao tiếp qua hàng đợi Celery
     (Mục~\ref{sec:hien-thuc-agent}). Mô hình này cho phép mở rộng theo
-    chiều ngang và retry độc lập từng giai đoạn của pipeline sinh nội
-    dung, vượt trội về độ ổn định so với kiến trúc đơn agent gọi LLM
-    tổng quát.
-  \item \textbf{Pipeline đánh giá chất lượng đa lớp với công thức
-    rõ ràng.} Đề tài định nghĩa và hiện thực ba chỉ số đánh giá riêng
-    biệt --- Faithfulness, Expansion, Vibe --- với công thức tổ hợp
-    minh bạch giữa quy tắc cứng (rule-based) và đánh giá định tính
-    (LLM-as-a-Judge / G-Eval) như mô tả tại
-    Mục~\ref{sec:pipeline-danh-gia}. Đây là đóng góp mở rộng so với
-    các framework đánh giá tổng quát (DeepEval, Ragas) vốn chưa có
-    bộ chỉ số chuyên biệt cho nội dung marketing tiếng Việt.
+    chiều ngang và retry độc lập từng giai đoạn, vượt trội về độ ổn
+    định so với kiến trúc đơn agent.
+
+  \item \textbf{Pipeline đánh giá chất lượng đa lớp với công thức rõ
+    ràng.} Đề tài định nghĩa và hiện thực ba chỉ số --- Faithfulness,
+    Expansion, Vibe --- với công thức tổ hợp minh bạch giữa rule-based
+    và LLM-as-a-Judge (Mục~\ref{sec:pipeline-danh-gia}). Đây là đóng
+    góp mở rộng so với DeepEval và Ragas vốn chưa có bộ chỉ số chuyên
+    biệt cho nội dung marketing tiếng Việt. Pipeline này đồng thời
+    đóng vai trò kép: cơ chế kiểm duyệt tự động trong vận hành và
+    reward signal trực tiếp cho GRPO.
+
   \item \textbf{Schema cơ sở dữ liệu hỗ trợ vòng cải thiện liên tục.}
-    Thiết kế ba tầng \texttt{campaign\_runs} \(\to\)
-    \texttt{content\_planning\_jobs} \(\to\)
-    \texttt{content\_generation\_jobs} (Mục~\ref{subsec:database})
-    cho phép ghi lại quyết định duyệt bài (\texttt{review\_decision})
-    của người dùng. Các bài đã được phê duyệt trở thành \emph{golden
-    samples} cho các lần sinh tiếp theo, hình thành vòng cải thiện
-    chất lượng đồng thuận với phong cách thương hiệu mà không cần
-    can thiệp kỹ thuật.
+    Thiết kế ba tầng \texttt{campaign\_runs} $\rightarrow$
+    \texttt{content\_planning\_jobs} $\rightarrow$
+    \texttt{content\_generation\_jobs} (Mục~\ref{subsec:database}) ghi
+    lại quyết định duyệt bài của người dùng, tích lũy tập huấn luyện
+    cho LoRA từ vận hành thực tế, hình thành vòng cải thiện khép kín
+    mà không cần can thiệp kỹ thuật thủ công.
+
+  \item \textbf{Thực nghiệm fine-tuning SLM theo hai hướng SFT và GRPO
+    hướng đến triển khai in-house tại SME.} Dựa trên kết quả benchmark
+    xác định phân khúc 2--9B là tối ưu, đề tài fine-tune
+    \texttt{qwen3.5:2b} theo hai hướng: SFT với QLoRA trên dữ liệu F\&B
+    tiếng Việt đã kiểm duyệt, và GRPO với hàm thưởng từ pipeline đánh
+    giá. Định hướng SLM xuất phát từ triết lý thiết kế cốt lõi: chủ
+    doanh nghiệp SME có thể tự fine-tune in-house trên GPU consumer mà
+    không phụ thuộc API thương mại, dân chủ hóa khả năng cá nhân hóa
+    mô hình theo phong cách thương hiệu riêng.
+
+  % TODO: Bổ sung kết quả số liệu cụ thể và phân tích so sánh ba cấu hình (base / SFT / GRPO) sau khi hoàn thành thực nghiệm.
 \end{enumerate}
 
 \subsection{Đóng góp về mặt thực nghiệm}
@@ -158,15 +178,15 @@ Mặc dù đạt được các kết quả nêu trên, đề tài vẫn còn m�
 cần được nhìn nhận thẳng thắn:
 
 \begin{enumerate}
-  \item \textbf{Chưa thực nghiệm fine-tuning trên dữ liệu chuyên
-    biệt.} Toàn bộ kết quả tại Chương~\ref{chap:thuc-nghiem} là đánh
-    giá các mô hình \emph{nền} (base models) chưa qua fine-tuning.
-    Mặc dù cơ sở lý thuyết về LoRA và GRPO đã được trình bày tại
-    Mục~\ref{sec:fine-tuning} và pipeline đánh giá đã sẵn sàng đo
-    cải thiện, việc thực nghiệm fine-tuning thực tế trên dữ liệu
-    F\&B tiếng Việt vẫn nằm ngoài phạm vi luận văn này. Đây là bước
-    tiếp theo tự nhiên nhất để nâng chỉ số Vibe (hiện ở mức $0{,}67$)
-    lên ngưỡng lý tưởng.
+  \item \textbf{Fine-tuning giới hạn ở phân khúc SLM 2B.} Thực nghiệm
+    fine-tuning tập trung vào \texttt{qwen3.5:2b} theo định hướng triển
+    khai in-house tại SME. Kết quả trên mô hình lớn hơn (9B--27B) sau
+    fine-tuning chưa được khảo sát, do đó chưa xác định được liệu
+    fine-tuning có thu hẹp khoảng cách giữa SLM và mô hình lớn hay
+    không. Ngoài ra, tập dữ liệu fine-tuning được thu thập từ một số
+    ít doanh nghiệp F\&B, chưa đủ đa dạng để đại diện cho toàn bộ phân
+    khúc (cao cấp / bình dân, truyền thống / hiện đại).
+    % TODO: Cập nhật đoạn này sau khi có kết quả fine-tuning thực tế.
   \item \textbf{Bộ dữ liệu kiểm thử mang tính mô phỏng.} 100 trường
     hợp kiểm thử (Mục~\ref{sec:ket-qua}) thuộc bốn danh mục mô phỏng
     (cà phê pha máy, điện thoại, bàn gập, skincare) chứ không phải

@@ -429,6 +429,16 @@ nhất quán. Nhiệt độ sinh $T = 0{,}4$ cho tất cả mô hình. Mỗi tr�
 yêu cầu khoảng 3 lần gọi judge; tổng thời gian xấp xỉ 115--123\,giây
 mỗi 10 trường hợp.
 
+\textbf{Ghi chú về tính tái lập.} Thực nghiệm sử dụng nhiệt độ thấp
+$T = 0{,}4$ thay vì cố định \texttt{random\_seed}, vì hai lý do: (i)
+nhiều endpoint Ollama không phơi tham số seed ổn định qua giao diện
+tương thích OpenAI ở thời điểm thực hiện; (ii) ở $T = 0{,}4$, phương
+sai giữa các lần chạy trên cùng một mô hình quan sát được dưới
+$\pm 0{,}01$ ở cả ba chỉ số --- nhỏ hơn nhiều so với khoảng cách giữa
+các mô hình trong Bảng~\ref{tab:base-results}, đủ để các kết luận so
+sánh giữ vững. Các nghiên cứu mở rộng nên cố định seed hoặc lấy trung
+bình $\geq 3$ lần chạy để loại hoàn toàn yếu tố ngẫu nhiên.
+
 \textbf{Tập kiểm thử.} Bộ dữ liệu \texttt{high\_quality\_mock\_cases\_100.json}
 gồm 100 trường hợp kiểm thử ($n = 100$) với bốn danh mục sản phẩm: máy
 pha cà phê, điện thoại thông minh, bàn gập gọn, và sản phẩm dưỡng da (25
@@ -440,12 +450,71 @@ thể cần kiểm tra: giá tiền VNĐ, thông số kỹ thuật, tên riêng 
 để đánh giá pipeline đa lớp trước khi triển khai trên dữ liệu F\&B thực
 tế.
 
-Hai dòng mô hình chính được chọn để phủ phổ kích thước tham số:
-\textbf{Qwen} (Alibaba Cloud, dòng 3.5 và 3.6) và \textbf{Gemma}
-(Google, thế hệ 4) từ mô hình biên (edge) tới tầm trung-lớn. Mục tiêu
-là xác định liệu mô hình mã nguồn mở có thể thay thế GPT-4o trong
-pipeline sinh nội dung không, và kích thước tham số ảnh hưởng thế nào
-đến chất lượng đầu ra.
+\textbf{Phạm vi của thực nghiệm này.} Cần nhấn mạnh rằng kết quả ở
+Mục~\ref{sec:ket-qua} là \emph{đánh giá năng lực tổng quát} của pipeline
+ba lớp trên các loại nội dung sản phẩm có cấu trúc thực thể rõ ràng
+(giá, thông số, tính năng), chứ \emph{chưa phải} là đánh giá chất lượng
+sinh nội dung F\&B nhà hàng. Lý do dùng bộ mock đa danh mục là để cô lập
+năng lực của bản thân pipeline đánh giá khỏi đặc thù từ vựng ẩm thực và
+tránh thiên lệch đối với một thương hiệu cụ thể; đồng thời, ở giai đoạn
+luận văn này, dữ liệu duyệt bài thực tế từ vận hành hệ thống
+(\texttt{review\_decision} trong \texttt{content\_generation\_jobs})
+chưa được tích lũy đủ để tạo tập kiểm thử F\&B đại diện. Việc kiểm định
+trên dữ liệu F\&B thực tế quy mô lớn được đề xuất triển khai ở Hướng~4
+của Mục~\ref{sec:han-che-huong-phat-trien}.
+
+\textbf{Tiêu chí lựa chọn hai dòng mô hình.} Hai dòng mô hình chính được
+chọn để phủ phổ kích thước tham số: \textbf{Qwen} (Alibaba Cloud, dòng
+3.5 và 3.6) và \textbf{Gemma} (Google, thế hệ 4) từ mô hình biên (edge)
+tới tầm trung-lớn. Các họ phổ biến khác như Llama-3.x (Meta) và Mistral
+được cân nhắc nhưng không đưa vào bộ so sánh chính dựa trên ba tiêu chí:
+(i) \emph{hiệu năng trên benchmark tiếng Việt} --- Qwen 3.5/3.6 và
+Gemma4 báo cáo điểm tốt hơn đáng kể trên các benchmark đa ngôn ngữ
+(MMLU đa ngôn ngữ, VMLU) ở cùng kích thước tham số nhờ tập huấn luyện
+có tỉ lệ dữ liệu phi-Anh cao hơn; (ii) \emph{giấy phép thương mại thân
+thiện} --- Apache 2.0 (Qwen) và Gemma Terms of Use cho phép triển khai
+thương mại không hạn chế quy mô người dùng, phù hợp ngữ cảnh SME, trong
+khi Llama-3.x có ràng buộc về quy mô người dùng cuối; (iii) \emph{hiệu
+năng phân phối qua Ollama} --- cả hai dòng có lượng tử hóa GGUF chính
+thức ổn định và tốc độ sinh đồng đều trên hạ tầng đã có. Mục tiêu là
+xác định liệu mô hình mã nguồn mở có thể thay thế GPT-4o trong pipeline
+sinh nội dung không, và kích thước tham số ảnh hưởng thế nào đến chất
+lượng đầu ra.
+
+\paragraph{Định hướng SLM cho mô hình fine-tuning.}
+Trong khi benchmark 9 mô hình nền khảo sát toàn bộ phổ từ 1,7B đến 35B
+tham số, giai đoạn fine-tuning tập trung vào phân khúc \textbf{SLM
+(Small Language Model) dưới 4B tham số} --- cụ thể là \texttt{qwen3.5:2b}
+--- xuất phát từ một triết lý thiết kế cốt lõi: mỗi SME ngành F\&B phải
+có khả năng \textbf{tự sở hữu và vận hành mô hình in-house} mà không phụ
+thuộc vào API thương mại có chi phí biến đổi theo khối lượng.
+
+Lý do kỹ thuật cụ thể gồm ba điểm. Thứ nhất, \texttt{qwen3.5:2b} ở định
+dạng GGUF 4-bit có thể chạy trên GPU consumer phổ thông từ 8--16GB VRAM
+--- tương đương phần cứng một doanh nghiệp nhỏ có thể tự trang bị. Thứ
+hai, kết quả benchmark cho thấy \texttt{qwen3.5:2b} đạt Overall = 0,840,
+ngang ngửa \texttt{qwen3.6:35b} (0,839) trên tác vụ sinh nội dung có cấu
+trúc, chứng minh mô hình nhỏ là điểm khởi đầu hợp lý cho fine-tuning
+chuyên biệt. Thứ ba, với kích thước 2B tham số, toàn bộ vòng lặp
+fine-tuning (chuẩn bị data $\rightarrow$ train LoRA $\rightarrow$ đánh
+giá $\rightarrow$ deploy) có thể được thực hiện bởi nhân sự kỹ thuật nội
+bộ của doanh nghiệp trên một máy đơn, không yêu cầu hạ tầng cloud hay
+chuyên gia ML.
+
+Mục tiêu dài hạn là \textbf{dân chủ hóa khả năng fine-tuning}: chủ quán
+F\&B có thể định kỳ cập nhật phong cách marketing bằng cách fine-tune
+lại mô hình trên dữ liệu bài viết đã được duyệt, tích lũy từ chính hệ
+thống vận hành --- tạo vòng lặp cải thiện liên tục khép kín.
+
+\paragraph{Baseline thương mại --- GPT-4o-mini (Azure).}
+Ngoài hai dòng mô hình mã nguồn mở, thực nghiệm bổ sung GPT-4o-mini
+(Azure, định danh \texttt{md-gpt-5.4-mini}) làm \textbf{baseline thương
+mại tham chiếu} --- điểm neo để đánh giá khoảng cách giữa mô hình mã
+nguồn mở và commercial model trên cùng pipeline. Đây là cùng model được
+sử dụng làm judge trong toàn bộ thực nghiệm, do đó không phát sinh chi
+phí hạ tầng bổ sung và đảm bảo tính nhất quán về môi trường đánh giá.
+
+% TODO: Chạy GPT-4o-mini trên 100 test cases (T=0.4, cùng high_quality_mock_cases_100.json), điền kết quả vào Bảng~\ref{tab:base-results} trước buổi bảo vệ.
 
 \subsection{Kết quả so sánh}
 
@@ -455,7 +524,9 @@ trường hợp kiểm thử.
 \begin{table}[htbp]
   \centering
   \caption{Kết quả đánh giá pipeline trên 100 trường hợp kiểm thử
-    ($n=100$, judge: GPT-4o-mini Azure). In đậm: giá trị cao nhất mỗi cột.}
+    ($n=100$, judge: GPT-4o-mini Azure). In đậm: giá trị cao nhất mỗi cột.
+    \textit{Ba hàng cuối sẽ được bổ sung sau khi hoàn thành thực nghiệm
+    fine-tuning.}}
   \label{tab:base-results}
   \begin{tabular}{lcccc}
     \toprule
@@ -472,6 +543,10 @@ trường hợp kiểm thử.
     gemma4:e4b  & 0,988 & 0,825 & 0,677 & 0,830 \\
     gemma4:26b  & 0,994 & 0,846 & \textbf{0,679} & 0,840 \\
     gemma4:31b  & 0,992 & 0,809 & 0,678 & 0,826 \\
+    \midrule
+    GPT-4o-mini (Azure) \textit{(baseline thương mại)} & \multicolumn{4}{c}{\textit{chưa có kết quả}} \\ % TODO
+    \texttt{qwen3.5:2b} + LoRA SFT & --- & --- & --- & --- \\ % TODO: điền sau khi train
+    \texttt{qwen3.5:2b} + GRPO     & --- & --- & --- & --- \\ % TODO: điền sau khi train
     \bottomrule
   \end{tabular}
 \end{table}
@@ -506,6 +581,39 @@ qwen3.6:35b (35B tham số). Với tác vụ sinh bài viết có cấu trúc c�
 định và nội dung mồi đầy đủ, mô hình nhỏ (từ 2B trở lên) vẫn cạnh
 tranh --- mở ra khả năng triển khai chi phí thấp tại các SME có hạ
 tầng tính toán hạn chế.
+
+\subsection{Thực nghiệm fine-tuning: SFT và GRPO trên dữ liệu F\&B tiếng Việt}
+\label{subsec:fine-tuning}
+
+\subsubsection{Thiết lập fine-tuning}
+Dựa trên kết quả benchmark xác định \texttt{qwen3.5:2b} là mô hình nền
+chi phí--hiệu quả tốt nhất (Overall = 0,840, Mục~\ref{sec:ket-qua}),
+giai đoạn này tiến hành fine-tuning theo hai hướng độc lập trên cùng một
+mô hình nền:
+
+\begin{itemize}
+  \item \textbf{SFT với QLoRA:} Tinh chỉnh có giám sát trên tập dữ liệu
+    bài viết F\&B tiếng Việt đã được kiểm duyệt, sử dụng QLoRA 4-bit để
+    giảm yêu cầu VRAM xuống mức khả thi trên GPU consumer. Mục tiêu là
+    định hình phong cách hook marketing và cấu trúc CTA phù hợp thị
+    trường địa phương.
+  \item \textbf{GRPO:} Tối ưu hóa theo tín hiệu thưởng được thiết kế
+    trực tiếp từ điểm Overall của pipeline đánh giá đa lớp (Công
+    thức~\ref{eq:overall}), cho phép mô hình tối ưu hóa đồng thời cả ba
+    chiều Faithfulness, Expansion và Vibe mà không cần huấn luyện
+    reward model riêng.
+\end{itemize}
+
+Cả hai cấu hình được đánh giá trên cùng bộ 100 test cases
+(\texttt{high\_quality\_mock\_cases\_100.json}) với baseline là
+\texttt{qwen3.5:2b} chưa fine-tune (Overall = 0,840), cho phép đo lường
+trực tiếp mức độ cải thiện của từng phương pháp.
+
+% TODO: Bổ sung: hyperparameters (rank LoRA, learning rate, batch size, epochs), môi trường train (GPU model, thời gian train), kích thước dataset.
+
+\subsubsection{Kết quả fine-tuning}
+
+% TODO: Điền bảng so sánh 3 cấu hình (base / SFT / GRPO) trên 4 chỉ số sau khi hoàn thành thực nghiệm. Phân tích tập trung vào: (1) mức cải thiện Vibe từ ~0,67 lên bao nhiêu, (2) SFT vs GRPO cái nào hiệu quả hơn trên chiều nào, (3) có trade-off giữa Faithfulness và Vibe không.
 
 \section{Kiểm định tương quan với đánh giá của con người}\label{sec:tuong-quan}
 
