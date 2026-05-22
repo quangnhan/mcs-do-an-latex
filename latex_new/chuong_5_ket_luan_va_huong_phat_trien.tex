@@ -23,69 +23,58 @@ nội dung trước khi đăng tải để tránh rủi ro thương hiệu. Pipe
 lời giải trực tiếp cho mâu thuẫn đó: thay vì buộc chủ quán đọc thủ
 công từng bài viết, hệ thống tự động sàng lọc và chỉ trình lên người
 dùng những bài có điểm tổng thể $S_{\text{overall}} \geq \theta$, với
-$\theta = 0{,}75$ là ngưỡng đã được kiểm định thực nghiệm.
+$\theta = 0{,}75$ là ngưỡng mặc định trong thiết kế pipeline, chưa được hiệu chỉnh qua kiểm định tương quan với đánh giá con người (xem Mục~\ref{sec:han-che-huong-phat-trien}).
 
-Trong vận hành thực tế, cơ chế phê duyệt tự động hoạt động theo ba
-nhánh xử lý dựa trên điểm số của pipeline:
-
-\begin{itemize}
-  \item \textbf{Tự động phê duyệt sơ bộ ($S \geq 0{,}85$):} Bài viết
-    đạt điểm cao trên cả ba lớp Faithfulness, Expansion, Vibe được
-    đánh dấu \emph{ready-to-publish}. Người dùng chỉ cần xem nhanh
-    và bấm xác nhận đăng. Đây là đa số trường hợp đối với các mô hình
-    Qwen 3.5 và Gemma4 trên 2B tham số đã thử nghiệm
-    (xem Bảng~\ref{tab:base-results}).
-  \item \textbf{Trình duyệt chuẩn ($0{,}75 \leq S < 0{,}85$):} Bài
-    viết đạt ngưỡng phê duyệt nhưng có ít nhất một lớp điểm dưới
-    trung bình. Hệ thống đính kèm chú thích về lớp yếu (ví dụ:
-    ``Vibe thấp do thiếu hook lôi cuốn'') để hướng người dùng đến
-    điểm cần chỉnh sửa.
-  \item \textbf{Tự động loại và sinh lại ($S < 0{,}75$):} Bài viết
-    không đạt ngưỡng được đưa vào hàng đợi sinh lại với prompt được
-    điều chỉnh theo lớp điểm thấp nhất. Nhờ cơ chế retry độc lập của
-    \texttt{content\_generation\_jobs} (Mục~\ref{subsec:database}),
-    người dùng không bị gián đoạn mà vẫn nhận được bài chất lượng cao
-    sau một vài lần lặp.
-\end{itemize}
+Bài viết đạt $S_{\text{overall}} \geq \theta = 0{,}75$ được chuyển
+sang trạng thái \texttt{approved} và trình lên người dùng xác nhận
+cuối trước khi đăng. Bài không đạt ngưỡng được đưa vào hàng đợi sinh
+lại với prompt được điều chỉnh theo lớp điểm thấp nhất. Nhờ cơ chế
+retry độc lập của \texttt{content\_generation\_jobs}
+(Mục~\ref{subsec:database}), người dùng không bị gián đoạn mà vẫn
+nhận được bài đạt chất lượng sau một vài lần lặp.
 
 \subsection{Tác động về thời gian và nguồn lực}
 
-Với tỉ lệ phân loại đúng $86\%$ tại ngưỡng $\theta = 0{,}75$
-(Mục~\ref{sec:tuong-quan}), pipeline có thể loại bỏ trước phần lớn
-nội dung kém chất lượng và chỉ chuyển khoảng $14\%$ trường hợp biên
-sang giai đoạn duyệt thủ công. Đối với một chiến dịch điển hình tạo
-$30$ bài viết mỗi tuần, ước tính người dùng tiết kiệm khoảng $80\%$
-thời gian duyệt bài so với mô hình duyệt toàn bộ thủ công, đồng thời
+Pipeline đánh giá đa lớp với ngưỡng $\theta = 0{,}75$ được thiết kế
+để lọc tự động phần lớn nội dung không đạt trước khi trình lên người
+dùng. Đối với một chiến dịch điển hình tạo $30$ bài viết mỗi tuần, cơ
+chế này kỳ vọng giảm đáng kể khối lượng duyệt thủ công, đồng thời
 vẫn giữ được quyền kiểm soát cuối cùng đối với các trường hợp nhạy
-cảm. Đây chính là sự cân bằng giữa tự động hóa và kiểm soát con người
-mà đối tượng khảo sát đã yêu cầu (Mục~\ref{sec:approval}).
+cảm. Để xác định chính xác tỉ lệ lọc đúng và hiệu chỉnh ngưỡng theo
+từng loại thương hiệu, bước kiểm định tương quan với đánh giá con
+người (Pearson/Spearman) được đề xuất như hướng phát triển tiếp theo
+tại Mục~\ref{sec:han-che-huong-phat-trien}. Đây chính là sự cân bằng
+giữa tự động hóa và kiểm soát con người mà đối tượng khảo sát đã yêu
+cầu (Mục~\ref{sec:approval}).
 
 \subsection{Khả năng triển khai trên hạ tầng SME}
 
-Một phát hiện quan trọng từ thực nghiệm so sánh chín mô hình tại
-Mục~\ref{sec:ket-qua} là quy mô tham số không tỉ lệ tuyến tính với
-chất lượng đầu ra trên ngưỡng $2$B: \texttt{qwen3.5:2b} đạt
-$S_{\text{overall}} = 0{,}840$ tương đương \texttt{qwen3.6:35b}
-($0{,}839$). Điều này có ý nghĩa thực tiễn lớn cho SME: doanh nghiệp
-hoàn toàn có thể triển khai mô hình $2$--$4$B trên hạ tầng tự chủ
-giá rẻ (GPU consumer hoặc thậm chí CPU với lượng tử hóa) thay vì phụ
-thuộc hoàn toàn vào API LLM thương mại có chi phí biến đổi cao theo
-khối lượng. Việc nội bộ hóa LLM còn loại bỏ rủi ro lộ dữ liệu thương
-hiệu và brand voice ra bên thứ ba --- một mối quan tâm lớn của các
-chủ quán đã được nêu trong khảo sát.
+Một phát hiện quan trọng từ thực nghiệm fine-tuning tại
+Mục~\ref{sec:fine-tuning-result} là mô hình mã nguồn mở $4$B tham số
+sau khi tinh chỉnh có thể tiệm cận chất lượng mô hình thương mại:
+\texttt{qwen3.5:4b} + SFT đạt $S_{\text{overall}} = 0{,}687$ so với
+$0{,}707$ của GPT-5.4-mini ($\Delta = -2{,}8\%$). Điều này có ý nghĩa
+thực tiễn lớn cho SME: doanh nghiệp hoàn toàn có thể triển khai mô
+hình $2$--$4$B trên hạ tầng tự chủ giá rẻ (GPU consumer hoặc thậm
+chí CPU với lượng tử hóa) thay vì phụ thuộc hoàn toàn vào API LLM
+thương mại có chi phí biến đổi cao theo khối lượng. Việc nội bộ hóa
+LLM còn loại bỏ rủi ro lộ dữ liệu thương hiệu và brand voice ra bên
+thứ ba --- một mối quan tâm lớn của các chủ quán đã được nêu trong
+khảo sát.
 
 \section{Đóng góp của đề tài}\label{sec:dong-gop}
 
 \subsection{Đóng góp về mặt kỹ thuật}
 
 Chương~\ref{chap:thuc-nghiem} trình bày hai giai đoạn thực nghiệm liên
-tiếp: (i) đánh giá benchmark 9 mô hình nền trên pipeline đánh giá đa
-lớp để xác định phân khúc tham số phù hợp; (ii) fine-tuning chuyên biệt
-trên mô hình được chọn bằng cả SFT (LoRA) và học tăng cường (GRPO) để
-định hình phong cách marketing F\&B tiếng Việt. Kết quả benchmark ở
-giai đoạn (i) xác định điểm khởi đầu chi phí--hiệu quả tốt nhất cho
-giai đoạn (ii), trong khi pipeline đánh giá đa lớp đóng vai trò reward
-signal cho GRPO mà không cần huấn luyện reward model riêng.
+tiếp: (i) đánh giá mô hình nền (\texttt{qwen3.5:2b}, \texttt{4b},
+\texttt{9b}) trên pipeline đánh giá đa lớp để xác định phân khúc tham
+số phù hợp; (ii) fine-tuning chuyên biệt trên hai mô hình được chọn
+bằng cả SFT (QLoRA) và học tăng cường (GRPO) để định hình phong cách
+marketing F\&B tiếng Việt. Kết quả giai đoạn (i) xác định điểm khởi
+đầu chi phí--hiệu quả tốt nhất cho giai đoạn (ii), trong khi pipeline
+đánh giá đa lớp đóng vai trò reward signal cho GRPO mà không cần huấn
+luyện reward model riêng.
 
 \begin{enumerate}
   \item \textbf{Kiến trúc đa tác nhân chuyên biệt cho marketing F\&B.}
@@ -114,42 +103,43 @@ signal cho GRPO mà không cần huấn luyện reward model riêng.
     mà không cần can thiệp kỹ thuật thủ công.
 
   \item \textbf{Thực nghiệm fine-tuning SLM theo hai hướng SFT và GRPO
-    hướng đến triển khai in-house tại SME.} Dựa trên kết quả benchmark
-    xác định phân khúc 2--9B là tối ưu, đề tài fine-tune
-    \texttt{qwen3.5:2b} theo hai hướng: SFT với QLoRA trên dữ liệu F\&B
-    tiếng Việt đã kiểm duyệt, và GRPO với hàm thưởng từ pipeline đánh
-    giá. Định hướng SLM xuất phát từ triết lý thiết kế cốt lõi: chủ
-    doanh nghiệp SME có thể tự fine-tune in-house trên GPU consumer mà
-    không phụ thuộc API thương mại, dân chủ hóa khả năng cá nhân hóa
-    mô hình theo phong cách thương hiệu riêng.
-
-  % TODO: Bổ sung kết quả số liệu cụ thể và phân tích so sánh ba cấu hình (base / SFT / GRPO) sau khi hoàn thành thực nghiệm.
+    hướng đến triển khai in-house tại SME.} Đề tài fine-tune
+    \texttt{qwen3.5:2b} và \texttt{qwen3.5:4b} theo hai hướng: SFT với
+    QLoRA trên dữ liệu F\&B tiếng Việt đã kiểm duyệt, và GRPO với hàm
+    thưởng rule-based. Kết quả: \texttt{qwen3.5:4b} + SFT đạt Overall
+    $0{,}687$, chỉ thấp hơn GPT-5.4-mini $2{,}8\%$, xác nhận khả năng
+    mô hình tham số nhỏ tiệm cận chất lượng thương mại sau tinh chỉnh
+    domain-specific. Định hướng SLM xuất phát từ triết lý thiết kế cốt
+    lõi: chủ doanh nghiệp SME có thể tự fine-tune in-house trên GPU
+    consumer mà không phụ thuộc API thương mại, dân chủ hóa khả năng
+    cá nhân hóa mô hình theo phong cách thương hiệu riêng.
 \end{enumerate}
 
 \subsection{Đóng góp về mặt thực nghiệm}
 
 \begin{enumerate}
-  \item \textbf{Báo cáo so sánh chín mô hình mã nguồn mở trên tác vụ
-    sinh nội dung marketing F\&B tiếng Việt.} Bảng~\ref{tab:base-results}
-    cung cấp dữ liệu định lượng có thể tái lập được trên hai họ mô
-    hình Qwen ($1{,}7$B--$35$B) và Gemma4 ($2$B--$31$B), bao trùm
-    dải tham số và kiến trúc (cả dense và Mixture-of-Experts). Đây
-    là tài liệu tham chiếu hữu ích cho các nghiên cứu sau lựa chọn
-    mô hình nền cho tác vụ tương tự.
-  \item \textbf{Phát hiện ngưỡng tham số tối thiểu.} Thực nghiệm chỉ
-    ra rằng dưới $2$B tham số (\texttt{qwen/qwen3-1.7b}) chỉ số Vibe
-    sụt giảm rõ rệt ($0{,}603$ so với mức trung bình $0{,}67$ của
-    nhóm còn lại). Đây là phát hiện mới cho thấy chất lượng hook
-    marketing đặt yêu cầu năng lực ngôn ngữ mà các mô hình quá nhỏ
-    không đáp ứng được, đồng thời định hướng việc lựa chọn mô hình
-    nền cho fine-tuning chuyên biệt.
-  \item \textbf{Kiểm định tương quan với đánh giá con người.}
-    Hệ số tương quan Pearson $r = 0{,}794$ trên Overall và độ chính
-    xác phân loại $86\%$ tại ngưỡng $\theta = 0{,}75$
-    (Mục~\ref{sec:tuong-quan}) là minh chứng định lượng rằng pipeline
-    tự động đủ tin cậy để thay thế phần lớn công việc kiểm duyệt sơ
-    bộ thủ công, hợp pháp hóa cơ chế auto-approval mô tả tại
-    Mục~\ref{sec:ung-dung}.
+  \item \textbf{Báo cáo so sánh mô hình nền và kết quả fine-tuning trên
+    tác vụ sinh nội dung marketing F\&B tiếng Việt.}
+    Bảng~\ref{tab:final-comparison} cung cấp dữ liệu định lượng có thể
+    tái lập được cho ba biến thể Qwen3.5 (2B, 4B, 9B) ở trạng thái nền,
+    cùng kết quả sau fine-tuning SFT và GRPO trên dữ liệu F\&B thực tế.
+    Đây là tài liệu tham chiếu hữu ích cho các nghiên cứu sau lựa chọn
+    mô hình nền và phương pháp tinh chỉnh cho tác vụ tương tự.
+  \item \textbf{Phát hiện về tác động của domain alignment trong GRPO.}
+    Thực nghiệm GRPO với tập Dining Review (review nhà hàng --- chéo miền
+    so với marketing F\&B) dẫn đến sụt giảm Overall $-38{,}2\%$ so với
+    baseline, trong đó Faithfulness giảm $-42{,}1\%$ do reward hacking.
+    Đây là bằng chứng thực nghiệm rõ ràng rằng \emph{domain alignment}
+    giữa dữ liệu huấn luyện RL và tác vụ mục tiêu quan trọng hơn bản
+    thân thuật toán, định hướng cách thiết kế hàm reward cho các nghiên
+    cứu tiếp theo.
+  \item \textbf{Đề xuất phương pháp kiểm định tương quan với đánh giá
+    con người.} Đề tài đề xuất sử dụng hệ số Pearson/Spearman để kiểm
+    định mức độ tương quan giữa điểm pipeline tự động và đánh giá của
+    con người, từ đó xác định ngưỡng phê duyệt $\theta$ tối ưu theo
+    từng loại thương hiệu. Đây là bước cần thiết để hợp pháp hóa cơ
+    chế auto-approval mô tả tại Mục~\ref{sec:ung-dung} và được đề xuất
+    như hướng phát triển tại Mục~\ref{sec:han-che-huong-phat-trien}.
 \end{enumerate}
 
 \subsection{Đóng góp về mặt quy trình}
@@ -178,39 +168,41 @@ Mặc dù đạt được các kết quả nêu trên, đề tài vẫn còn m�
 cần được nhìn nhận thẳng thắn:
 
 \begin{enumerate}
-  \item \textbf{Fine-tuning giới hạn ở phân khúc SLM 2B.} Thực nghiệm
-    fine-tuning tập trung vào \texttt{qwen3.5:2b} theo định hướng triển
-    khai in-house tại SME. Kết quả trên mô hình lớn hơn (9B--27B) sau
-    fine-tuning chưa được khảo sát, do đó chưa xác định được liệu
-    fine-tuning có thu hẹp khoảng cách giữa SLM và mô hình lớn hay
-    không. Ngoài ra, tập dữ liệu fine-tuning được thu thập từ một số
-    ít doanh nghiệp F\&B, chưa đủ đa dạng để đại diện cho toàn bộ phân
-    khúc (cao cấp / bình dân, truyền thống / hiện đại).
-    % TODO: Cập nhật đoạn này sau khi có kết quả fine-tuning thực tế.
-  \item \textbf{Bộ dữ liệu kiểm thử mang tính mô phỏng.} 100 trường
-    hợp kiểm thử (Mục~\ref{sec:ket-qua}) thuộc bốn danh mục mô phỏng
-    (cà phê pha máy, điện thoại, bàn gập, skincare) chứ không phải
-    dữ liệu thực tế từ menu của các quán F\&B. Điều này đảm bảo tính
-    đa dạng của test cases nhưng có thể chưa phản ánh đầy đủ đặc thù
-    của ngữ cảnh F\&B Việt Nam (món ăn truyền thống, từ ngữ ẩm thực
-    địa phương, văn hóa quán xá).
+  \item \textbf{Fine-tuning giới hạn ở phân khúc SLM 2B--4B.} Thực
+    nghiệm fine-tuning tập trung vào \texttt{qwen3.5:2b} và
+    \texttt{qwen3.5:4b} theo định hướng triển khai in-house tại SME.
+    Kết quả trên mô hình lớn hơn (9B trở lên) sau fine-tuning chưa
+    được khảo sát, do đó chưa xác định được điểm bão hòa lợi ích của
+    tinh chỉnh theo quy mô tham số. Ngoài ra, tập dữ liệu SFT được
+    thu thập từ một số ít doanh nghiệp F\&B, chưa đủ đa dạng để đại
+    diện cho toàn bộ phân khúc (cao cấp / bình dân, truyền thống /
+    hiện đại).
+  \item \textbf{Bộ dữ liệu kiểm thử quy mô nhỏ và đơn nguồn.} 100
+    trường hợp kiểm thử (Mục~\ref{sec:fine-tuning-result}) được thu thập
+    từ nhà hàng tại Việt Nam, phản ánh tốt đặc thù từ vựng và phong
+    cách địa phương nhưng còn giới hạn về độ đa dạng: tập trung vào
+    một số loại hình F\&B nhất định, chưa bao phủ đủ dải từ quán bình
+    dân, quán cao cấp đến chuỗi thương hiệu lớn. Kết quả đánh giá có
+    thể chưa đại diện cho toàn bộ phổ SME ngành F\&B Việt Nam.
   \item \textbf{Phạm vi nền tảng giới hạn.} Đề tài chỉ tập trung vào
     nội dung Facebook (bài đăng văn bản kèm ảnh tĩnh). Các định dạng
     khác trên Facebook (Reels, Stories) cũng như các nền tảng phổ
     biến khác chưa được nghiên cứu, dù các nguyên lý kiến trúc và
     pipeline đánh giá có khả năng tổng quát hóa.
-  \item \textbf{Đánh giá con người ở quy mô nhỏ.} Kiểm định tương
-    quan thực hiện trên $n_h = 50$ trường hợp với ba đánh giá viên
-    (Mục~\ref{sec:tuong-quan}). Quy mô này đủ để chứng minh tương
-    quan có ý nghĩa thống kê nhưng chưa đủ rộng để phân tích các
-    nhóm thương hiệu khác nhau (cao cấp / phổ thông, truyền thống /
-    hiện đại).
+  \item \textbf{Kiểm định tương quan với đánh giá con người chưa được
+    thực hiện.} Đề tài đề xuất sử dụng hệ số Pearson/Spearman để đo
+    mức độ khớp giữa điểm pipeline tự động và đánh giá của chuyên gia,
+    nhưng chưa có điều kiện thu thập nhãn con người trong phạm vi
+    nghiên cứu này. Do đó, ngưỡng $\theta = 0{,}75$ chưa được hiệu
+    chỉnh theo đánh giá chuyên gia, và độ chính xác phân loại tự động
+    chưa có số liệu xác nhận độc lập.
   \item \textbf{Pipeline đánh giá phụ thuộc vào LLM-as-a-Judge.}
-    Lớp Faithfulness và Vibe đều dùng GPT-4o-mini làm judge. Sự thiên
-    lệch tiềm ẩn của judge model (ví dụ: ưu tiên giọng văn ``bóng
-    bẩy'' hơn giọng văn tự nhiên --- chính là nguyên nhân của bốn
-    trường hợp false positive đã ghi nhận) là một rủi ro hệ thống cần
-    được giám sát.
+    Lớp Faithfulness và Vibe đều dùng GPT-5.4 Azure làm judge. Sự thiên
+    lệch tiềm ẩn của judge model (ví dụ: ưu tiên giọng văn ``bóng bẩy''
+    hơn giọng văn tự nhiên) là một rủi ro hệ thống cần được giám sát.
+    Thêm vào đó, GPT-5.4-mini cũng đồng thời là điểm tham chiếu thương
+    mại trong bảng so sánh, nên cần lưu ý khi diễn giải điểm số tuyệt
+    đối của mô hình này.
 \end{enumerate}
 
 \subsection{Hướng phát triển tiếp theo}
@@ -218,16 +210,17 @@ cần được nhìn nhận thẳng thắn:
 Trên cơ sở các hạn chế đã chỉ ra, đề tài đề xuất các hướng phát
 triển sau:
 
-\paragraph{Hướng 1 --- Thực nghiệm fine-tuning với LoRA và GRPO.}
-Sử dụng dữ liệu duyệt bài thực tế thu thập được từ vận hành hệ thống
-(\texttt{review\_decision} trong \texttt{content\_generation\_jobs})
-làm tập huấn luyện cho fine-tuning. Áp dụng LoRA trên mô hình nền
-$2$--$9$B (đã được xác định là phân khúc chi phí--hiệu quả tốt nhất)
-để định hình phong cách marketing F\&B tiếng Việt. Sau đó áp dụng
-GRPO với hàm thưởng được thiết kế trực tiếp từ điểm pipeline đánh
-giá đa lớp, tận dụng pipeline hiện có như một reward signal sẵn sàng
-mà không cần huấn luyện reward model riêng. Mục tiêu cụ thể: nâng
-chỉ số Vibe trung bình từ $0{,}67$ lên trên $0{,}80$.
+\paragraph{Hướng 1 --- Mở rộng và cải thiện thực nghiệm fine-tuning.}
+Kết quả tại Chương~\ref{chap:thuc-nghiem} xác nhận SFT hiệu quả trong
+khi GRPO bị suy giảm do lệch miền. Hướng phát triển gồm ba nhánh:
+(i)~mở rộng tập dữ liệu SFT từ vài trăm lên $1{,}000$+ bài viết
+marketing F\&B đã kiểm duyệt, bao phủ đa dạng hơn về loại hình và
+phong cách thương hiệu, kỳ vọng cải thiện thêm Faithfulness và Vibe;
+(ii)~thiết kế lại tập huấn luyện GRPO sử dụng chính các bài đăng
+marketing F\&B có số liệu tương tác thực tế (thay vì tập Dining Review
+chéo miền), nhằm khắc phục reward hacking và hiện tượng suy giảm
+Faithfulness; (iii)~thực nghiệm fine-tuning trên mô hình $9$B trở lên
+để xác định điểm bão hòa lợi ích của tinh chỉnh theo quy mô tham số.
 
 \paragraph{Hướng 2 --- Mở rộng đa phương thức (multi-modal).}
 Hệ thống hiện nay sinh ảnh độc lập với văn bản qua ImageAgent. Hướng
@@ -267,13 +260,13 @@ trôi (drift) chất lượng đánh giá.
 
 Đề tài đã trình bày một hành trình hoàn chỉnh từ khảo sát nhu cầu
 SME ngành F\&B đến thiết kế kiến trúc hệ thống, hiện thực hóa các
-agent, xây dựng pipeline đánh giá đa lớp và kiểm định thực nghiệm
-chín mô hình ngôn ngữ mã nguồn mở. Kết quả thu được --- chỉ số
-Overall cao nhất $0{,}843$ trên \texttt{qwen3.5:27b}, độ chính xác
-phân loại $86\%$ tại ngưỡng phê duyệt --- không chỉ trả lời được
-câu hỏi nghiên cứu ban đầu mà còn mở ra một nền tảng kỹ thuật và
-quy trình có khả năng triển khai thực tế tại các SME ngành F\&B Việt
-Nam. Các hướng phát triển nêu trên, đặc biệt là thực nghiệm
-fine-tuning trên dữ liệu thực tế và kiểm định pilot quy mô lớn, sẽ
-là những bước tiếp theo cần thiết để chuyển hóa nghiên cứu này
-thành sản phẩm hoàn thiện.
+agent, xây dựng pipeline đánh giá đa lớp, và thực nghiệm tinh chỉnh
+mô hình theo hai hướng SFT và GRPO. Kết quả nổi bật --- \texttt{qwen3.5:4b}
++ SFT đạt Overall $0{,}687$, chỉ thấp hơn GPT-5.4-mini $2{,}8\%$ trong
+khi vận hành hoàn toàn cục bộ không phụ thuộc API thương mại --- không
+chỉ trả lời được câu hỏi nghiên cứu ban đầu mà còn mở ra một nền tảng
+kỹ thuật và quy trình có khả năng triển khai thực tế tại các SME ngành
+F\&B Việt Nam. Các hướng phát triển nêu trên, đặc biệt là cải thiện
+domain alignment cho GRPO, kiểm định tương quan với đánh giá con người,
+và pilot quy mô lớn với dữ liệu tương tác thực, sẽ là những bước tiếp
+theo cần thiết để chuyển hóa nghiên cứu này thành sản phẩm hoàn thiện.

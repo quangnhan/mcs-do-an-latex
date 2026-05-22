@@ -2,11 +2,10 @@
 
 Chương này trình bày toàn bộ quá trình xây dựng và thực nghiệm hệ thống:
 thiết kế kiến trúc và cơ sở dữ liệu, hiện thực hóa các thành phần Agent
-bằng LangGraph, thiết lập các thực nghiệm fine-tuning SFT và học tăng cường
-GRPO trên dữ liệu F\&B thực tế, khung đánh giá chất lượng đa lớp, và kết
-quả so sánh các phương pháp tinh chỉnh. Mọi thực nghiệm tập trung vào nền
-tảng \textbf{Facebook} với dữ liệu thực tế từ các SME ngành F\&B tại Việt
-Nam.
+bằng LangGraph, khung đánh giá chất lượng đa lớp, và kết quả so sánh hai
+phương pháp tinh chỉnh là SFT và học tăng cường GRPO trên dữ liệu F\&B
+thực tế. Mọi thực nghiệm tập trung vào nền tảng \textbf{Facebook} với dữ
+liệu thực tế từ các SME ngành F\&B tại Việt Nam.
 
 \section{Thiết kế kiến trúc hệ thống}\label{sec:kien-truc}
 
@@ -107,7 +106,7 @@ ba tầng để cho phép retry độc lập ở mỗi bước.
     quan (một bài viết có thể quảng bá nhiều món cùng lúc).
   \item \textbf{\texttt{content\_generation\_jobs}}: Kết quả sinh nội
     dung từ ContentAgent. Lưu \texttt{headline}, \texttt{body\_markdown},
-    \texttt{extra\_outputs} (JSONB — hashtags và metadata bổ sung),
+    \texttt{extra\_outputs} (JSONB --- hashtags và metadata bổ sung),
     \texttt{raw\_prompt} (snapshot prompt đầy đủ để debug), và metadata
     duyệt bài: \texttt{review\_decision}, \texttt{review\_comment},
     \texttt{reviewed\_at}.
@@ -152,10 +151,12 @@ song song:
 \section{Hiện thực hóa các thành phần Agent}\label{sec:hien-thuc-agent}
 
 Tất cả agent được hiện thực trên nền tảng \textbf{LangGraph} --- thư
-viện xây dựng state machine từ đồ thị có hướng trên LangChain. Mỗi
-node trong đồ thị là một hàm Python nhận và trả về \texttt{AgentState}
-(TypedDict); LangGraph điều phối luồng thực thi theo các điều kiện
-chuyển trạng thái được định nghĩa tường minh.
+viện xây dựng state machine từ đồ thị có hướng trên LangChain, hiện
+thực hóa trực tiếp kiến trúc đa tác nhân và máy trạng thái hội thoại
+đã trình bày ở Mục~\ref{sec:agent}. Mỗi node trong đồ thị là một hàm
+Python nhận và trả về \texttt{AgentState} (TypedDict); LangGraph điều
+phối luồng thực thi theo các điều kiện chuyển trạng thái được định
+nghĩa tường minh.
 
 \subsection{CampaignAgent --- Điều phối trung tâm}
 
@@ -325,207 +326,7 @@ Hàm \texttt{get\_or\_create()} duy trì một dict trong bộ nhớ ánh xạ
 mang \texttt{thread\_id} riêng cho \texttt{MemorySaver}, đảm bảo các
 phiên làm việc độc lập về trạng thái hội thoại.
 
-\section{Thực nghiệm fine-tuning SFT trên dữ liệu F\&B tiếng Việt}
-\label{sec:fine-tuning-result}
-
-\subsection{Thiết lập fine-tuning}
-
-Giai đoạn này tiến hành Supervised Fine-Tuning (SFT) trên hai kích
-thước tham số để đánh giá ảnh hưởng của quy mô đến hiệu quả học phong
-cách:
-
-\begin{itemize}
-  \item \textbf{\texttt{qwen3.5:2b} + SFT (QLoRA 16-bit)}: tinh chỉnh
-    có giám sát trên tập bài viết Facebook F\&B tiếng Việt đã kiểm
-    duyệt. Mô hình sau huấn luyện:
-    \texttt{qwen3.5-2b-facebook-content}.
-  \item \textbf{\texttt{qwen3.5:4b} + SFT (QLoRA 16-bit)}: cùng phương
-    pháp trên mô hình nền 4B tham số. Mô hình sau huấn luyện:
-    \texttt{qwen3.5-4b-facebook-content}.
-\end{itemize}
-
-Mục tiêu là định hình phong cách Facebook-native F\&B --- đặc biệt
-là giọng điệu, cách neo giá/deal, và cấu trúc CTA --- thứ mà các mô
-hình nền chưa nắm vững qua tiền huấn luyện đa mục đích. Cả hai mô hình
-sinh văn bản ở chế độ \emph{nothinking} (tắt chain-of-thought) để phù
-hợp tốc độ suy diễn trong môi trường sản xuất, nhiệt độ $T = 0{,}4$.
-
-\subsection{Tập dữ liệu đánh giá}
-
-Thực nghiệm sử dụng bộ kiểm thử F\&B thực tế\footnote{Tên tệp:
-\texttt{fnb\_dataset\_test.json}.}
-gồm 100 trường hợp ($n = 100$) thu thập từ nhà hàng tại Việt Nam. Mỗi trường hợp gồm \texttt{input\_title}, \texttt{seed\_content}
-(thông tin sản phẩm/menu với tên món, giá, combo đặc trưng ẩm thực
-tiếng Việt) và \texttt{actual\_output} do mô hình sinh. Tập dữ liệu này
-khác biệt với tập mock đa danh mục dùng trong calibration (xem
-Mục~\ref{sec:ket-qua}) ở chỗ phản ánh đặc thù từ vựng nhà hàng, đơn
-vị phần ăn, và văn phong thương hiệu địa phương.
-
-Judge: GPT-5.4, cùng
-pipeline đánh giá cập nhật mô tả ở Mục~\ref{sec:pipeline-danh-gia}.
-
-Kết quả so sánh đầy đủ được trình bày trong Mục~\ref{sec:tong-ket-thuc-nghiem}.
-
-\section{Thực nghiệm học tăng cường với GRPO}
-\label{sec:grpo-result}
-
-\subsection{Động lực và tổng quan phương pháp}
-
-Bên cạnh SFT, học tăng cường (Reinforcement Learning) cung cấp hướng
-tiếp cận bổ sung: thay vì học từ nhãn kiểm duyệt, mô hình học trực
-tiếp từ \emph{tín hiệu tương tác thực tế} --- lượt thích, bình luận,
-chia sẻ --- của các bài đăng Facebook hiện có. Phương pháp GRPO
-(Group Relative Policy Optimization) được chọn vì (i)~không cần
-huấn luyện reward model riêng biệt, (ii)~không cần critic/value model
-như PPO, và (iii)~tương thích với hàm reward rule-based, tiết kiệm tài
-nguyên phù hợp với bối cảnh SME.
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.82\textwidth]{images/GRPO}
-  \caption{Vòng lặp huấn luyện GRPO. Từ mỗi prompt, policy sinh $G$
-    completions; hàm reward chấm điểm từng completion; advantage được
-    chuẩn hóa trong nhóm (group normalization); policy cập nhật với
-    ràng buộc KL so với reference policy.}
-  \label{fig:grpo-train}
-\end{figure}
-
-Advantage của completion $i$ trong nhóm $G$:
-
-\begin{equation}
-  A_i = \frac{r_i - \bar{r}}{\sigma_r + \varepsilon}, \quad
-  \bar{r} = \frac{1}{G}\sum_{j=1}^{G} r_j, \quad
-  \sigma_r = \sqrt{\frac{1}{G}\sum_{j=1}^{G}(r_j - \bar{r})^2}
-  \label{eq:grpo-advantage}
-\end{equation}
-
-Hàm mất mát GRPO kết hợp ràng buộc KL so với reference policy
-$\pi_{\text{ref}}$:
-
-\begin{equation}
-  \mathcal{L}_{\text{GRPO}}
-    = -\frac{1}{G}\sum_{i=1}^{G} A_i \log \pi_\theta(y_i \mid x)
-    + \beta \cdot D_{\text{KL}}\!\bigl(\pi_\theta \,\|\, \pi_{\text{ref}}\bigr)
-  \label{eq:grpo-loss}
-\end{equation}
-
-với $\beta = 0{,}04$ là hệ số phạt KL ngăn policy lệch quá xa khỏi
-mô hình nền ban đầu.
-
-\subsection{Tập dữ liệu Dining Review}
-
-Dữ liệu huấn luyện gồm 500 bài đăng thực thu thập từ cộng đồng
-\emph{Dining Review} (Facebook) --- các bài viết review nhà hàng,
-quán ăn tại Việt Nam bằng tiếng Việt. Mỗi bản ghi có 11 cột:
-\texttt{text} (nội dung) và 10 chỉ số tương tác gồm
-\texttt{likesCount}, \texttt{commentsCount}, \texttt{sharesCount},
-và bảy loại reaction (like, love, haha, care, wow, angry, sad).
-
-\textbf{Điểm engagement tổng hợp.} Từ các chỉ số tương tác, một
-điểm proxy được xây dựng theo công thức trọng số:
-
-\begin{equation}
-  e_{\text{raw}} = L + 0{,}5C + 1{,}5S
-    + R_{\text{like}} + 1{,}2\,R_{\text{love}}
-    + 0{,}8\,(R_{\text{haha}} + R_{\text{care}} + R_{\text{wow}})
-    - 0{,}5\,R_{\text{angry}} - 0{,}3\,R_{\text{sad}}
-  \label{eq:engage-raw}
-\end{equation}
-
-\begin{equation}
-  e = \ln\!\bigl(1 + \max(e_{\text{raw}},\, 0)\bigr)
-  \label{eq:engage-log}
-\end{equation}
-
-trong đó $L$, $C$, $S$ lần lượt là lượt thích, bình luận, chia sẻ.
-Trọng số cao hơn cho share ($1{,}5\times$) phản ánh cam kết sâu hơn;
-hàm logarithm nén phân phối lệch phải của engagement. Tập train
-dùng 256 mẫu, tập eval dùng 32 mẫu, lấy ngẫu nhiên từ 500 bài.
-
-\textbf{Chiến lược Prefix Completion.} Dataset không có cặp
-prompt--response rõ ràng. Giải pháp: câu đầu tiên của mỗi bài thực
-đóng vai trò \emph{state/prompt}, phần còn lại do model sinh ra và
-được hàm reward chấm điểm. Model học cách hoàn thiện bài post sao
-cho các tín hiệu hình thức tương quan với engagement cao trong dataset.
-
-\subsection{Hàm reward rule-based}
-
-Hàm reward được thiết kế dựa trên phân tích tương quan giữa đặc trưng
-hình thức và điểm engagement trong tập Dining Review. Năm thành phần
-được mô tả trong Bảng~\ref{tab:reward-fn}.
-
-\begin{table}[htbp]
-  \centering
-  \small
-  \caption{Năm thành phần hàm reward rule-based và điểm số tương ứng.}
-  \label{tab:reward-fn}
-  \begin{tabular}{p{0.22\textwidth}cp{0.50\textwidth}}
-    \toprule
-    \textbf{Thành phần} & \textbf{Điểm} & \textbf{Điều kiện} \\
-    \midrule
-    \multirow{3}{*}{Độ dài}
-      & $+1{,}0$ & $150 \leq |y| \leq 1\,000$ ký tự \\
-      & $-2{,}0$ & $|y| < 30$ ký tự \\
-      & $-0{,}5$ & $|y| > 2\,000$ ký tự \\
-    \midrule
-    Emoji
-      & $+\min(0{,}15k,\; 0{,}6)$ & $k$: số emoji --- tương quan dương
-        với likes và reactions trong dataset \\
-    \midrule
-    \multirow{2}{*}{CTA / câu hỏi}
-      & $+0{,}4$ & Từ khoá gọi hành động (bình luận, chia sẻ, đặt bàn,
-        inbox, liên hệ\ldots) \\
-      & $+0{,}3$ & Có dấu hỏi (\texttt{?}) \\
-    \midrule
-    Kết thúc hoàn chỉnh
-      & $+0{,}2$ & Ký tự cuối là dấu kết thúc
-        (\texttt{.}, \texttt{!}, \texttt{?}, \texttt{…}) \\
-    \midrule
-    Tiếng Việt
-      & $+0{,}3$ & $\geq 6$ ký tự có dấu --- đảm bảo model không
-        sinh tiếng Anh \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-\subsection{Cấu hình huấn luyện}
-
-\texttt{Qwen3.5-2B} được chọn làm policy để giữ nhất quán với cấu
-hình SFT, cho phép so sánh trực tiếp hiệu quả hai phương pháp trên
-cùng mô hình nền. Bảng~\ref{tab:grpo-config} tóm tắt siêu tham số.
-
-\begin{table}[htbp]
-  \centering
-  \small
-  \caption{Siêu tham số huấn luyện GRPO.}
-  \label{tab:grpo-config}
-  \begin{tabular}{ll}
-    \toprule
-    \textbf{Tham số} & \textbf{Giá trị} \\
-    \midrule
-    Mô hình nền & \texttt{Qwen/Qwen3.5-2B} \\
-    Quantization & QLoRA 16-bit (NF4, double quant, bf16 compute) \\
-    LoRA & $r=16$, $\alpha=32$, dropout $=0$;
-           7 module (q/k/v/o proj, gate/up/down proj) \\
-    Tham số có thể huấn luyện & $10{,}9$M / $1{,}89$B ($0{,}58\%$) \\
-    \midrule
-    Số completions mỗi prompt ($G$) & 4 \\
-    Độ dài completion tối đa & 256 token \\
-    Nhiệt độ sinh ($T$) & $0{,}7$ \\
-    Hệ số KL penalty ($\beta$) & $0{,}04$ \\
-    \midrule
-    Epochs & 1 \\
-    Batch size / gradient accumulation & 1 / 4 (effective batch = 4) \\
-    Learning rate & $3 \times 10^{-6}$ \\
-    Số mẫu train / eval & 256 / 32 \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-Kết quả đánh giá trên tập F\&B thực tế được trình bày cùng kết quả
-SFT trong Bảng~\ref{tab:final-comparison}
-(Mục~\ref{sec:tong-ket-thuc-nghiem}).
-
+% -----------------------------------------------------------------------
 \section{Khung đánh giá chất lượng đa lớp}\label{sec:pipeline-danh-gia}
 
 Để đánh giá chất lượng nội dung sinh ra một cách tự động hóa và có độ
@@ -669,7 +470,258 @@ Trong triển khai, bài đạt $\text{Overall} \geq \theta = 0{,}75$ được
 chuyển tự động sang trạng thái \texttt{approved}. Ngưỡng $\theta$ có
 thể cấu hình theo từng dự án mà không cần thay đổi code pipeline.
 
-\section{Tổng kết kết quả thực nghiệm fine-tuning}
+% -----------------------------------------------------------------------
+\section{Thực nghiệm fine-tuning SFT trên dữ liệu F\&B tiếng Việt}
+\label{sec:fine-tuning-result}
+
+\subsection{Thiết lập fine-tuning}
+
+Giai đoạn này tiến hành Supervised Fine-Tuning (SFT) trên hai kích
+thước tham số để đánh giá ảnh hưởng của quy mô đến hiệu quả học phong
+cách:
+
+\begin{itemize}
+  \item \textbf{\texttt{qwen3.5:2b} + SFT (QLoRA 16-bit)}: tinh chỉnh
+    có giám sát trên tập bài viết Facebook F\&B tiếng Việt đã kiểm
+    duyệt. Mô hình sau huấn luyện:
+    \texttt{qwen3.5-2b-facebook-content}.
+  \item \textbf{\texttt{qwen3.5:4b} + SFT (QLoRA 16-bit)}: cùng phương
+    pháp trên mô hình nền 4B tham số. Mô hình sau huấn luyện:
+    \texttt{qwen3.5-4b-facebook-content}.
+\end{itemize}
+
+Mô hình \texttt{qwen3.5:9b} được đưa vào bảng tổng hợp làm điểm
+tham chiếu tham số lớn hơn nhưng không tiến hành fine-tuning do chi
+phí tính toán vượt phạm vi thực nghiệm. Cả hai cấu hình fine-tuning
+đều áp dụng QLoRA (chi tiết lý thuyết xem Mục~\ref{subsec:sft}).
+
+Mục tiêu là định hình phong cách Facebook-native F\&B --- đặc biệt
+là giọng điệu, cách neo giá/deal, và cấu trúc CTA --- thứ mà các mô
+hình nền chưa nắm vững qua tiền huấn luyện đa mục đích. Cả hai mô hình
+sinh văn bản ở chế độ \emph{nothinking} (tắt chain-of-thought) để phù
+hợp tốc độ suy diễn trong môi trường sản xuất, nhiệt độ $T = 0{,}4$.
+
+\subsection{Tập dữ liệu đánh giá}
+
+Thực nghiệm sử dụng bộ kiểm thử F\&B thực tế gồm 100 trường hợp
+($n = 100$) thu thập từ nhà hàng tại Việt Nam. Mỗi
+trường hợp gồm \texttt{input\_title}, \texttt{seed\_content} (thông tin
+sản phẩm/menu với tên món, giá, combo đặc trưng ẩm thực tiếng Việt) và
+\texttt{actual\_output} do mô hình sinh. Tập dữ liệu này phản ánh đặc
+thù từ vựng nhà hàng, đơn vị phần ăn, và văn phong thương hiệu địa
+phương --- môi trường gần nhất với triển khai thực tế của hệ thống.
+Judge: GPT-5.4 Azure, cùng pipeline đánh giá ba lớp mô tả ở
+Mục~\ref{sec:pipeline-danh-gia}.
+
+\subsection{Kết quả SFT}
+
+\textbf{qwen3.5:2b + SFT} ghi nhận cải thiện ở hai chiều Expansion
+($0{,}662 \to 0{,}754$, $+13{,}9\%$) và Vibe ($0{,}450 \to 0{,}587$,
+$+30{,}4\%$). Faithfulness gần như không thay đổi ($0{,}599 \to
+0{,}597$, $-0{,}2\%$). Overall đạt $0{,}646$ --- vượt baseline 2B
+($0{,}570$) nhưng còn cách đáng kể so với điểm tham chiếu thương mại
+GPT-5.4-mini ($0{,}707$, $\Delta = -9{,}2\%$). Kết quả gợi ý rằng với
+2B tham số, capacity mô hình chưa đủ để nội tâm hóa toàn diện phong
+cách marketing Facebook-native F\&B từ bộ dữ liệu SFT có kích thước
+hạn chế.
+
+\textbf{qwen3.5:4b + SFT} cho kết quả vượt trội hơn rõ rệt: Vibe tăng
+từ $0{,}502$ lên $0{,}648$ ($+29{,}1\%$), Faithfulness tăng từ $0{,}596$
+lên $0{,}637$ ($+6{,}9\%$), Expansion ổn định ($0{,}768 \to 0{,}777$).
+Overall đạt $0{,}687$ --- chỉ thấp hơn GPT-5.4-mini $0{,}020$ điểm
+($\Delta = -2{,}8\%$). Đây là kết quả cạnh tranh đáng kể, cho thấy mô
+hình mã nguồn mở 4B tham số có thể tiệm cận chất lượng thương mại sau
+khi được tinh chỉnh với dữ liệu domain-specific.
+
+% -----------------------------------------------------------------------
+\section{Thực nghiệm học tăng cường với GRPO}
+\label{sec:grpo-result}
+
+\subsection{Động lực và tổng quan phương pháp}
+
+Bên cạnh SFT, học tăng cường (Reinforcement Learning) cung cấp hướng
+tiếp cận bổ sung: thay vì học từ nhãn kiểm duyệt, mô hình học trực
+tiếp từ \emph{tín hiệu tương tác thực tế} --- lượt thích, bình luận,
+chia sẻ --- của các bài đăng Facebook hiện có. Phương pháp GRPO
+(Group Relative Policy Optimization) được chọn vì (i)~không cần
+huấn luyện reward model riêng biệt, (ii)~không cần critic/value model
+như PPO, và (iii)~tương thích với hàm reward rule-based, tiết kiệm tài
+nguyên phù hợp với bối cảnh SME. Cơ sở lý thuyết GRPO đã được trình
+bày tại Mục~\ref{subsec:rl} (xem Hình~\ref{fig:grpo}); phần này tập
+trung vào cấu hình thực nghiệm và phân tích kết quả.
+
+Advantage của completion $i$ trong nhóm $G$:
+
+\begin{equation}
+  A_i = \frac{r_i - \bar{r}}{\sigma_r + \varepsilon}, \quad
+  \bar{r} = \frac{1}{G}\sum_{j=1}^{G} r_j, \quad
+  \sigma_r = \sqrt{\frac{1}{G}\sum_{j=1}^{G}(r_j - \bar{r})^2}
+  \label{eq:grpo-advantage}
+\end{equation}
+
+Hàm mất mát GRPO kết hợp ràng buộc KL so với reference policy
+$\pi_{\text{ref}}$:
+
+\begin{equation}
+  \mathcal{L}_{\text{GRPO}}
+    = -\frac{1}{G}\sum_{i=1}^{G} A_i \log \pi_\theta(y_i \mid x)
+    + \beta \cdot D_{\text{KL}}\!\bigl(\pi_\theta \,\|\, \pi_{\text{ref}}\bigr)
+  \label{eq:grpo-loss}
+\end{equation}
+
+với $\beta = 0{,}04$ là hệ số phạt KL ngăn policy lệch quá xa khỏi
+mô hình nền ban đầu.
+
+\subsection{Tập dữ liệu Dining Review}
+
+Dữ liệu huấn luyện gồm 500 bài đăng thực thu thập từ cộng đồng
+\emph{Dining Review} (Facebook) --- các bài viết review nhà hàng,
+quán ăn tại Việt Nam bằng tiếng Việt. Mỗi bản ghi có 11 cột:
+\texttt{text} (nội dung) và 10 chỉ số tương tác gồm
+\texttt{likesCount}, \texttt{commentsCount}, \texttt{sharesCount},
+và bảy loại reaction (like, love, haha, care, wow, angry, sad).
+
+\textbf{Điểm engagement tổng hợp.} Từ các chỉ số tương tác, một
+điểm proxy được xây dựng theo công thức trọng số:
+
+\begin{equation}
+  e_{\text{raw}} = L + 0{,}5C + 1{,}5S
+    + R_{\text{like}} + 1{,}2\,R_{\text{love}}
+    + 0{,}8\,(R_{\text{haha}} + R_{\text{care}} + R_{\text{wow}})
+    - 0{,}5\,R_{\text{angry}} - 0{,}3\,R_{\text{sad}}
+  \label{eq:engage-raw}
+\end{equation}
+
+\begin{equation}
+  e = \ln\!\bigl(1 + \max(e_{\text{raw}},\, 0)\bigr)
+  \label{eq:engage-log}
+\end{equation}
+
+trong đó $L$, $C$, $S$ lần lượt là lượt thích, bình luận, chia sẻ.
+Trọng số cao hơn cho share ($1{,}5\times$) phản ánh cam kết sâu hơn;
+hàm logarithm nén phân phối lệch phải của engagement. Tập train
+dùng 256 mẫu, tập eval dùng 32 mẫu, lấy ngẫu nhiên từ 500 bài.
+
+\textbf{Chiến lược Prefix Completion.} Dataset không có cặp
+prompt--response rõ ràng. Giải pháp: câu đầu tiên của mỗi bài thực
+đóng vai trò \emph{state/prompt}, phần còn lại do model sinh ra và
+được hàm reward chấm điểm. Model học cách hoàn thiện bài post sao
+cho các tín hiệu hình thức tương quan với engagement cao trong dataset.
+
+\subsection{Hàm reward rule-based}
+
+Hàm reward được thiết kế dựa trên phân tích tương quan giữa đặc trưng
+hình thức và điểm engagement trong tập Dining Review. Năm thành phần
+được mô tả trong Bảng~\ref{tab:reward-fn}.
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \caption{Năm thành phần hàm reward rule-based và điểm số tương ứng.}
+  \label{tab:reward-fn}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{p{0.22\textwidth}cp{0.50\textwidth}}
+    \toprule
+    \textbf{Thành phần} & \textbf{Điểm} & \textbf{Điều kiện} \\
+    \midrule
+    \multirow{3}{*}{Độ dài}
+      & $+1{,}0$ & $150 \leq |y| \leq 1\,000$ ký tự \\
+      & $-2{,}0$ & $|y| < 30$ ký tự \\
+      & $-0{,}5$ & $|y| > 2\,000$ ký tự \\
+    \midrule
+    Emoji
+      & $+\min(0{,}15k,\; 0{,}6)$ & $k$: số emoji --- tương quan dương
+        với likes và reactions trong dataset \\
+    \midrule
+    \multirow{2}{*}{CTA / câu hỏi}
+      & $+0{,}4$ & Từ khoá gọi hành động (bình luận, chia sẻ, đặt bàn,
+        inbox, liên hệ\ldots) \\
+      & $+0{,}3$ & Có dấu hỏi (\texttt{?}) \\
+    \midrule
+    Kết thúc hoàn chỉnh
+      & $+0{,}2$ & Ký tự cuối là dấu kết thúc
+        (\texttt{.}, \texttt{!}, \texttt{?}, \texttt{…}) \\
+    \midrule
+    Tiếng Việt
+      & $+0{,}3$ & $\geq 6$ ký tự có dấu --- đảm bảo model không
+        sinh tiếng Anh \\
+    \bottomrule
+  \end{tabular}}
+\end{table}
+
+\subsection{Cấu hình huấn luyện}
+
+\texttt{Qwen3.5-2B} được chọn làm policy để giữ nhất quán với cấu
+hình SFT, cho phép so sánh trực tiếp hiệu quả hai phương pháp trên
+cùng mô hình nền. Bảng~\ref{tab:grpo-config} tóm tắt siêu tham số.
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \caption{Siêu tham số huấn luyện GRPO.}
+  \label{tab:grpo-config}
+  \begin{tabular}{ll}
+    \toprule
+    \textbf{Tham số} & \textbf{Giá trị} \\
+    \midrule
+    Mô hình nền & \texttt{qwen3.5:2b} \\
+    Quantization & QLoRA 16-bit (NF4, double quant, bf16 compute) \\
+    LoRA & $r=16$, $\alpha=32$, dropout $=0$;
+           7 module (q/k/v/o proj, gate/up/down proj) \\
+    Tham số có thể huấn luyện & $10{,}9$M / $1{,}89$B ($0{,}58\%$) \\
+    \midrule
+    Số completions mỗi prompt ($G$) & 4 \\
+    Độ dài completion tối đa & 256 token \\
+    Nhiệt độ sinh ($T$) & $0{,}7$ \\
+    Hệ số KL penalty ($\beta$) & $0{,}04$ \\
+    \midrule
+    Epochs & 1 \\
+    Batch size / gradient accumulation & 1 / 4 (effective batch = 4) \\
+    Learning rate & $3 \times 10^{-6}$ \\
+    Số mẫu train / eval & 256 / 32 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Kết quả GRPO}
+
+Kết quả đánh giá trên tập F\&B thực tế ($n = 100$) cho thấy GRPO với
+hàm reward rule-based từ tập Dining Review \emph{làm giảm} chất lượng
+so với mô hình nền trên mọi chiều: Faithfulness $0{,}347$, Expansion
+$0{,}465$, Vibe $0{,}245$, Overall $0{,}352$ --- sụt giảm $0{,}218$
+điểm ($-38{,}2\%$) so với baseline \texttt{qwen3.5:2b} ($0{,}570$).
+
+Đây là kết quả tiêu cực nhưng cung cấp thông tin quan trọng về giới
+hạn của phương pháp. Ba nguyên nhân chính được xác định:
+
+\begin{enumerate}
+  \item \textbf{Lệch miền (domain mismatch)}: Tập Dining Review gồm
+    bài viết review của người dùng --- phong cách chủ quan, tường thuật
+    ngôi thứ nhất --- khác biệt căn bản với bài viết thương hiệu
+    marketing F\&B (phong cách thuyết phục, neo sản phẩm/giá, CTA hành
+    động). Hàm reward học từ engagement signals của bài review không
+    phản ánh yêu cầu phong cách marketing, khiến mô hình bị dẫn dắt
+    lệch hướng.
+  \item \textbf{Reward hacking}: Model tối ưu các tín hiệu hình thức
+    dễ đạt điểm (thêm emoji vào bất kể ngữ cảnh, chèn từ khóa CTA
+    máy móc, kéo dài văn bản) mà bỏ qua tính mạch lạc và bảo toàn
+    thực thể --- Faithfulness sụt giảm mạnh nhất ($0{,}599 \to 0{,}347$,
+    $-42{,}1\%$) là bằng chứng rõ nhất của hiện tượng này.
+  \item \textbf{Quy mô huấn luyện hạn chế}: Chỉ 1 epoch trên 256 mẫu
+    với effective batch size 4; mô hình chưa hội tụ đủ để phân biệt
+    reward thực sự hữu ích với các shortcut hình thức, và ràng buộc KL
+    ($\beta = 0{,}04$) không đủ mạnh để giữ mô hình trong vùng chất
+    lượng của reference policy.
+\end{enumerate}
+
+Kết quả này xác nhận rằng \emph{sự khớp miền} (domain alignment) giữa
+dữ liệu huấn luyện GRPO và tác vụ mục tiêu là yếu tố then chốt, quan
+trọng hơn bản thân thuật toán RL. Hướng khắc phục trong tương lai: sử
+dụng tập huấn luyện GRPO là chính các bài viết marketing F\&B có số
+liệu tương tác thực tế, thay vì tập review chéo miền.
+
+% -----------------------------------------------------------------------
+\section{Tổng kết kết quả thực nghiệm}
 \label{sec:tong-ket-thuc-nghiem}
 
 Bảng~\ref{tab:final-comparison} tổng hợp toàn bộ kết quả trên tập
@@ -698,9 +750,8 @@ là điểm tham chiếu thương mại.
       & 0,599 & 0,662 & 0,450 & 0,570 \\
     \texttt{qwen3.5:2b} + SFT
       & 0,597 & 0,754 & 0,587 & 0,646 \\
-    \texttt{qwen3.5:2b} + GRPO
-      & \multicolumn{4}{c}{\textit{đang đánh giá}} \\
-    \midrule
+    \texttt{qwen3.5:2b} + RL
+      & 0,347 & 0,465 & 0,245 & 0,352 \\
     \texttt{qwen3.5:4b} (nền)
       & 0,596 & 0,768 & 0,502 & 0,622 \\
     \texttt{qwen3.5:4b} + SFT
@@ -712,31 +763,90 @@ là điểm tham chiếu thương mại.
   \end{tabular}
 \end{table}
 
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[
+      ybar,
+      bar width        = 0.18cm,
+      width            = \textwidth,
+      height           = 7.5cm,
+      enlarge x limits = 0.12,
+      ylabel           = {Điểm},
+      ymin = 0, ymax = 0.95,
+      ytick            = {0, 0.2, 0.4, 0.6, 0.8},
+      symbolic x coords = {Faith., Expan., Vibe, Overall},
+      xtick            = data,
+      legend style     = {at={(0.5,-0.18)}, anchor=north,
+                          legend columns=3, font=\small},
+      nodes near coords,
+      nodes near coords align = {vertical},
+      every node near coord/.append style = {font=\tiny, rotate=90,
+                                              anchor=west},
+      grid             = major,
+      grid style       = {dashed, gray!30},
+    ]
+      \addplot coordinates {(Faith.,0.659) (Expan.,0.817) (Vibe,0.645) (Overall,0.707)};
+      \addplot coordinates {(Faith.,0.599) (Expan.,0.662) (Vibe,0.450) (Overall,0.570)};
+      \addplot coordinates {(Faith.,0.597) (Expan.,0.754) (Vibe,0.587) (Overall,0.646)};
+      \addplot coordinates {(Faith.,0.347) (Expan.,0.465) (Vibe,0.245) (Overall,0.352)};
+      \addplot coordinates {(Faith.,0.596) (Expan.,0.768) (Vibe,0.502) (Overall,0.622)};
+      \addplot coordinates {(Faith.,0.637) (Expan.,0.777) (Vibe,0.648) (Overall,0.687)};
+      \legend{GPT-5.4-mini,
+              qwen3.5:2b (nền),
+              qwen3.5:2b + SFT,
+              qwen3.5:2b + RL,
+              qwen3.5:4b (nền),
+              qwen3.5:4b + SFT}
+    \end{axis}
+  \end{tikzpicture}
+  \caption{So sánh ba chiều chất lượng và điểm tổng thể giữa các mô hình.
+    SFT cải thiện đều đặn; GRPO (RL) sụt giảm mạnh do lệch miền dữ liệu
+    huấn luyện.}
+  \label{fig:model-comparison}
+\end{figure}
+
 \textbf{SFT cải thiện Vibe rõ rệt ở cả hai kích thước.}
-\texttt{qwen3.5:2b} + SFT tăng Vibe từ 0,450 lên 0,587 ($+30{,}4\%$);
-\texttt{qwen3.5:4b} + SFT từ 0,502 lên 0,648 ($+29{,}1\%$). Đây là
+\texttt{qwen3.5:2b} + SFT tăng Vibe từ $0{,}450$ lên $0{,}587$ ($+30{,}4\%$);
+\texttt{qwen3.5:4b} + SFT từ $0{,}502$ lên $0{,}648$ ($+29{,}1\%$). Đây là
 lớp hưởng lợi nhiều nhất từ tinh chỉnh có giám sát, xác nhận rằng
 giọng điệu Facebook-native F\&B có thể học được từ dữ liệu kiểm duyệt.
 
 \textbf{Expansion cải thiện rõ trên 2B, ổn định trên 4B.}
-\texttt{qwen3.5:2b} + SFT tăng từ 0,662 lên 0,754 ($+0{,}092$), trong
-khi \texttt{qwen3.5:4b} + SFT giữ nguyên (0,768 $\to$ 0,777) vì mô
+\texttt{qwen3.5:2b} + SFT tăng từ $0{,}662$ lên $0{,}754$ ($+0{,}092$), trong
+khi \texttt{qwen3.5:4b} + SFT giữ nguyên ($0{,}768 \to 0{,}777$) vì mô
 hình 4B đã có năng lực diễn giải nội sinh từ tiền huấn luyện.
 
-\textbf{Faithfulness ổn định qua fine-tuning.} Cả hai mô hình SFT
-không giảm Faithfulness đáng kể (2B: $-0{,}002$; 4B: $+0{,}041$),
-xác nhận SFT không làm mất khả năng bảo toàn thực thể --- điều kiện
-cần cho triển khai thực tế.
+\textbf{Faithfulness ổn định qua SFT, sụt giảm nghiêm trọng sau GRPO.}
+Cả hai mô hình SFT không giảm Faithfulness đáng kể (2B: $-0{,}002$;
+4B: $+0{,}041$), xác nhận SFT không làm mất khả năng bảo toàn thực thể.
+Ngược lại, \texttt{qwen3.5:2b} + RL ghi nhận Faithfulness chỉ $0{,}347$
+--- thấp hơn $0{,}252$ điểm so với baseline ($-42{,}1\%$) --- cho thấy
+hiện tượng reward hacking rõ ràng khi mô hình học từ tín hiệu không
+được căn chỉnh với tác vụ mục tiêu.
 
-\textbf{GRPO bổ sung tín hiệu tương tác thực.} Khác với SFT học từ
-nhãn kiểm duyệt, GRPO tối ưu trực tiếp theo các đặc trưng hình thức
-tương quan với engagement trong tập Dining Review (500 bài). Hai
-hướng tiếp cận có thể kết hợp tuần tự --- SFT định hình phong cách
-từ bài mẫu đã duyệt, GRPO tinh chỉnh tiếp theo phản hồi tương tác
-thực --- tạo thành pipeline huấn luyện đa giai đoạn phù hợp với SME.
+\textbf{GRPO với dữ liệu chéo miền gây hồi quy chất lượng.}
+Overall $0{,}352$ của \texttt{qwen3.5:2b} + RL thấp hơn cả baseline
+$0{,}570$ ($-38{,}2\%$). Kết quả này phủ nhận giả thuyết rằng tín hiệu
+engagement từ tập Dining Review có thể thay thế nhãn kiểm duyệt trong
+bài toán tối ưu phong cách marketing. Tuy nhiên, đây là kết quả có giá
+trị thực nghiệm: nó đặt ra yêu cầu rõ ràng về \emph{domain alignment}
+khi thiết kế hàm reward cho RL trong bài toán sinh văn bản marketing.
 
 \textbf{\texttt{qwen3.5:4b} + SFT là lựa chọn tốt nhất trong nhóm
-mã nguồn mở hiện tại}, với Overall 0,687 so với 0,707 của GPT-5.4-mini
-($\Delta = -0{,}020$, $-2{,}8\%$). Chi phí vận hành thấp hơn đáng kể
-(mô hình cục bộ, không phụ thuộc API thương mại theo lượt gọi) mang
-lại ý nghĩa thực tiễn cho SME ngành F\&B Việt Nam.
+mã nguồn mở hiện tại}, với Overall $0{,}687$ so với $0{,}707$ của
+GPT-5.4-mini ($\Delta = -0{,}020$, $-2{,}8\%$). Chi phí vận hành thấp
+hơn đáng kể --- mô hình chạy cục bộ, không phụ thuộc API thương mại
+theo lượt gọi --- mang lại ý nghĩa thực tiễn cho SME ngành F\&B Việt
+Nam có ngân sách hạn chế.
+
+Chương 4 đã trình bày toàn bộ quá trình xây dựng và thực nghiệm hệ
+thống Marketing Agent: từ thiết kế kiến trúc đa dịch vụ và schema cơ
+sở dữ liệu, hiện thực hóa bốn agent bằng LangGraph, đến khung đánh
+giá chất lượng ba lớp, và kết quả so sánh hai hướng tinh chỉnh SFT và
+GRPO trên dữ liệu F\&B thực tế. Kết quả xác nhận rằng mô hình mã
+nguồn mở tham số nhỏ được tinh chỉnh đúng miền có thể tiệm cận hiệu
+suất mô hình thương mại lớn, đồng thời cung cấp bằng chứng thực
+nghiệm rõ ràng về tầm quan trọng của domain alignment trong thiết kế
+hàm reward cho RL. Chương 5 sẽ tổng kết đóng góp của đề tài, đánh giá
+hạn chế còn tồn tại và đề xuất hướng phát triển tiếp theo.

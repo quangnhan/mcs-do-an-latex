@@ -3,16 +3,16 @@
 
 Chương này trình bày nền tảng lý thuyết và công nghệ phục vụ mục tiêu luận
 văn: xây dựng tác nhân (Agent) hỗ trợ tạo nội dung marketing cho doanh
-nghiệp F\&B quy mô nhỏ trên nền tảng Facebook, đồng thời áp
-dụng các kỹ thuật tinh chỉnh mô hình (PEFT, GRPO) và
-đánh giá chất lượng đa lớp trước khi đăng bài. Các mục được sắp
-xếp theo thứ tự từ kiến trúc mô hình, thích ứng tác vụ, bổ sung tri
-thức bên ngoài đến chuẩn hóa chất lượng đầu ra, ăn khớp với thiết kế tổng
-thể hệ thống và nội dung thực nghiệm ở Chương \ref{chap:thuc-nghiem}.
-Luận văn không mở rộng lịch sử NLP theo hướng từ mô hình túi từ
-(Bag-of-Words) hay RNN, mà tập trung vào mô hình ngôn ngữ lớn dạng
-Transformer cải tiến hiện đang được sử dụng rộng rãi trong cả nghiên cứu
-và triển khai.
+nghiệp F\&B quy mô nhỏ trên nền tảng Facebook, đồng thời áp dụng kỹ
+thuật tinh chỉnh mô hình (QLoRA--SFT, GRPO) nhằm đưa mô hình tham số nhỏ
+tiệm cận hiệu suất mô hình thương mại lớn, và đánh giá chất lượng đa lớp
+trước khi đăng bài. Các mục được sắp xếp theo thứ tự từ kiến trúc mô
+hình, thích ứng tác vụ, bổ sung tri thức bên ngoài đến chuẩn hóa chất
+lượng đầu ra, ăn khớp với thiết kế tổng thể hệ thống và nội dung thực
+nghiệm ở Chương~\ref{chap:thuc-nghiem}. Luận văn không mở rộng lịch sử
+NLP theo hướng từ mô hình túi từ (Bag-of-Words) hay RNN, mà tập trung
+vào mô hình ngôn ngữ lớn dạng Transformer cải tiến hiện đang được sử dụng
+rộng rãi trong cả nghiên cứu và triển khai.
 
 \section{Kiến trúc mô hình ngôn ngữ hiện đại}\label{sec:llm-kiem-truc}
 
@@ -79,10 +79,26 @@ tham số kích hoạt trong một lần truyền thuận hạn chế, giúp
 cân bằng dung lượng mô hình với chi phí suy diễn (FLOPs, độ
 trễ). Điều này liên quan trực tiếp tới tối ưu vận hành: doanh
 nghiệp có thể cân nhắc mô hình MoE khi cần dung lượng tri thức
-phong phú nhưng vẫn phải giới hạn GPU/VRAM. Phần nghiên cứu ở các
-chương sau có thể tham chiếu các mô hình mã nguồn mở có tầng MoE (nếu
-được dùng trong thực nghiệm) hoặc phân tích ở mức tương quan, không
-bắt buộc mọi cấu hình đều dùng MoE.
+phong phú nhưng vẫn phải giới hạn GPU/VRAM. Các mô hình được tinh chỉnh
+trong luận văn (Qwen3.5 2B/4B) sử dụng kiến trúc dense tiêu chuẩn, không
+áp dụng MoE; MoE được trình bày ở đây như nền tảng lý thuyết để hiểu toàn
+cảnh thiết kế mô hình mã nguồn mở hiện đại.
+
+\subsection{Dòng mô hình Qwen3.5 --- lựa chọn thực nghiệm}\label{subsec:qwen}
+
+Dòng mô hình Qwen3.5 (Alibaba Cloud) là họ mô hình ngôn ngữ mã nguồn
+mở sử dụng kiến trúc decoder-only Transformer, tích hợp GQA và RoPE,
+hỗ trợ đa ngôn ngữ bao gồm tiếng Việt. Các biến thể có kích thước từ
+dưới 2B đến hơn 70B tham số cho phép lựa chọn linh hoạt giữa chi phí
+suy diễn và năng lực ngôn ngữ, phù hợp với ràng buộc phần cứng của
+nghiên cứu trên một GPU đơn.
+
+Luận văn tập trung vào ba biến thể \textbf{Qwen3.5 2B}, \textbf{4B} và
+\textbf{9B} làm mô hình cơ sở (baseline), trong đó 2B và 4B được tinh
+chỉnh thêm bằng SFT (QLoRA) và GRPO. Mục tiêu thực nghiệm là kiểm chứng
+khả năng đưa mô hình tham số nhỏ (2B--4B) tiệm cận hiệu suất của mô hình
+thương mại lớn (GPT-5.4-mini làm tham chiếu ngoài), thông qua tinh chỉnh
+có mục tiêu trên dữ liệu tác vụ thay vì mở rộng số lượng tham số.
 
 \section{Chiến lược huấn luyện mô hình}\label{sec:fine-tuning}
 
@@ -265,9 +281,10 @@ dung sinh còn khớp thực thể (tên món, địa
 danh, tên thương hiệu) bằng cách ưu tiên cung cấp ngữ
 cảnh từ kho tài liệu đã lập chỉ mục, bổ sung cho phần
 tinh chỉnh phong cách ở mục
-\ref{sec:fine-tuning}. Phần triển khai cơ sở dữ liệu
-bảng \texttt{Document}, \texttt{Embedding} nằm ở
-Chương \ref{chap:thuc-nghiem}.
+\ref{sec:fine-tuning}. Trong phạm vi thực nghiệm của luận văn,
+tri thức thương hiệu được lưu trữ có cấu trúc trong cơ sở dữ liệu
+quan hệ và nạp trực tiếp vào prompt của Agent; việc tích hợp
+vector store và embedding đầy đủ là hướng mở rộng tiếp theo.
 
 \section{Lý thuyết đánh giá chất lượng đa lớp}\label{sec:eval-metrics}
 
@@ -492,73 +509,12 @@ khó truy vết.
 
 Hiện thực hóa cụ thể của các mẫu trên trong luận văn (sơ
 đồ trạng thái, danh mục công cụ, phân chia agent) được
-trình bày ở Chương \ref{chap:thuc-nghiem}.
+trình bày ở Chương~\ref{chap:thuc-nghiem}.
 
-\section{Vận hành mô hình ngôn ngữ trong hệ thống phân tán}\label{sec:llmops}
-
-Mục này trình bày các khái niệm vận hành (LLMOps) cần
-thiết để đưa tác nhân dựa trên LLM vào sử dụng thực tế ở
-mức tổng quan; lựa chọn công nghệ cụ thể được trình bày ở
-Chương \ref{chap:thuc-nghiem}.
-
-\subsection{Kiến trúc bất đồng bộ cho tác vụ LLM}
-
-Một lượt sinh nội dung marketing có thể yêu cầu nhiều
-lượt gọi LLM kèm một lượt sinh ảnh, tổng thời gian thường
-vượt quá ngưỡng một yêu cầu HTTP đồng bộ thông thường.
-Nếu xử lý trực tiếp trong luồng HTTP, kết nối từ phía
-người dùng có nguy cơ chờ lâu hoặc hết thời gian, đồng
-thời mỗi lỗi tạm thời từ phía mô hình sẽ làm hỏng cả phiên
-giao dịch. Mẫu thiết kế thông dụng là tách phần gọi LLM
-ra khỏi luồng HTTP bằng một hàng đợi tác vụ (task queue):
-API nhận yêu cầu, ghi một bản ghi công việc, đẩy thông
-điệp vào hàng đợi, rồi trả về ngay cho người dùng một
-định danh tham chiếu. Các tiến trình xử lý nền (worker)
-lắng nghe hàng đợi, gọi LLM, ghi kết quả vào cơ sở dữ
-liệu, và phía giao diện hiển thị kết quả khi sẵn sàng. Mô
-hình này cho phép mở rộng theo chiều ngang theo lượng yêu
-cầu, đồng thời cách ly lỗi: một tác vụ thất bại có thể
-thử lại mà không ảnh hưởng các tác vụ khác.
-
-\subsection{Quan trắc và truy vết LLM}
-
-Quan trắc (observability) cho ứng dụng dùng LLM khác với
-log truyền thống ở chỗ cần lưu nội dung của prompt và
-phản hồi, kèm các chỉ số như độ trễ, số token đầu vào và
-đầu ra, ước tính chi phí, và liên kết các lượt gọi cùng
-thuộc về một phiên xử lý. Khi chất lượng đầu ra suy giảm,
-người vận hành cần truy ngược đúng prompt đã được mô hình
-tiêu thụ, vì khác biệt nhỏ trong định dạng nhập (ví dụ
-thiếu một dòng tri thức nền) có thể tạo khác biệt lớn
-trong đầu ra. Trong bối cảnh SME ngân sách hạn chế, dữ
-liệu quan trắc còn giúp thống kê chi phí token theo từng
-agent hoặc theo từng chiến dịch, hỗ trợ quyết định chuyển
-sang mô hình rẻ hơn cho những vai phù hợp.
-
-\subsection{Lớp trừu tượng hóa nhà cung cấp mô hình}
-
-Hệ sinh thái LLM hiện nay gồm nhiều nhà cung cấp dịch vụ
-(OpenAI, Anthropic, Google) và nhiều mô hình mã nguồn mở
-chạy cục bộ. Việc gắn cứng mã nguồn agent với SDK của một
-nhà cung cấp khiến chi phí chuyển đổi tăng cao và khó so
-sánh giữa các mô hình. Mẫu LLM gateway (hoặc proxy) đặt
-một lớp trung gian thống nhất giao diện gọi mô hình:
-agent chỉ làm việc với một API duy nhất, lớp gateway
-chuyển tiếp tới nhà cung cấp tương ứng dựa trên cấu hình.
-Lợi ích phụ là tập trung xử lý giới hạn tốc độ (rate
-limit), thử lại (retry), và chuyển dự phòng (fallback)
-sang nhà cung cấp khác khi mô hình chính gặp sự cố.
-
-\subsection{Lưu trữ tài nguyên sinh ra}
-
-Ngoài văn bản, agent còn sinh ra ảnh minh họa cho bài
-đăng. Lưu ảnh trực tiếp trong cơ sở dữ liệu quan hệ vừa
-làm bảng phình to, vừa khó phục vụ qua URL công khai cho
-các nền tảng mạng xã hội. Mẫu thông dụng là tách hai
-loại lưu trữ: kho lưu trữ đối tượng (object storage)
-tương thích S3 chứa các tệp nhị phân và phục vụ URL trực
-tiếp, còn cơ sở dữ liệu quan hệ chỉ giữ siêu dữ liệu
-(URL, kích thước, mô tả, lượt phê duyệt). Cách tách này
-tận dụng được hạ tầng lưu trữ đối tượng đã trưởng thành
-và tránh thắt nút ở tầng cơ sở dữ liệu khi số lượng tệp
-tăng.
+Chương 3 đã xây dựng nền tảng lý thuyết cho toàn bộ hệ thống: từ kiến
+trúc Transformer và dòng mô hình Qwen3.5 được lựa chọn, đến các kỹ thuật
+tinh chỉnh (QLoRA--SFT, GRPO) nhằm định hướng phong cách sinh nội dung,
+cơ chế RAG để tích hợp tri thức thương hiệu, khung đánh giá đa lớp để
+kiểm soát chất lượng đầu ra, và kiến trúc đa tác nhân để tổ chức luồng
+công việc. Các khái niệm này sẽ được hiện thực hóa trực tiếp trong thiết
+kế hệ thống và thực nghiệm ở Chương~\ref{chap:thuc-nghiem}.

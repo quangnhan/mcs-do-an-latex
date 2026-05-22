@@ -30,7 +30,7 @@ Vì vậy, việc nghiên cứu và phát triển một AI Agent tự động h�
 chuyên biệt cho SME ngành F\&B là vô cùng cần thiết và có ý nghĩa thực
 tiễn. Đề tài này tập trung xây dựng hệ thống không chỉ giúp chủ doanh
 nghiệp tiết kiệm thời gian, tối ưu hóa nguồn lực mà còn nâng cao hiệu
-quả chiến dịch marketing thông qua kỹ thuật tinh chỉnh mô hình (LoRA,
+quả chiến dịch marketing thông qua kỹ thuật tinh chỉnh mô hình (QLoRA,
 GRPO) và cơ chế đánh giá chất lượng nội dung đa lớp trước khi đăng bài.
 
 \section{Mục tiêu nghiên cứu}\label{sec:muc-tieu}
@@ -70,9 +70,10 @@ Các mục tiêu cụ thể của hệ thống bao gồm:
   tạo ra theo chiến dịch hoặc thời gian cụ thể.
 
 \item
-  \textbf{Đánh giá và cải thiện hệ thống:} Tiến hành thử nghiệm
-  prototype với người dùng thực tế, thu thập phản hồi để đánh giá tính
-  khả dụng và chất lượng nội dung đầu ra.
+  \textbf{Đánh giá hệ thống:} Đề xuất phương pháp kiểm định tương quan
+  giữa pipeline đánh giá tự động và đánh giá của con người (Pearson,
+  Spearman), từ đó xác định ngưỡng phê duyệt phù hợp và hướng cải thiện
+  cho các giai đoạn tiếp theo.
 \end{itemize}
 
 \section{Đối tượng và phạm vi nghiên cứu}\label{sec:doi-tuong-pham-vi}
@@ -107,106 +108,29 @@ Phương pháp nghiên cứu gồm ba nhóm hoạt động chính:
   ra của hệ thống thông qua pipeline đánh giá đa lớp: kết hợp quy tắc cứng và đánh giá định tính (LLM-as-a-Judge, G-Eval).
 \end{enumerate}
 
-\section{Thách thức và phương pháp tiếp cận}\label{sec:thach-thuc}
-
-\subsection{Thách thức}
+\section{Thách thức}\label{sec:thach-thuc}
 
 \begin{itemize}
 \item
-  Thiếu kỹ năng và thời gian của chủ quán F\&B:
-
-  \begin{itemize}
-  \item
-    Chủ quán là người không chuyên về marketing và công nghệ, yêu cầu
-    giao diện cực kỳ đơn giản, không cần cấu hình phức tạp.
-  \item
-    Họ rất bận rộn, cần một giải pháp tự động hóa cao độ, giảm thiểu tối
-    đa sự can thiệp thủ công hàng ngày.
-  \end{itemize}
+  \textbf{Thiếu kỹ năng và thời gian của chủ quán F\&B:}
+  Chủ quán thường không chuyên về marketing và công nghệ, yêu cầu giao
+  diện cực kỳ đơn giản và quy trình tự động hóa cao độ, giảm thiểu tối
+  đa thao tác thủ công hàng ngày.
 
 \item
-  Chất lượng nội dung và tính xác thực:
-
-  \begin{itemize}
-  \item
-    Nội dung marketing F\&B đòi hỏi sự chân thực, trong khi nội dung do
-    AI tạo sinh thường có nguy cơ bị cảm nhận là thiếu tự nhiên hoặc
-    không phù hợp giọng thương hiệu.
-  \item
-    Thách thức là đảm bảo giọng văn nhất quán, phù hợp
-    đặc thù từng thương hiệu và không bị máy móc.
-  \end{itemize}
+  \textbf{Chất lượng nội dung và tính xác thực:}
+  Nội dung marketing F\&B đòi hỏi sự chân thực và nhất quán với giọng
+  thương hiệu, trong khi nội dung do AI tạo sinh có nguy cơ bị cảm nhận
+  là thiếu tự nhiên hoặc không phù hợp.
 
 \item
-  Tính địa phương hóa:
-
-  \begin{itemize}
-  \item
-    Xu hướng F\&B và nội dung viral trên mạng xã hội, đặc biệt trên
-    \textbf{Facebook} tại thị trường Việt Nam, thay đổi liên tục.
-  \item
-    Hệ thống cần tạo ra nội dung phù hợp với văn hóa địa phương, tránh
-    các biểu đạt lỗi thời hoặc không liên quan.
-  \end{itemize}
+  \textbf{Tính địa phương hóa:}
+  Xu hướng F\&B và nội dung viral trên \textbf{Facebook} tại thị trường
+  Việt Nam thay đổi liên tục; hệ thống phải tạo ra nội dung phù hợp văn
+  hóa địa phương, tránh biểu đạt lỗi thời hoặc không liên quan.
 \end{itemize}
 
-\subsection{Phương pháp tiếp cận}
-
-\begin{itemize}
-\item
-  Sử dụng AI Agent dựa trên LLM để xây dựng chiến lược và sáng tạo nội
-  dung:
-
-  \begin{itemize}
-  \item
-    LLM đóng vai trò cốt lõi trong việc hiểu ngữ cảnh F\&B và chuyển
-    hóa dữ liệu thương hiệu thành các ý tưởng bài viết có cấu trúc.
-  \item
-    Áp dụng kỹ thuật prompt engineering kết hợp fine-tuning để định hình
-    phong cách marketing chuyên nghiệp, phù hợp từng thương hiệu.
-  \end{itemize}
-
-\item
-  Thiết kế luồng công việc tinh gọn, lấy người dùng làm trung tâm:
-
-  \begin{itemize}
-  \item
-    Xây dựng giao diện đơn giản, tập trung vào việc cho phép người dùng
-    quản lý dữ liệu thương hiệu, xem xét và sử dụng nội dung đã được hệ
-    thống tạo ra.
-  \item
-    Tối ưu hóa quy trình làm việc để giảm thiểu thao tác thủ công, giúp
-    người dùng nhận được nội dung marketing hoàn chỉnh một cách nhanh
-    chóng.
-  \end{itemize}
-
-\item
-  Xây dựng và quản lý cơ sở tri thức thương hiệu:
-
-  \begin{itemize}
-  \item
-    Thiết kế hệ thống lưu trữ dựa trên cơ sở dữ liệu vector (Vector
-    Database) để tổ chức dữ liệu thương hiệu, menu và phong cách viết
-    của từng doanh nghiệp.
-  \item
-    Cơ chế truy xuất tri thức (RAG) đảm bảo nội dung được tạo ra luôn
-    nhất quán với nhận diện thương hiệu.
-  \end{itemize}
-
-\item
-  Triển khai và đánh giá hệ thống:
-
-  \begin{itemize}
-  \item
-    Xây dựng và triển khai prototype hoàn chỉnh bao gồm các chức năng
-    quản lý dữ liệu thương hiệu, sinh nội dung và đánh giá chất lượng.
-  \item
-    Tiến hành thử nghiệm với người dùng thực tế để đánh giá hiệu quả hệ
-    thống và thu thập phản hồi cải thiện.
-  \end{itemize}
-\end{itemize}
-
-\section{Bố cục đề tài}\label{sec:bo-cuc}
+\section{Bố cục luận văn}\label{sec:bo-cuc}
 
 Đề tài được trình bày trong năm chương:
 
@@ -227,3 +151,8 @@ Phương pháp nghiên cứu gồm ba nhóm hoạt động chính:
   \textbf{Chương 5} kết luận, đánh giá đóng góp, hạn chế và hướng phát
   triển tiếp theo.
 \end{itemize}
+
+Chương 1 đã xác lập bối cảnh, mục tiêu và phạm vi nghiên cứu làm nền
+tảng cho toàn bộ luận văn. Các chương tiếp theo sẽ lần lượt trình bày
+phân tích thị trường, cơ sở lý thuyết, hiện thực hóa hệ thống và kết
+quả thực nghiệm.
