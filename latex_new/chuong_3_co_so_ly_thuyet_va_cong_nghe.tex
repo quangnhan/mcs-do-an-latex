@@ -16,7 +16,7 @@ và triển khai.
 
 \section{Kiến trúc mô hình ngôn ngữ hiện đại}\label{sec:llm-kiem-truc}
 
-\subsection{Từ cơ chế tự tập trung đến Transformer}
+\subsection{Từ cơ chế self-attention đến Transformer}
 
 Các mô hình ngôn ngữ lớn (LLM) thế hệ gần đây dựa trên kiến trúc
 Transformer với cơ chế self-attention, cho phép mỗi token
@@ -84,13 +84,27 @@ chương sau có thể tham chiếu các mô hình mã nguồn mở có tầng M
 được dùng trong thực nghiệm) hoặc phân tích ở mức tương quan, không
 bắt buộc mọi cấu hình đều dùng MoE.
 
-\section{Chiến lược tinh chỉnh mô hình}\label{sec:fine-tuning}
+\section{Chiến lược huấn luyện mô hình}\label{sec:fine-tuning}
 
 Mục này dùng thuật ngữ \textit{fine-tuning} theo tài liệu quốc tế để chỉ
-quá trình điều chỉnh mô hình ngôn ngữ đã tiền huấn luyện trên tập
-dữ liệu tác vụ.
+quá trình điều chỉnh mô hình ngôn ngữ đã tiền huấn luyện trên tập dữ liệu
+tác vụ. Hai hướng tiếp cận chính được trình bày: tinh chỉnh có giám sát
+(Supervised Fine-tuning, SFT) phù hợp khi có dữ liệu cặp câu lệnh--đáp
+án chất lượng cao, và học tăng cường từ phản hồi (Reinforcement Learning
+from Feedback, RL/RLHF) phù hợp khi muốn tối ưu hóa theo tín hiệu thưởng
+đo được mà không cần nhãn tường minh cho từng câu trả lời.
 
-\subsection{Giới hạn tinh chỉnh toàn bộ tham số và vai trò của PEFT}
+\subsection{Học có giám sát (Supervised Fine-tuning)}\label{subsec:sft}
+
+Tinh chỉnh có giám sát (SFT) điều chỉnh mô hình dựa trên tập dữ liệu
+gồm các cặp đầu vào--đầu ra có nhãn: với mỗi mẫu $(x, y^*)$, mô hình
+cực đại hóa log-likelihood sinh ra $y^*$ từ $x$. Đây là bước nền tảng
+giúp mô hình tiền huấn luyện thích nghi với phong cách và định dạng
+đặc thù của tác vụ --- trong trường hợp luận văn là bài đăng marketing
+F\&B tiếng Việt trên Facebook với tông giọng gần gũi, cấu trúc rõ ràng,
+và lời kêu gọi hành động cụ thể.
+
+\subsubsection{Giới hạn tinh chỉnh toàn bộ tham số và vai trò của PEFT}
 
 Khi tài nguyên hạn chế, việc huấn luyện lại toàn bộ tham số LLM
 thường không khả thi. Các kỹ thuật tinh chỉnh hiệu quả tham
@@ -101,7 +115,7 @@ luyện. Điều này phù hợp bài toán định hướng phong cách marketi
 (tông giọng, cấu trúc câu, ràng buộc từ vựng) từ một tập mẫu hữu
 hạn, thay vì mô hình hoá lại toàn bộ thống kê ngôn ngữ.
 
-\subsection{LoRA và QLoRA}
+\subsubsection{LoRA và QLoRA}
 
 Low-Rank Adaptation (LoRA) bổ sung cập nhật có hạng thấp lên
 một tầng tuyến tính đã cố định trọng số trước. Với ma trận trọng số
@@ -122,7 +136,7 @@ marketing từ prompt có cấu trúc ổn định đặc biệt hưởng lợi 
 QLoRA kết hợp lượng tử hoá mô hình cơ sở ở dạng độ chính xác
 thấp (4-bit) khi tải/huấn luyện, đồng thời duy trì LoRA ở vài bit
 cao hơn cho phép nhảy gradient, giúp giảm bộ nhớ vật lý tới mức
-huấn luyện trên thiết bị tầm trung -- phù hợp tình huống nghiên cứu
+huấn luyện trên thiết bị tầm trung --- phù hợp tình huống nghiên cứu
 thực tế có một GPU. Luận văn ưu tiên trình bày bản chất toán--kỹ
 thuật: hạng thấp thay thế cập nhật đầy đủ, và lượng tử khi cần tối
 ưu tài nguyên, thay vì mô tả từng công cụ phần mềm cụ thể.
@@ -135,28 +149,54 @@ thuật: hạng thấp thay thế cập nhật đầy đủ, và lượng tử k
     \label{fig:lora}
 \end{figure}
 
-\subsection{Group Relative Policy Optimization (GRPO)}
+\subsection{Học tăng cường (Reinforcement Learning)}\label{subsec:rl}
 
-Ngoài tinh chỉnh có giám sát theo cặp câu lệnh--đáp án, một hướng
-khác là tối ưu theo tín hiệu thưởng (ví dụ: độ tương thích
-nội dung, độ ``chuẩn'' marketing) để hướng mô hình tới cách tạo văn
-mang phong cách đề tài cần. Các cách dựa PPO, RLHF thường cần một
-reward model tách biệt huấn luyện trước, phát sinh chi phí cỡ
-bậc tương tự mô hình chính.
+Khi dữ liệu có nhãn khan hiếm hoặc tín hiệu chất lượng khó đo
+bằng nhãn tường minh --- chẳng hạn ``phong cách marketing đúng chất
+F\&B'' --- học tăng cường (RL) cho phép tối ưu mô hình trực tiếp theo
+hàm thưởng đo được. Thay vì học từ câu trả lời mẫu đúng, mô hình
+nhận tín hiệu thưởng sau mỗi đầu ra và cập nhật tham số để tối đa hóa
+thưởng kỳ vọng. Trong ngữ cảnh tạo nội dung, hàm thưởng có thể là điểm
+Faithfulness, Expansion, hoặc Vibe từ pipeline đánh giá đa lớp (xem
+Mục~\ref{sec:eval-metrics}), đưa tín hiệu tự động này trực tiếp vào
+vòng huấn luyện mà không cần người gán nhãn tường minh cho từng bài.
 
-Group Relative Policy Optimization (GRPO) tối ưu theo
-chênh lệch thưởng tương đối trong từng nhóm mẫu sinh (cùng
-bối cảnh, nhiều ứng viên đầu ra), thay vì ước lượng giá trị tuyệt
-đối ổn định trên từng bước. Trực giác: khi cần so sánh bốn mẫu nội
-dung bài viết từ cùng một lời nhắc, dễ hơn khi bảo mô hình học
-ưu thế của ứng viên tốt so với các ứng viên tệ trong cùng lô
-hơn là gắn một số thưởng tuyệt đối chính xác. Cơ chế này giảm
-phụ thuộc vận hành vào reward model cỡ lớn, phù hợp
-phạm vi luận văn tập trung định hình phong cách và
-hành vi của Agent mà vẫn an toàn về tài nguyên. Chi
-tiết thuật toán, siêu tham số, và tích hợp thực nghiệm được
-trình bày gọn ở Chương \ref{chap:thuc-nghiem} kèm cấu hình
-huấn luyện/đối sánh theo từng mô hình mã nguồn mở.
+\subsubsection{Group Relative Policy Optimization (GRPO)}
+
+Các phương pháp dựa trên PPO và RLHF truyền thống thường cần một reward
+model tách biệt huấn luyện trước, phát sinh chi phí cỡ bậc tương tự mô
+hình chính. Group Relative Policy Optimization (GRPO) giải quyết vấn đề
+này bằng cách tối ưu theo chênh lệch thưởng \emph{tương đối} trong từng
+nhóm mẫu sinh (cùng bối cảnh, nhiều ứng viên đầu ra), thay vì ước lượng
+giá trị tuyệt đối ổn định trên từng bước.
+
+Trực giác: khi cần so sánh bốn mẫu nội dung bài viết từ cùng một lời
+nhắc, dễ hơn khi bảo mô hình học ưu thế của ứng viên tốt so với các
+ứng viên tệ trong cùng lô hơn là gắn một số thưởng tuyệt đối chính xác.
+Cụ thể, với mỗi lời nhắc $q$, mô hình sinh nhóm $G$ ứng viên
+$\{a_1,\ldots,a_G\}$; mỗi ứng viên nhận phần thưởng $r_i$ từ hàm thưởng
+rồi được chuẩn hóa thành lợi thế tương đối:
+\begin{equation}
+    \hat{A}_i = \frac{r_i - \mathrm{mean}(r)}{\mathrm{std}(r)}.
+\end{equation}
+Chính sách $\pi_\theta$ được cập nhật để tăng xác suất sinh ứng viên có
+$\hat{A}_i > 0$ và giảm xác suất sinh ứng viên có $\hat{A}_i < 0$, đồng
+thời có thêm ràng buộc KL-divergence so với chính sách tham chiếu
+$\pi_{\mathrm{ref}}$ để tránh phân kỳ quá xa. Cơ chế này giảm phụ thuộc
+vận hành vào reward model cỡ lớn, phù hợp phạm vi luận văn tập trung
+định hình phong cách và hành vi của Agent mà vẫn an toàn về tài nguyên.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.82\textwidth]{images/GRPO.png}
+    \caption{Minh họa cơ chế GRPO: với mỗi câu hỏi $q$, mô hình
+    tham chiếu $\pi_{\mathrm{ref}}$ sinh nhóm $G$ ứng viên đầu ra
+    $\{a_1,\ldots,a_G\}$; mỗi ứng viên nhận phần thưởng $r_i$ rồi
+    được chuẩn hóa thành lợi thế tương đối
+    $\hat{A}_i = \frac{r_i - \mathrm{mean}(r)}{\mathrm{std}(r)}$
+    để cập nhật chính sách $\pi_\theta$.}
+    \label{fig:grpo}
+\end{figure}
 
 \subsection{Khung huấn luyện thực tế}
 
@@ -244,89 +284,117 @@ thể (module, tham số, tương quan với
 
 \subsection{Quy tắc cứng (Rule-based)}
 
-Các bộ lọc theo từ vựng, mẫu, hoặc biểu thức
-(regular expression) dùng để loại tức thì các
-bài vi phạm danh sách từ cấm (hình ảnh
-không phù hợp, cạnh tranh, danh từ cần tránh theo
-chính sách thương hiệu). Tầng thực thể
-(entities): kiểm tra tên món, giá, chương trình
-khuyến mãi có nằm trong tập sự kiện/tài
-liệu nội bộ mà bài cần nhắc tới, hoặc
-có tên quán, địa điểm trùng với
-dữ liệu đã chuẩn hoá. Tầng
-cấu trúc phổ biến trên
-mạng xã hội: Hook (câu
-khai thác chú ý) -- Body
-(phần thân thuyết phục, mô tả) --
-CTA (kêu gọi hành động, ví
-dụ đặt bàn, dùng mã, ghé quán) có
-thể mô tả bằng tập mẫu cấu trúc
-hoặc bộ kiểm tra thứ tự đoạn;
-những khoảng còn thiếu tạo
-cảnh báo trước khi tới các lớp
-mềm hơn.
+Các bộ lọc dựa trên từ vựng và biểu thức chính quy
+dùng để phát hiện vi phạm hoặc đo lường các tín
+hiệu đặc trưng mà không cần gọi LLM, giảm chi phí và
+tăng tốc độ đánh giá.
 
-\subsection{Chỉ số xác suất: perplexity từ logprobs}
+\textbf{Trích xuất thực thể (entity extraction).}
+Với nội dung F\&B, năm nhóm thực thể được trích từ
+nội dung mồi bằng biểu thức chính quy:
+(i)~\emph{giá tiền} (số kèm đơn vị VNĐ/đồng/đ/\%);
+(ii)~\emph{thông số kỹ thuật} (số kèm ml/g/kcal);
+(iii)~\emph{combo/set/deal} (ví dụ ``combo 2 người'',
+``3 ly''); (iv)~\emph{chuỗi trích dẫn} (nội dung trong
+nháy kép); (v)~\emph{tên sản phẩm/thương hiệu} theo
+mẫu ``tên: ...'', ``món: ...''. Điểm rule-based
+Faithfulness là tỉ lệ thực thể từ seed xuất hiện trong
+output.
 
-Khi mô hình cung cấp xác suất theo từng bước
-(log-probability) cho các token đã sinh, có
-thể ước lượng perplexity (PPL) là thước
-đo trung bình ``mức bất ngờ'' của mô hình
-trước văn bản, thường dùng để so sánh tương
-đối giữa hai phiên bản mô hình cùng một
-bài. Với dãy token $x_1,\ldots,x_N$:
+\textbf{Đánh giá mở rộng nội dung (ContentExpansionRule).}
+Thành phần rule của lớp Expansion đo ba tín hiệu:
+(i)~\emph{tỉ lệ độ dài} $s_{\text{len}}$ ánh xạ tầng
+theo $r = |output|/|seed|$ ($r \geq 2{,}5 \to 1{,}0$;
+$r \geq 1{,}5 \to 0{,}7$; $r \geq 1{,}0 \to 0{,}4$;
+còn lại $0{,}1$); (ii)~\emph{ngôn ngữ lợi ích}
+$s_{\text{ben}} = \min(1,\,n_{\text{ben}}/3)$ (tần
+suất từ khóa như ``giúp'', ``tận hưởng'', ``phù hợp'');
+(iii)~\emph{ngữ cảnh sử dụng} $s_{\text{ctx}} =
+\min(1,\,n_{\text{ctx}}/2)$ (từ khóa thời điểm/dịp
+như ``buổi sáng'', ``cùng gia đình''). Ba tín hiệu
+kết hợp theo trọng số:
+$s_{\text{rule}} = 0{,}4\,s_{\text{len}} +
+0{,}35\,s_{\text{ben}} + 0{,}25\,s_{\text{ctx}}$.
+
+\textbf{Cấu trúc Facebook (FbStructureRule).}
+Bốn tín hiệu cấu trúc được đo tự động:
+(i)~tỉ lệ đoạn ngắn ($\leq 320$ ký tự)
+$\geq 0{,}6$; (ii)~độ dài đoạn trung bình $\leq 280$
+ký tự; (iii)~có danh sách gạch đầu dòng;
+(iv)~có dòng kêu gọi hành động tường minh
+(``comment'', ``inbox'', ``đặt lịch''). Điểm
+$s_{\text{fb}}$ là tổng có trọng số của bốn tín
+hiệu này.
+
+\textbf{Quy tắc phạt (VibePenaltyRule).}
+Bốn loại lỗi phong cách gây trừ điểm trực tiếp:
+(i)~ngôn ngữ phóng đại (``đỉnh cao'', ``vô đối'',
+``số 1 Việt Nam'' --- phạt $0{,}10$ nếu $\geq 2$
+lần); (ii)~câu mở kiểu AI (``Trong bối cảnh\ldots'',
+``Hãy cùng khám phá\ldots'' --- phạt $0{,}08$);
+(iii)~mật độ emoji quá cao ($>1$ emoji/40 ký tự ---
+phạt $0{,}05$); (iv)~bullet list rập khuôn ($\geq 4$
+dòng, $\leq 2$ từ đầu dòng khác nhau --- phạt
+$0{,}05$). Tổng điểm phạt $p$ được trừ trực tiếp
+khỏi điểm Vibe tổng hợp.
+
+\subsection{G-Eval và đánh giá đa chiều bằng LLM (LLM-as-a-Judge)}
+
+G-Eval đề xuất dùng chính LLM làm thẩm phán: cung cấp
+rubric (tiêu chí, thang điểm) kèm Chain-of-Thought ngắn
+để gán điểm chất lượng. Luận văn tích hợp G-Eval từ thư
+viện DeepEval cho lớp Faithfulness và Expansion, mỗi lớp
+có tiêu chí đặc thù (xem Chương~\ref{chap:thuc-nghiem}).
+
+\textbf{Rubric Vibe 5 chiều cho Facebook F\&B tiếng Việt.}
+Lớp Marketing Vibe sử dụng LLM judge với rubric đa chiều
+thay vì GEval tiêu chuẩn, vì cần 5 điểm độc lập với
+trọng số khác nhau. Năm chiều D1--D5 phản ánh yêu cầu
+đặc thù của nội dung Facebook F\&B tại Việt Nam:
+
+\begin{itemize}
+  \item \textbf{D1 --- Giọng thật} ($w = 0{,}25$): giọng
+    trực tiếp, gần gũi, không brand-speak hoặc AI
+    template. Chấp nhận cả giọng vận hành F\&B lẫn
+    giọng chủ quán.
+  \item \textbf{D2 --- Neo thực tế kinh doanh} ($w =
+    0{,}15$): bài neo vào thực tế F\&B qua giá cụ thể,
+    deal/combo, \% giảm, thời hạn, hoặc KPI. Price
+    anchoring là đủ.
+  \item \textbf{D3 --- Thuyết phục bằng cụ thể} ($w =
+    0{,}25$): thuyết phục dựa trên số liệu và deal cụ
+    thể, không hype chung chung.
+  \item \textbf{D4 --- Chất lượng CTA} ($w = 0{,}20$):
+    CTA cụ thể có token hành động (``Comment FRANCHISE'',
+    ``Inbox COMBO89''), phù hợp đối tượng, dễ thực hiện.
+  \item \textbf{D5 --- Nhịp Facebook tự nhiên} ($w =
+    0{,}15$): đoạn ngắn, code-switching Việt--Anh tự
+    nhiên, không có AI essay tone.
+\end{itemize}
+
+Mỗi chiều chấm thang nguyên $0$--$4$; điểm LLM tổng
+hợp $s_{\text{llm}} = \sum_{k} w_k \cdot d_k / 4$.
+Rubric đặt ràng buộc: bài F\&B chất lượng tốt (có giá,
+deal, CTA rõ, nhịp tự nhiên) phải đạt $3$--$4$ ở mỗi
+chiều; không trừ điểm vì bài ``không hoàn hảo'' theo
+nghĩa văn học.
+
+Điểm Vibe tổng hợp kết hợp judge LLM, cấu trúc
+Facebook và điểm phạt:
 \begin{equation}
-    \mathrm{PPL}
-    = \exp\!\left(
-    -\frac{1}{N}
-    \sum_{i=1}^{N}
-    \log p_\theta(
-    x_i \mid
-    x_{<i}
-    ) \right).
+  \text{Vibe} = \max\!\Bigl(0,\,\min\!\Bigl(1,\;
+  0{,}85\,s_{\text{llm}} + 0{,}15\,s_{\text{fb}}
+  - p\Bigr)\Bigr),
+  \label{eq:vibe-theory}
 \end{equation}
-PPL thấp hơn không đồng nghĩa
-``marketing tốt hơn''; tuy nhiên chỉ
-số hữu dụng khi kết hợp với tiêu
-chí tác vụ (chất lượng nội dung)
-để phát hiện đoạn rỗng, lặp, hoặc
-lệch phân phối so với tập chuẩn.
-Trong khuôn khổ luận văn, lớp này
-đóng vai trò tín hiệu bổ trợ, không
-thay thế toàn bộ thẩm định nội
-dung.
+trong đó $s_{\text{fb}}$ là điểm cấu trúc Facebook
+(FbStructureRule) và $p$ là tổng điểm phạt
+(VibePenaltyRule).
 
-\subsection{G-Eval và mô phỏng Persona bằng LLM (LLM-as-a-Judge)}
-
-G-Eval đề xuất dùng chính LLM làm
-thẩm phán: cung cấp rubric (các
-tiêu chí, thang điểm) và câu lệnh
-có cấu trúc, có thể kèm
-Chain-of-Thought ngắn, để gán điểm
-chất lượng (ví dụ: sát bối cảnh, kịch
-tính, mức độ ``chuẩn marketing'').
-Trong bối cảnh nghiên cứu, hướng
-tương tự có thể tích hợp thư
-viện đánh giá tự động (ví dụ
-DeepEval) với một judge mạnh
-hơn mô hình sinh cục bộ, đồng
-bộ bộ metric nghiệp vụ (ví
-dụ Faithfulness, Expansion, bản
-mô tả ``Marketing Vibe'' nếu
-cấu hình) với từng bài sinh. Ngoài rubric tổng
-hợp, có thể thiết kế persona khách
-hàng (bối cảnh F\&B, độ tuổi, khu vực) để
-đặt câu hỏi dạng ``bài này có thu hút
-bạn không?'' rồi chuẩn hóa điểm, bổ
-sung góc thực tế bên cạnh các tiêu chí
-kỹ thuật.
-
-Quy trình kết hợp các lớp đánh giá và số
-hóa kết quả (ghi theo lô chạy và theo mô
-hình) được làm rõ trong Chương
-\ref{chap:thuc-nghiem}, đồng thời hỗ trợ
-phân tích tương quan với điểm của
-chuyên gia khi có dữ liệu khảo sát.
+Quy trình kết hợp các lớp đánh giá và số hóa kết quả
+được trình bày cụ thể tại Chương~\ref{chap:thuc-nghiem},
+cùng với kiểm định tương quan giữa điểm tự động và đánh
+giá của chuyên gia.
 
 \section{Tác nhân (Agent) dựa trên mô hình ngôn ngữ lớn}\label{sec:agent}
 
@@ -433,7 +501,7 @@ thiết để đưa tác nhân dựa trên LLM vào sử dụng thực tế ở
 mức tổng quan; lựa chọn công nghệ cụ thể được trình bày ở
 Chương \ref{chap:thuc-nghiem}.
 
-\subsection{Tách bất đồng bộ tác vụ LLM}
+\subsection{Kiến trúc bất đồng bộ cho tác vụ LLM}
 
 Một lượt sinh nội dung marketing có thể yêu cầu nhiều
 lượt gọi LLM kèm một lượt sinh ảnh, tổng thời gian thường

@@ -52,8 +52,8 @@ Các mục tiêu cụ thể của hệ thống bao gồm:
   thay vì chỉ dựa trên LLM tổng quát.
 
 \item
-  \textbf{Nghiên cứu kỹ thuật tinh chỉnh mô hình (LoRA, GRPO):} Áp dụng
-  các phương pháp fine-tuning hiệu quả nhằm định hình phong cách
+  \textbf{Nghiên cứu kỹ thuật tinh chỉnh mô hình:} Áp dụng
+  hai phương pháp tinh chỉnh chính là học có giám sát (Supervised Fine-Tuning) và học tăng cường (Reinforcement Learning) nhằm định hình phong cách
   marketing và hành vi sinh nội dung phù hợp với đặc thù ngành F\&B và
   thị trường Việt Nam.
 
@@ -81,13 +81,11 @@ Các mục tiêu cụ thể của hệ thống bao gồm:
 mục tiêu là chủ quán, người quản lý hoặc nhân sự phụ trách marketing.
 
 \textbf{Phạm vi nội dung và kênh:} Đề tài \textbf{tập trung vào nội dung
-marketing trên Facebook} (Facebook Page, bài đăng, hình ảnh và
-video/Reels trên Facebook). Các nền tảng khác không thuộc phạm vi đề tài
+marketing trên Facebook} (Facebook Page, bài đăng và hình ảnh). Các nền tảng khác không thuộc phạm vi đề tài
 nhằm thống nhất đánh giá và triển khai thực nghiệm.
 
 \textbf{Phạm vi kỹ thuật:} Mô hình ngôn ngữ mã nguồn mở; tinh chỉnh
-(LoRA/GRPO); cơ chế truy xuất tri thức (RAG) phục vụ brand voice và
-menu; pipeline đánh giá chất lượng nội dung.
+(SFT/RL); cơ chế truy xuất tri thức (RAG) phục vụ truy xuất thông tin thương hiệu; pipeline đánh giá chất lượng nội dung.
 
 \section{Phương pháp nghiên cứu}\label{sec:phuong-phap}
 
@@ -101,14 +99,12 @@ Phương pháp nghiên cứu gồm ba nhóm hoạt động chính:
 
 \item
   \textbf{Tinh chỉnh mô hình mã nguồn mở:} Huấn luyện bổ sung trên dữ
-  liệu và mục tiêu của đề tài (fine-tuning với LoRA/GRPO), sử dụng mô
-  hình có thể tái lập được trong nghiên cứu.
+  liệu và mục tiêu của đề tài (fine-tuning với SFT/RL), sử dụng mô
+  hình mã nguồn mở có thể tái hiện được trong nghiên cứu.
 
 \item
   \textbf{Kiểm định chất lượng:} Đánh giá độ tin cậy và chất lượng đầu
-  ra của hệ thống thông qua pipeline đánh giá đa lớp (multi-layered
-  evaluation): kết hợp quy tắc cứng, chỉ số xác suất (perplexity từ
-  logprobs) và đánh giá định tính (LLM-as-a-Judge, G-Eval).
+  ra của hệ thống thông qua pipeline đánh giá đa lớp: kết hợp quy tắc cứng và đánh giá định tính (LLM-as-a-Judge, G-Eval).
 \end{enumerate}
 
 \section{Thách thức và phương pháp tiếp cận}\label{sec:thach-thuc}
@@ -166,7 +162,7 @@ Phương pháp nghiên cứu gồm ba nhóm hoạt động chính:
     LLM đóng vai trò cốt lõi trong việc hiểu ngữ cảnh F\&B và chuyển
     hóa dữ liệu thương hiệu thành các ý tưởng bài viết có cấu trúc.
   \item
-    Áp dụng kỹ thuật Prompt Engineering kết hợp fine-tuning để định hình
+    Áp dụng kỹ thuật prompt engineering kết hợp fine-tuning để định hình
     phong cách marketing chuyên nghiệp, phù hợp từng thương hiệu.
   \end{itemize}
 

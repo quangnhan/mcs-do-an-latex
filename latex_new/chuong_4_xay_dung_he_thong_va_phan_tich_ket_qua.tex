@@ -1,11 +1,12 @@
 \chapter{Xây dựng hệ thống Marketing Agent và phân tích kết quả thực nghiệm}\label{chap:thuc-nghiem}
 
 Chương này trình bày toàn bộ quá trình xây dựng và thực nghiệm hệ thống:
-thiết kế kiến trúc và cơ sở dữ liệu, hiện thực hóa các thành phần
-Agent bằng LangGraph, pipeline đánh giá chất lượng đa lớp, kết quả so
-sánh các mô hình ngôn ngữ mã nguồn mở, và kiểm định tương quan giữa điểm
-tự động với đánh giá từ con người. Mọi thực nghiệm tập trung vào nền tảng
-\textbf{Facebook} với dữ liệu thực tế từ các SME ngành F\&B tại Việt Nam.
+thiết kế kiến trúc và cơ sở dữ liệu, hiện thực hóa các thành phần Agent
+bằng LangGraph, thiết lập các thực nghiệm fine-tuning SFT và học tăng cường
+GRPO trên dữ liệu F\&B thực tế, khung đánh giá chất lượng đa lớp, và kết
+quả so sánh các phương pháp tinh chỉnh. Mọi thực nghiệm tập trung vào nền
+tảng \textbf{Facebook} với dữ liệu thực tế từ các SME ngành F\&B tại Việt
+Nam.
 
 \section{Thiết kế kiến trúc hệ thống}\label{sec:kien-truc}
 
@@ -14,6 +15,13 @@ tự động với đánh giá từ con người. Mọi thực nghiệm tập tr
 Hệ thống được thiết kế theo mô hình \textbf{đa tác nhân} (multi-agent)
 với các thành phần tách biệt rõ trách nhiệm, giao tiếp qua message queue
 để đảm bảo khả năng mở rộng theo chiều ngang. Các dịch vụ cốt lõi gồm:
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{images/system_architecture.png}
+  \caption{Kiến trúc tổng quan hệ thống Marketing Agent}
+  \label{fig:system-architecture}
+\end{figure}
 
 \begin{itemize}
   \item \textbf{Orchestrator API}: Dịch vụ FastAPI xử lý xác thực JWT,
@@ -162,19 +170,27 @@ tóm tắt các chuyển trạng thái hợp lệ.
 
 \begin{table}[htbp]
   \centering
+  \small
   \caption{Chuyển trạng thái hội thoại trong CampaignAgent.}
   \label{tab:campaign-states}
+  \resizebox{\textwidth}{!}{%
   \begin{tabular}{llll}
     \toprule
-    \textbf{Trạng thái hiện tại} & \textbf{Intent nhận được} & \textbf{Trạng thái tiếp theo} & \textbf{Hành động} \\
+    \textbf{Trạng thái hiện tại} & \textbf{Intent nhận được}
+      & \textbf{Trạng thái tiếp theo} & \textbf{Hành động} \\
     \midrule
-    \texttt{CHATTING}          & \texttt{REQUEST\_PLAN}  & \texttt{AWAITING\_APPROVAL} & Gọi ContentPlanningAgent \\
-    \texttt{AWAITING\_APPROVAL}& \texttt{APPROVE\_PLAN}  & \texttt{DONE}               & Gọi ContentAgent + ImageAgent \\
-    \texttt{AWAITING\_APPROVAL}& \texttt{REJECT\_PLAN}   & \texttt{CHATTING}           & Xóa kế hoạch pending \\
-    \texttt{AWAITING\_APPROVAL}& \texttt{CHAT}           & \texttt{AWAITING\_APPROVAL} & Nhắc lại kế hoạch chờ \\
-    \texttt{CHATTING}          & \texttt{CHAT}           & \texttt{CHATTING}           & Trả lời tự do \\
+    \texttt{CHATTING}           & \texttt{REQUEST\_PLAN}
+      & \texttt{AWAITING\_APPROVAL} & Gọi ContentPlanningAgent \\
+    \texttt{AWAITING\_APPROVAL} & \texttt{APPROVE\_PLAN}
+      & \texttt{DONE}               & Gọi ContentAgent + ImageAgent \\
+    \texttt{AWAITING\_APPROVAL} & \texttt{REJECT\_PLAN}
+      & \texttt{CHATTING}           & Xóa kế hoạch pending \\
+    \texttt{AWAITING\_APPROVAL} & \texttt{CHAT}
+      & \texttt{AWAITING\_APPROVAL} & Nhắc lại kế hoạch chờ \\
+    \texttt{CHATTING}           & \texttt{CHAT}
+      & \texttt{CHATTING}           & Trả lời tự do \\
     \bottomrule
-  \end{tabular}
+  \end{tabular}}
 \end{table}
 
 \textbf{Kiến trúc đồ thị LangGraph.} Đồ thị có ba node chính với
@@ -309,15 +325,219 @@ Hàm \texttt{get\_or\_create()} duy trì một dict trong bộ nhớ ánh xạ
 mang \texttt{thread\_id} riêng cho \texttt{MemorySaver}, đảm bảo các
 phiên làm việc độc lập về trạng thái hội thoại.
 
-\section{Pipeline đánh giá chất lượng đa lớp}\label{sec:pipeline-danh-gia}
+\section{Thực nghiệm fine-tuning SFT trên dữ liệu F\&B tiếng Việt}
+\label{sec:fine-tuning-result}
 
-Để đánh giá chất lượng nội dung sinh ra một cách có thể tự động hóa
-và có độ tin cậy cao, luận văn xây dựng pipeline đánh giá ba lớp độc
-lập dựa trên thư viện \textbf{DeepEval}. Mỗi lớp đo một chiều khác
-nhau của chất lượng bài viết marketing; điểm tổng hợp kết hợp tuyến
-tính kết quả từ cả ba lớp. Thực nghiệm sử dụng tập 100 trường hợp
-kiểm thử (\texttt{high\_quality\_mock\_cases\_100.json}) với phán quyết
-LLM từ GPT-4o-mini (Azure).
+\subsection{Thiết lập fine-tuning}
+
+Giai đoạn này tiến hành Supervised Fine-Tuning (SFT) trên hai kích
+thước tham số để đánh giá ảnh hưởng của quy mô đến hiệu quả học phong
+cách:
+
+\begin{itemize}
+  \item \textbf{\texttt{qwen3.5:2b} + SFT (QLoRA 16-bit)}: tinh chỉnh
+    có giám sát trên tập bài viết Facebook F\&B tiếng Việt đã kiểm
+    duyệt. Mô hình sau huấn luyện:
+    \texttt{qwen3.5-2b-facebook-content}.
+  \item \textbf{\texttt{qwen3.5:4b} + SFT (QLoRA 16-bit)}: cùng phương
+    pháp trên mô hình nền 4B tham số. Mô hình sau huấn luyện:
+    \texttt{qwen3.5-4b-facebook-content}.
+\end{itemize}
+
+Mục tiêu là định hình phong cách Facebook-native F\&B --- đặc biệt
+là giọng điệu, cách neo giá/deal, và cấu trúc CTA --- thứ mà các mô
+hình nền chưa nắm vững qua tiền huấn luyện đa mục đích. Cả hai mô hình
+sinh văn bản ở chế độ \emph{nothinking} (tắt chain-of-thought) để phù
+hợp tốc độ suy diễn trong môi trường sản xuất, nhiệt độ $T = 0{,}4$.
+
+\subsection{Tập dữ liệu đánh giá}
+
+Thực nghiệm sử dụng bộ kiểm thử F\&B thực tế\footnote{Tên tệp:
+\texttt{fnb\_dataset\_test.json}.}
+gồm 100 trường hợp ($n = 100$) thu thập từ nhà hàng tại Việt Nam. Mỗi trường hợp gồm \texttt{input\_title}, \texttt{seed\_content}
+(thông tin sản phẩm/menu với tên món, giá, combo đặc trưng ẩm thực
+tiếng Việt) và \texttt{actual\_output} do mô hình sinh. Tập dữ liệu này
+khác biệt với tập mock đa danh mục dùng trong calibration (xem
+Mục~\ref{sec:ket-qua}) ở chỗ phản ánh đặc thù từ vựng nhà hàng, đơn
+vị phần ăn, và văn phong thương hiệu địa phương.
+
+Judge: GPT-5.4, cùng
+pipeline đánh giá cập nhật mô tả ở Mục~\ref{sec:pipeline-danh-gia}.
+
+Kết quả so sánh đầy đủ được trình bày trong Mục~\ref{sec:tong-ket-thuc-nghiem}.
+
+\section{Thực nghiệm học tăng cường với GRPO}
+\label{sec:grpo-result}
+
+\subsection{Động lực và tổng quan phương pháp}
+
+Bên cạnh SFT, học tăng cường (Reinforcement Learning) cung cấp hướng
+tiếp cận bổ sung: thay vì học từ nhãn kiểm duyệt, mô hình học trực
+tiếp từ \emph{tín hiệu tương tác thực tế} --- lượt thích, bình luận,
+chia sẻ --- của các bài đăng Facebook hiện có. Phương pháp GRPO
+(Group Relative Policy Optimization) được chọn vì (i)~không cần
+huấn luyện reward model riêng biệt, (ii)~không cần critic/value model
+như PPO, và (iii)~tương thích với hàm reward rule-based, tiết kiệm tài
+nguyên phù hợp với bối cảnh SME.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.82\textwidth]{images/GRPO}
+  \caption{Vòng lặp huấn luyện GRPO. Từ mỗi prompt, policy sinh $G$
+    completions; hàm reward chấm điểm từng completion; advantage được
+    chuẩn hóa trong nhóm (group normalization); policy cập nhật với
+    ràng buộc KL so với reference policy.}
+  \label{fig:grpo-train}
+\end{figure}
+
+Advantage của completion $i$ trong nhóm $G$:
+
+\begin{equation}
+  A_i = \frac{r_i - \bar{r}}{\sigma_r + \varepsilon}, \quad
+  \bar{r} = \frac{1}{G}\sum_{j=1}^{G} r_j, \quad
+  \sigma_r = \sqrt{\frac{1}{G}\sum_{j=1}^{G}(r_j - \bar{r})^2}
+  \label{eq:grpo-advantage}
+\end{equation}
+
+Hàm mất mát GRPO kết hợp ràng buộc KL so với reference policy
+$\pi_{\text{ref}}$:
+
+\begin{equation}
+  \mathcal{L}_{\text{GRPO}}
+    = -\frac{1}{G}\sum_{i=1}^{G} A_i \log \pi_\theta(y_i \mid x)
+    + \beta \cdot D_{\text{KL}}\!\bigl(\pi_\theta \,\|\, \pi_{\text{ref}}\bigr)
+  \label{eq:grpo-loss}
+\end{equation}
+
+với $\beta = 0{,}04$ là hệ số phạt KL ngăn policy lệch quá xa khỏi
+mô hình nền ban đầu.
+
+\subsection{Tập dữ liệu Dining Review}
+
+Dữ liệu huấn luyện gồm 500 bài đăng thực thu thập từ cộng đồng
+\emph{Dining Review} (Facebook) --- các bài viết review nhà hàng,
+quán ăn tại Việt Nam bằng tiếng Việt. Mỗi bản ghi có 11 cột:
+\texttt{text} (nội dung) và 10 chỉ số tương tác gồm
+\texttt{likesCount}, \texttt{commentsCount}, \texttt{sharesCount},
+và bảy loại reaction (like, love, haha, care, wow, angry, sad).
+
+\textbf{Điểm engagement tổng hợp.} Từ các chỉ số tương tác, một
+điểm proxy được xây dựng theo công thức trọng số:
+
+\begin{equation}
+  e_{\text{raw}} = L + 0{,}5C + 1{,}5S
+    + R_{\text{like}} + 1{,}2\,R_{\text{love}}
+    + 0{,}8\,(R_{\text{haha}} + R_{\text{care}} + R_{\text{wow}})
+    - 0{,}5\,R_{\text{angry}} - 0{,}3\,R_{\text{sad}}
+  \label{eq:engage-raw}
+\end{equation}
+
+\begin{equation}
+  e = \ln\!\bigl(1 + \max(e_{\text{raw}},\, 0)\bigr)
+  \label{eq:engage-log}
+\end{equation}
+
+trong đó $L$, $C$, $S$ lần lượt là lượt thích, bình luận, chia sẻ.
+Trọng số cao hơn cho share ($1{,}5\times$) phản ánh cam kết sâu hơn;
+hàm logarithm nén phân phối lệch phải của engagement. Tập train
+dùng 256 mẫu, tập eval dùng 32 mẫu, lấy ngẫu nhiên từ 500 bài.
+
+\textbf{Chiến lược Prefix Completion.} Dataset không có cặp
+prompt--response rõ ràng. Giải pháp: câu đầu tiên của mỗi bài thực
+đóng vai trò \emph{state/prompt}, phần còn lại do model sinh ra và
+được hàm reward chấm điểm. Model học cách hoàn thiện bài post sao
+cho các tín hiệu hình thức tương quan với engagement cao trong dataset.
+
+\subsection{Hàm reward rule-based}
+
+Hàm reward được thiết kế dựa trên phân tích tương quan giữa đặc trưng
+hình thức và điểm engagement trong tập Dining Review. Năm thành phần
+được mô tả trong Bảng~\ref{tab:reward-fn}.
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \caption{Năm thành phần hàm reward rule-based và điểm số tương ứng.}
+  \label{tab:reward-fn}
+  \begin{tabular}{p{0.22\textwidth}cp{0.50\textwidth}}
+    \toprule
+    \textbf{Thành phần} & \textbf{Điểm} & \textbf{Điều kiện} \\
+    \midrule
+    \multirow{3}{*}{Độ dài}
+      & $+1{,}0$ & $150 \leq |y| \leq 1\,000$ ký tự \\
+      & $-2{,}0$ & $|y| < 30$ ký tự \\
+      & $-0{,}5$ & $|y| > 2\,000$ ký tự \\
+    \midrule
+    Emoji
+      & $+\min(0{,}15k,\; 0{,}6)$ & $k$: số emoji --- tương quan dương
+        với likes và reactions trong dataset \\
+    \midrule
+    \multirow{2}{*}{CTA / câu hỏi}
+      & $+0{,}4$ & Từ khoá gọi hành động (bình luận, chia sẻ, đặt bàn,
+        inbox, liên hệ\ldots) \\
+      & $+0{,}3$ & Có dấu hỏi (\texttt{?}) \\
+    \midrule
+    Kết thúc hoàn chỉnh
+      & $+0{,}2$ & Ký tự cuối là dấu kết thúc
+        (\texttt{.}, \texttt{!}, \texttt{?}, \texttt{…}) \\
+    \midrule
+    Tiếng Việt
+      & $+0{,}3$ & $\geq 6$ ký tự có dấu --- đảm bảo model không
+        sinh tiếng Anh \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Cấu hình huấn luyện}
+
+\texttt{Qwen3.5-2B} được chọn làm policy để giữ nhất quán với cấu
+hình SFT, cho phép so sánh trực tiếp hiệu quả hai phương pháp trên
+cùng mô hình nền. Bảng~\ref{tab:grpo-config} tóm tắt siêu tham số.
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \caption{Siêu tham số huấn luyện GRPO.}
+  \label{tab:grpo-config}
+  \begin{tabular}{ll}
+    \toprule
+    \textbf{Tham số} & \textbf{Giá trị} \\
+    \midrule
+    Mô hình nền & \texttt{Qwen/Qwen3.5-2B} \\
+    Quantization & QLoRA 16-bit (NF4, double quant, bf16 compute) \\
+    LoRA & $r=16$, $\alpha=32$, dropout $=0$;
+           7 module (q/k/v/o proj, gate/up/down proj) \\
+    Tham số có thể huấn luyện & $10{,}9$M / $1{,}89$B ($0{,}58\%$) \\
+    \midrule
+    Số completions mỗi prompt ($G$) & 4 \\
+    Độ dài completion tối đa & 256 token \\
+    Nhiệt độ sinh ($T$) & $0{,}7$ \\
+    Hệ số KL penalty ($\beta$) & $0{,}04$ \\
+    \midrule
+    Epochs & 1 \\
+    Batch size / gradient accumulation & 1 / 4 (effective batch = 4) \\
+    Learning rate & $3 \times 10^{-6}$ \\
+    Số mẫu train / eval & 256 / 32 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Kết quả đánh giá trên tập F\&B thực tế được trình bày cùng kết quả
+SFT trong Bảng~\ref{tab:final-comparison}
+(Mục~\ref{sec:tong-ket-thuc-nghiem}).
+
+\section{Khung đánh giá chất lượng đa lớp}\label{sec:pipeline-danh-gia}
+
+Để đánh giá chất lượng nội dung sinh ra một cách tự động hóa và có độ
+tin cậy cao, luận văn xây dựng pipeline đánh giá ba lớp độc lập dựa
+trên thư viện \textbf{DeepEval}. Mỗi lớp đo một chiều khác nhau của
+chất lượng bài viết marketing; điểm tổng hợp kết hợp tuyến tính kết
+quả từ cả ba lớp. Pipeline được hiện thực trong module
+\texttt{evaluation/metrics.py} với kiến trúc thống nhất: mỗi
+evaluator kết hợp một thành phần rule-based (nhanh, xác định) và một
+thành phần LLM judge (ngữ nghĩa sâu hơn) qua lớp \texttt{JudgeLLM}
+bọc OpenAI/AzureOpenAI client thành giao diện tương thích
+\texttt{DeepEvalBaseLLM}.
 
 \subsection{Lớp 1 --- Faithfulness: Kiểm tra tuân thủ thực thể}
 \label{subsec:faithfulness}
@@ -331,28 +551,36 @@ tên sản phẩm, thông số). Điểm tổng hợp:
   \label{eq:faithfulness}
 \end{equation}
 
-\textbf{Thành phần quy tắc} ($s_{\text{rule}}$): hàm
-\texttt{entity\_presence\_score()} trích xuất thực thể từ seed theo
-biểu thức chính quy, gồm ba loại: giá tiền (VNĐ, đ, triệu), thông số
-kỹ thuật (kg, ml, \%), chuỗi trong ngoặc kép. Điểm bằng tỉ lệ thực
-thể xuất hiện trong đầu ra:
+\textbf{Thành phần quy tắc} ($s_{\text{rule}}$): lớp
+\texttt{EntityPresenceRule} trích xuất năm nhóm thực thể từ seed
+bằng biểu thức chính quy: giá tiền (VNĐ/đ/k/triệu/\%), thông số kỹ
+thuật (ml/g/kg/kcal), combo/set/deal, chuỗi trích dẫn, và tên sản
+phẩm/thương hiệu. Điểm là tỉ lệ thực thể xuất hiện trong đầu ra:
 
-\begin{lstlisting}[language=Python, caption={Trích xuất thực thể cho điểm rule-based Faithfulness.}]
+\begin{lstlisting}[language=Python, caption={EntityPresenceRule --- năm nhóm thực thể F\&B.}]
 PRICE_RE = re.compile(
-    r"(?:\d{1,3}(?:[.,]\d{3})+|\d+(?:[.,]\d+)?)\s*"
-    r"(?:VND|vnd|d|USD|\$|trieu|tr|k)\b", re.IGNORECASE)
+    r"(?:\d{1,3}(?:[.,]\d{3})+|\d+)\s*"
+    r"(?:VND|dong|d|trieu|tr\.?|k)\b|[%$]",
+    re.IGNORECASE)
+SPEC_RE  = re.compile(
+    r"\b\d+(?:[.,]\d+)?\s*(?:ml|lit|g|kg|kcal|cal)\b",
+    re.IGNORECASE)
+COMBO_RE = re.compile(
+    r"\b(?:combo|set|deal|goi)\s*\d+|\d+\s*(?:mon|ly|to)\b",
+    re.IGNORECASE)
 
-def entity_presence_score(seed, output):
-    entities = extract_candidate_entities(seed)
+def measure(self, seed, output):
+    entities = self.extract_entities(seed)  # 5 loai tren
     if not entities:
         return 1.0, {"note": "no entities"}
     matched = [e for e in entities if e.lower() in output.lower()]
     return len(matched) / len(entities), {"matched": matched}
 \end{lstlisting}
 
-\textbf{Thành phần LLM} ($s_{\text{llm}}$): \texttt{FaithfulnessMetric}
-của DeepEval đánh giá mâu thuẫn giữa đầu ra và retrieval context bằng
-cách phân tích chuỗi lý giải (chain-of-thought).
+\textbf{Thành phần LLM} ($s_{\text{llm}}$): \texttt{FaithfulnessGEval}
+(GEval của DeepEval) đánh giá mâu thuẫn giữa đầu ra và retrieval
+context bằng chain-of-thought, trừ điểm nếu output chứa claim không
+được hỗ trợ bởi seed (kể cả hype vô căn cứ).
 
 \subsection{Lớp 2 --- Expansion Quality: Đánh giá khả năng mở rộng}
 \label{subsec:expansion}
@@ -362,45 +590,71 @@ thô thành nội dung có giá trị với khách hàng, thay vì chỉ liệt 
 Điểm tổng hợp:
 
 \begin{equation}
-  \text{Expansion} = 0{,}9 \cdot s_{\text{llm}} + 0{,}1 \cdot s_{\text{length}}
+  \text{Expansion} = 0{,}9 \cdot s_{\text{llm}} + 0{,}1 \cdot s_{\text{rule}}
   \label{eq:expansion}
 \end{equation}
 
-\textbf{Thành phần LLM} ($s_{\text{llm}}$): \texttt{GEval} với tiêu
-chí: ``Bài phải diễn giải lợi ích cho khách hàng và ngữ cảnh sử dụng
-thực tế từ thông tin thô trong seed. Trừ điểm nếu chỉ lặp lại bullet
-kỹ thuật.''
+\textbf{Thành phần LLM} ($s_{\text{llm}}$): \texttt{ExpansionGEval}
+với tiêu chí: ``Bài phải diễn giải lợi ích cho khách hàng và ngữ cảnh
+sử dụng thực tế từ thông tin thô trong seed. Trừ điểm nếu chỉ lặp lại
+bullet kỹ thuật mà không giải thích giá trị.''
 
-\textbf{Thành phần độ dài} ($s_{\text{length}}$): tỉ lệ $r =
-|\text{output}| / |\text{seed}|$ ánh xạ theo bậc thang:
-$r \geq 3{,}0 \to 1{,}0$; $r \geq 2{,}0 \to 0{,}7$;
-$r \geq 1{,}2 \to 0{,}4$; còn lại $0{,}1$.
+\textbf{Thành phần quy tắc} ($s_{\text{rule}}$):
+\texttt{ContentExpansionRule} đo ba tín hiệu:
+(i)~\emph{tỉ lệ độ dài} $s_{\text{len}}$ ($r \geq 2{,}5 \to 1{,}0$;
+$r \geq 1{,}5 \to 0{,}7$; $r \geq 1{,}0 \to 0{,}4$; còn lại $0{,}1$);
+(ii)~\emph{ngôn ngữ lợi ích} $s_{\text{ben}} = \min(1, n_{\text{ben}}/3)$
+(từ khóa ``giúp'', ``tận hưởng'', ``phù hợp'',...);
+(iii)~\emph{ngữ cảnh sử dụng} $s_{\text{ctx}} = \min(1, n_{\text{ctx}}/2)$
+(từ khóa dịp/thời điểm). Kết hợp:
+$s_{\text{rule}} = 0{,}4\,s_{\text{len}} + 0{,}35\,s_{\text{ben}} +
+0{,}25\,s_{\text{ctx}}$.
 
 \subsection{Lớp 3 --- Marketing Vibe: Đánh giá phong cách marketing}
 \label{subsec:vibe}
 
-Lớp này đánh giá hai khía cạnh: sức lôi cuốn của hook mở bài và tính
-đầy đủ của cấu trúc bài viết. Điểm tổng hợp:
+Lớp này đánh giá chất lượng phong cách theo tiêu chuẩn
+Facebook-native F\&B tiếng Việt, kết hợp LLM judge 5 chiều,
+cấu trúc Facebook và điểm phạt:
 
 \begin{equation}
-  \text{Vibe} = 0{,}7 \cdot s_{\text{hook}} + 0{,}3 \cdot (0{,}5 \cdot s_{\text{md}} + 0{,}5 \cdot s_{\text{cta}})
+  \text{Vibe} = \max\!\Bigl(0,\,\min\!\Bigl(1,\;
+  0{,}85\,s_{\text{llm}} + 0{,}15\,s_{\text{fb}} - p\Bigr)\Bigr)
   \label{eq:vibe}
 \end{equation}
 
-\textbf{Hook tone} ($s_{\text{hook}}$): hàm \texttt{extract\_first\_hook()}
-tách đoạn mở bài (paragraph đầu sau tiêu đề, tối đa 400 ký tự), gửi
-tới \texttt{GEval} để chấm theo bốn bước: (1) chỉ xét phần hook,
-(2) đánh giá tính lôi cuốn và chuyên nghiệp, (3) đối chiếu với yêu
-cầu, (4) trừ điểm hook quá ngắn hoặc chung chung.
+\textbf{LLM judge 5 chiều} ($s_{\text{llm}}$):
+\texttt{MarketingVibeJudge} gửi rubric đặc thù cho judge LLM, nhận
+điểm nguyên $0$--$4$ trên từng chiều D1--D5, rồi tính:
+$s_{\text{llm}} = \sum_k w_k \cdot d_k / 4$.
 
-\textbf{Cấu trúc Markdown} ($s_{\text{md}}$): hàm
-\texttt{rule\_markdown\_structure()} kiểm tra sự hiện diện của H1, H2,
-và danh sách gạch đầu dòng; điểm bằng số tiêu chí thỏa mãn chia 3.
+\begin{table}[h]
+  \centering
+  \small
+  \caption{Năm chiều đánh giá Vibe và trọng số.}
+  \label{tab:vibe-dims}
+  \begin{tabular}{cp{0.65\textwidth}c}
+    \toprule
+    \textbf{Chiều} & \textbf{Mô tả} & \textbf{Trọng số} \\
+    \midrule
+    D1 & Giọng thật --- trực tiếp, không brand-speak/AI template & 0,25 \\
+    D2 & Neo thực tế kinh doanh --- giá, deal, combo, thời hạn & 0,15 \\
+    D3 & Thuyết phục bằng cụ thể --- số liệu, không hype rỗng & 0,25 \\
+    D4 & Chất lượng CTA --- token hành động rõ, low-friction & 0,20 \\
+    D5 & Nhịp Facebook tự nhiên --- đoạn ngắn, không AI essay & 0,15 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
-\textbf{CTA} ($s_{\text{cta}}$): hàm \texttt{rule\_cta\_end()} tìm lời
-kêu gọi hành động trong 600 ký tự cuối theo tập mẫu cố định (``mua
-ngay'', ``đặt hàng'', ``inbox'', ``liên hệ'', emoji hành động, URL).
-Điểm nhị phân: 1,0 hoặc 0,0.
+\textbf{Cấu trúc Facebook} ($s_{\text{fb}}$):
+\texttt{FbStructureRule} đo bốn tín hiệu có trọng số: tỉ lệ đoạn
+ngắn ($\leq 320$ ký tự), độ dài đoạn trung bình ($\leq 280$ ký tự),
+có danh sách gạch đầu dòng, và có dòng CTA tường minh.
+
+\textbf{Điểm phạt} ($p$): \texttt{VibePenaltyRule} trừ điểm cho bốn
+lỗi phong cách: ngôn ngữ phóng đại ($-0{,}10$), câu mở kiểu AI
+($-0{,}08$), emoji quá dày ($-0{,}05$), và bullet list rập khuôn
+($-0{,}05$).
 
 \subsection{Điểm tổng thể và ngưỡng phê duyệt}
 
@@ -415,275 +669,74 @@ Trong triển khai, bài đạt $\text{Overall} \geq \theta = 0{,}75$ được
 chuyển tự động sang trạng thái \texttt{approved}. Ngưỡng $\theta$ có
 thể cấu hình theo từng dự án mà không cần thay đổi code pipeline.
 
-\section{Kết quả thực nghiệm so sánh mô hình}\label{sec:ket-qua}
+\section{Tổng kết kết quả thực nghiệm fine-tuning}
+\label{sec:tong-ket-thuc-nghiem}
 
-\subsection{Thiết lập thực nghiệm}
-
-Thực nghiệm đánh giá tổng cộng \textbf{9 mô hình} mã nguồn mở theo hai
-giai đoạn. Giai đoạn khởi động (16/04/2026) chạy thử \textbf{qwen/qwen3-1.7b}
-qua LM Studio với judge là GPT-4o-mini (OpenAI trực tiếp) để hiệu chỉnh
-pipeline. Giai đoạn chính (20--21/04/2026) đánh giá 8 mô hình còn lại
-qua Ollama (endpoint \texttt{http://192.168.92.22:11434/v1}) với judge
-là GPT-4o-mini (Azure, định danh \texttt{md-gpt-5.4-mini}) để đảm bảo
-nhất quán. Nhiệt độ sinh $T = 0{,}4$ cho tất cả mô hình. Mỗi trường hợp
-yêu cầu khoảng 3 lần gọi judge; tổng thời gian xấp xỉ 115--123\,giây
-mỗi 10 trường hợp.
-
-\textbf{Ghi chú về tính tái lập.} Thực nghiệm sử dụng nhiệt độ thấp
-$T = 0{,}4$ thay vì cố định \texttt{random\_seed}, vì hai lý do: (i)
-nhiều endpoint Ollama không phơi tham số seed ổn định qua giao diện
-tương thích OpenAI ở thời điểm thực hiện; (ii) ở $T = 0{,}4$, phương
-sai giữa các lần chạy trên cùng một mô hình quan sát được dưới
-$\pm 0{,}01$ ở cả ba chỉ số --- nhỏ hơn nhiều so với khoảng cách giữa
-các mô hình trong Bảng~\ref{tab:base-results}, đủ để các kết luận so
-sánh giữ vững. Các nghiên cứu mở rộng nên cố định seed hoặc lấy trung
-bình $\geq 3$ lần chạy để loại hoàn toàn yếu tố ngẫu nhiên.
-
-\textbf{Tập kiểm thử.} Bộ dữ liệu \texttt{high\_quality\_mock\_cases\_100.json}
-gồm 100 trường hợp kiểm thử ($n = 100$) với bốn danh mục sản phẩm: máy
-pha cà phê, điện thoại thông minh, bàn gập gọn, và sản phẩm dưỡng da (25
-trường hợp mỗi danh mục). Mỗi trường hợp gồm \texttt{input\_title} (tiêu
-đề yêu cầu), \texttt{seed\_content} (thông tin sản phẩm thô: giá, thông
-số kỹ thuật, tính năng), và \texttt{actual\_output} (bài viết marketing
-Markdown do mô hình sinh). Bộ dữ liệu được thiết kế phủ đủ các loại thực
-thể cần kiểm tra: giá tiền VNĐ, thông số kỹ thuật, tên riêng --- phù hợp
-để đánh giá pipeline đa lớp trước khi triển khai trên dữ liệu F\&B thực
-tế.
-
-\textbf{Phạm vi của thực nghiệm này.} Cần nhấn mạnh rằng kết quả ở
-Mục~\ref{sec:ket-qua} là \emph{đánh giá năng lực tổng quát} của pipeline
-ba lớp trên các loại nội dung sản phẩm có cấu trúc thực thể rõ ràng
-(giá, thông số, tính năng), chứ \emph{chưa phải} là đánh giá chất lượng
-sinh nội dung F\&B nhà hàng. Lý do dùng bộ mock đa danh mục là để cô lập
-năng lực của bản thân pipeline đánh giá khỏi đặc thù từ vựng ẩm thực và
-tránh thiên lệch đối với một thương hiệu cụ thể; đồng thời, ở giai đoạn
-luận văn này, dữ liệu duyệt bài thực tế từ vận hành hệ thống
-(\texttt{review\_decision} trong \texttt{content\_generation\_jobs})
-chưa được tích lũy đủ để tạo tập kiểm thử F\&B đại diện. Việc kiểm định
-trên dữ liệu F\&B thực tế quy mô lớn được đề xuất triển khai ở Hướng~4
-của Mục~\ref{sec:han-che-huong-phat-trien}.
-
-\textbf{Tiêu chí lựa chọn hai dòng mô hình.} Hai dòng mô hình chính được
-chọn để phủ phổ kích thước tham số: \textbf{Qwen} (Alibaba Cloud, dòng
-3.5 và 3.6) và \textbf{Gemma} (Google, thế hệ 4) từ mô hình biên (edge)
-tới tầm trung-lớn. Các họ phổ biến khác như Llama-3.x (Meta) và Mistral
-được cân nhắc nhưng không đưa vào bộ so sánh chính dựa trên ba tiêu chí:
-(i) \emph{hiệu năng trên benchmark tiếng Việt} --- Qwen 3.5/3.6 và
-Gemma4 báo cáo điểm tốt hơn đáng kể trên các benchmark đa ngôn ngữ
-(MMLU đa ngôn ngữ, VMLU) ở cùng kích thước tham số nhờ tập huấn luyện
-có tỉ lệ dữ liệu phi-Anh cao hơn; (ii) \emph{giấy phép thương mại thân
-thiện} --- Apache 2.0 (Qwen) và Gemma Terms of Use cho phép triển khai
-thương mại không hạn chế quy mô người dùng, phù hợp ngữ cảnh SME, trong
-khi Llama-3.x có ràng buộc về quy mô người dùng cuối; (iii) \emph{hiệu
-năng phân phối qua Ollama} --- cả hai dòng có lượng tử hóa GGUF chính
-thức ổn định và tốc độ sinh đồng đều trên hạ tầng đã có. Mục tiêu là
-xác định liệu mô hình mã nguồn mở có thể thay thế GPT-4o trong pipeline
-sinh nội dung không, và kích thước tham số ảnh hưởng thế nào đến chất
-lượng đầu ra.
-
-\paragraph{Định hướng SLM cho mô hình fine-tuning.}
-Trong khi benchmark 9 mô hình nền khảo sát toàn bộ phổ từ 1,7B đến 35B
-tham số, giai đoạn fine-tuning tập trung vào phân khúc \textbf{SLM
-(Small Language Model) dưới 4B tham số} --- cụ thể là \texttt{qwen3.5:2b}
---- xuất phát từ một triết lý thiết kế cốt lõi: mỗi SME ngành F\&B phải
-có khả năng \textbf{tự sở hữu và vận hành mô hình in-house} mà không phụ
-thuộc vào API thương mại có chi phí biến đổi theo khối lượng.
-
-Lý do kỹ thuật cụ thể gồm ba điểm. Thứ nhất, \texttt{qwen3.5:2b} ở định
-dạng GGUF 4-bit có thể chạy trên GPU consumer phổ thông từ 8--16GB VRAM
---- tương đương phần cứng một doanh nghiệp nhỏ có thể tự trang bị. Thứ
-hai, kết quả benchmark cho thấy \texttt{qwen3.5:2b} đạt Overall = 0,840,
-ngang ngửa \texttt{qwen3.6:35b} (0,839) trên tác vụ sinh nội dung có cấu
-trúc, chứng minh mô hình nhỏ là điểm khởi đầu hợp lý cho fine-tuning
-chuyên biệt. Thứ ba, với kích thước 2B tham số, toàn bộ vòng lặp
-fine-tuning (chuẩn bị data $\rightarrow$ train LoRA $\rightarrow$ đánh
-giá $\rightarrow$ deploy) có thể được thực hiện bởi nhân sự kỹ thuật nội
-bộ của doanh nghiệp trên một máy đơn, không yêu cầu hạ tầng cloud hay
-chuyên gia ML.
-
-Mục tiêu dài hạn là \textbf{dân chủ hóa khả năng fine-tuning}: chủ quán
-F\&B có thể định kỳ cập nhật phong cách marketing bằng cách fine-tune
-lại mô hình trên dữ liệu bài viết đã được duyệt, tích lũy từ chính hệ
-thống vận hành --- tạo vòng lặp cải thiện liên tục khép kín.
-
-\paragraph{Baseline thương mại --- GPT-4o-mini (Azure).}
-Ngoài hai dòng mô hình mã nguồn mở, thực nghiệm bổ sung GPT-4o-mini
-(Azure, định danh \texttt{md-gpt-5.4-mini}) làm \textbf{baseline thương
-mại tham chiếu} --- điểm neo để đánh giá khoảng cách giữa mô hình mã
-nguồn mở và commercial model trên cùng pipeline. Đây là cùng model được
-sử dụng làm judge trong toàn bộ thực nghiệm, do đó không phát sinh chi
-phí hạ tầng bổ sung và đảm bảo tính nhất quán về môi trường đánh giá.
-
-% TODO: Chạy GPT-4o-mini trên 100 test cases (T=0.4, cùng high_quality_mock_cases_100.json), điền kết quả vào Bảng~\ref{tab:base-results} trước buổi bảo vệ.
-
-\subsection{Kết quả so sánh}
-
-Bảng~\ref{tab:base-results} trình bày kết quả trung bình trên 100
-trường hợp kiểm thử.
+Bảng~\ref{tab:final-comparison} tổng hợp toàn bộ kết quả trên tập
+F\&B thực tế ($n = 100$, judge: GPT-5.4 Azure) cho ba hướng tiếp cận:
+mô hình nền chưa tinh chỉnh, SFT (Supervised Fine-Tuning), và GRPO
+(học tăng cường với reward rule-based). Tất cả mô hình mã nguồn mở
+sinh văn bản ở chế độ \emph{nothinking}, nhiệt độ $T = 0{,}4$; GPT-5.4-mini
+là điểm tham chiếu thương mại.
 
 \begin{table}[htbp]
   \centering
-  \caption{Kết quả đánh giá pipeline trên 100 trường hợp kiểm thử
-    ($n=100$, judge: GPT-4o-mini Azure). In đậm: giá trị cao nhất mỗi cột.
-    \textit{Ba hàng cuối sẽ được bổ sung sau khi hoàn thành thực nghiệm
-    fine-tuning.}}
-  \label{tab:base-results}
+  \small
+  \caption{So sánh tổng hợp mô hình nền, SFT và GRPO trên tập F\&B
+    thực tế ($n=100$, judge: GPT-5.4 Azure). In đậm: cao nhất mỗi cột
+    trong nhóm mã nguồn mở.}
+  \label{tab:final-comparison}
   \begin{tabular}{lcccc}
     \toprule
-    \textbf{Mô hình} & \textbf{Faithfulness} & \textbf{Expansion} & \textbf{Vibe} & \textbf{Overall} \\
+    \textbf{Mô hình} & \textbf{Faith.} & \textbf{Expan.}
+      & \textbf{Vibe} & \textbf{Overall} \\
     \midrule
-    qwen/qwen3-1.7b & 0,998 & 0,852 & 0,603 & 0,818 \\
+    GPT-5.4-mini (baseline thương mại)
+      & 0,659 & 0,817 & 0,645 & 0,707 \\
     \midrule
-    qwen3.5:2b  & 0,995 & 0,849 & 0,676 & 0,840 \\
-    qwen3.5:9b  & \textbf{0,998} & 0,839 & 0,678 & 0,838 \\
-    qwen3.5:27b & 0,995 & \textbf{0,861} & 0,672 & \textbf{0,843} \\
-    qwen3.6:35b & 0,993 & 0,847 & 0,677 & 0,839 \\
+    \texttt{qwen3.5:2b} (nền)
+      & 0,599 & 0,662 & 0,450 & 0,570 \\
+    \texttt{qwen3.5:2b} + SFT
+      & 0,597 & 0,754 & 0,587 & 0,646 \\
+    \texttt{qwen3.5:2b} + GRPO
+      & \multicolumn{4}{c}{\textit{đang đánh giá}} \\
     \midrule
-    gemma4:e2b  & 0,993 & 0,852 & 0,667 & 0,837 \\
-    gemma4:e4b  & 0,988 & 0,825 & 0,677 & 0,830 \\
-    gemma4:26b  & 0,994 & 0,846 & \textbf{0,679} & 0,840 \\
-    gemma4:31b  & 0,992 & 0,809 & 0,678 & 0,826 \\
+    \texttt{qwen3.5:4b} (nền)
+      & 0,596 & 0,768 & 0,502 & 0,622 \\
+    \texttt{qwen3.5:4b} + SFT
+      & \textbf{0,637} & \textbf{0,777} & \textbf{0,648} & \textbf{0,687} \\
     \midrule
-    GPT-4o-mini (Azure) \textit{(baseline thương mại)} & \multicolumn{4}{c}{\textit{chưa có kết quả}} \\ % TODO
-    \texttt{qwen3.5:2b} + LoRA SFT & --- & --- & --- & --- \\ % TODO: điền sau khi train
-    \texttt{qwen3.5:2b} + GRPO     & --- & --- & --- & --- \\ % TODO: điền sau khi train
+    \texttt{qwen3.5:9b} (nền, tham chiếu)
+      & 0,584 & 0,780 & 0,538 & 0,634 \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-\subsection{Phân tích kết quả}
+\textbf{SFT cải thiện Vibe rõ rệt ở cả hai kích thước.}
+\texttt{qwen3.5:2b} + SFT tăng Vibe từ 0,450 lên 0,587 ($+30{,}4\%$);
+\texttt{qwen3.5:4b} + SFT từ 0,502 lên 0,648 ($+29{,}1\%$). Đây là
+lớp hưởng lợi nhiều nhất từ tinh chỉnh có giám sát, xác nhận rằng
+giọng điệu Facebook-native F\&B có thể học được từ dữ liệu kiểm duyệt.
 
-\textbf{Faithfulness đồng đều cao, kể cả mô hình nhỏ nhất.} Tất cả 9
-mô hình đều đạt Faithfulness trên 0,988, trong đó qwen3.5:9b và
-qwen/qwen3-1.7b cùng đạt 0,998. Điều này xác nhận: khi seed content
-được cung cấp cấu trúc rõ ràng (giá, thông số, tên sản phẩm), ngay cả
-mô hình 1.7B tham số vẫn bảo toàn thực thể tốt --- nguy cơ
-hallucination thấp khi hệ thống RAG cung cấp context đầy đủ.
+\textbf{Expansion cải thiện rõ trên 2B, ổn định trên 4B.}
+\texttt{qwen3.5:2b} + SFT tăng từ 0,662 lên 0,754 ($+0{,}092$), trong
+khi \texttt{qwen3.5:4b} + SFT giữ nguyên (0,768 $\to$ 0,777) vì mô
+hình 4B đã có năng lực diễn giải nội sinh từ tiền huấn luyện.
 
-\textbf{Expansion phân hóa rõ theo họ mô hình.} Dòng Qwen 3.5 (27B:
-0,861; 2B: 0,849) vượt trội hơn Gemma4 về khả năng diễn giải lợi ích
-từ thông tin kỹ thuật thô. Gemma4:31b (0,809) thấp hơn cả gemma4:26b
-(0,846), cho thấy quy mô tham số không đảm bảo chất lượng mở rộng
-nội dung; chất lượng dữ liệu huấn luyện theo ngữ cảnh đóng vai trò
-quan trọng hơn.
+\textbf{Faithfulness ổn định qua fine-tuning.} Cả hai mô hình SFT
+không giảm Faithfulness đáng kể (2B: $-0{,}002$; 4B: $+0{,}041$),
+xác nhận SFT không làm mất khả năng bảo toàn thực thể --- điều kiện
+cần cho triển khai thực tế.
 
-\textbf{Vibe là thách thức chung và lộ rõ giới hạn của mô hình nhỏ.}
-8 mô hình lớn đạt Vibe trong dải 0,667--0,679, nhưng qwen/qwen3-1.7b
-chỉ đạt 0,603 --- thấp hơn hẳn 0,064 điểm so với nhóm còn lại. Điều
-này cho thấy khả năng tạo hook marketing lôi cuốn đòi hỏi năng lực
-ngôn ngữ nhất định; mô hình dưới 2B tham số chưa đủ để đạt phong cách
-marketing mong muốn. Khoảng cách Vibe giữa tất cả mô hình và ngưỡng
-lý tưởng là minh chứng định lượng cho nhu cầu fine-tuning chuyên biệt.
+\textbf{GRPO bổ sung tín hiệu tương tác thực.} Khác với SFT học từ
+nhãn kiểm duyệt, GRPO tối ưu trực tiếp theo các đặc trưng hình thức
+tương quan với engagement trong tập Dining Review (500 bài). Hai
+hướng tiếp cận có thể kết hợp tuần tự --- SFT định hình phong cách
+từ bài mẫu đã duyệt, GRPO tinh chỉnh tiếp theo phản hồi tương tác
+thực --- tạo thành pipeline huấn luyện đa giai đoạn phù hợp với SME.
 
-\textbf{Quy mô tham số không tỉ lệ tuyến tính với Overall (trên
-ngưỡng 2B).} qwen3.5:2b (2B tham số) đạt Overall 0,840 ngang ngửa
-qwen3.6:35b (35B tham số). Với tác vụ sinh bài viết có cấu trúc cố
-định và nội dung mồi đầy đủ, mô hình nhỏ (từ 2B trở lên) vẫn cạnh
-tranh --- mở ra khả năng triển khai chi phí thấp tại các SME có hạ
-tầng tính toán hạn chế.
-
-\subsection{Thực nghiệm fine-tuning: SFT và GRPO trên dữ liệu F\&B tiếng Việt}
-\label{subsec:fine-tuning}
-
-\subsubsection{Thiết lập fine-tuning}
-Dựa trên kết quả benchmark xác định \texttt{qwen3.5:2b} là mô hình nền
-chi phí--hiệu quả tốt nhất (Overall = 0,840, Mục~\ref{sec:ket-qua}),
-giai đoạn này tiến hành fine-tuning theo hai hướng độc lập trên cùng một
-mô hình nền:
-
-\begin{itemize}
-  \item \textbf{SFT với QLoRA:} Tinh chỉnh có giám sát trên tập dữ liệu
-    bài viết F\&B tiếng Việt đã được kiểm duyệt, sử dụng QLoRA 4-bit để
-    giảm yêu cầu VRAM xuống mức khả thi trên GPU consumer. Mục tiêu là
-    định hình phong cách hook marketing và cấu trúc CTA phù hợp thị
-    trường địa phương.
-  \item \textbf{GRPO:} Tối ưu hóa theo tín hiệu thưởng được thiết kế
-    trực tiếp từ điểm Overall của pipeline đánh giá đa lớp (Công
-    thức~\ref{eq:overall}), cho phép mô hình tối ưu hóa đồng thời cả ba
-    chiều Faithfulness, Expansion và Vibe mà không cần huấn luyện
-    reward model riêng.
-\end{itemize}
-
-Cả hai cấu hình được đánh giá trên cùng bộ 100 test cases
-(\texttt{high\_quality\_mock\_cases\_100.json}) với baseline là
-\texttt{qwen3.5:2b} chưa fine-tune (Overall = 0,840), cho phép đo lường
-trực tiếp mức độ cải thiện của từng phương pháp.
-
-% TODO: Bổ sung: hyperparameters (rank LoRA, learning rate, batch size, epochs), môi trường train (GPU model, thời gian train), kích thước dataset.
-
-\subsubsection{Kết quả fine-tuning}
-
-% TODO: Điền bảng so sánh 3 cấu hình (base / SFT / GRPO) trên 4 chỉ số sau khi hoàn thành thực nghiệm. Phân tích tập trung vào: (1) mức cải thiện Vibe từ ~0,67 lên bao nhiêu, (2) SFT vs GRPO cái nào hiệu quả hơn trên chiều nào, (3) có trade-off giữa Faithfulness và Vibe không.
-
-\section{Kiểm định tương quan với đánh giá của con người}\label{sec:tuong-quan}
-
-\subsection{Thiết kế thí nghiệm}
-
-Để xác nhận tính hợp lệ của pipeline đánh giá tự động, thực nghiệm
-kiểm định tương quan được thực hiện trên tập con $n_h = 50$ trường hợp
-được đánh giá song song bởi pipeline và ba đánh giá viên con người
-có kinh nghiệm trong lĩnh vực marketing F\&B.
-
-Mỗi đánh giá viên chấm điểm Likert 5 bậc (1--5) cho ba tiêu chí tương
-ứng với ba chỉ số pipeline: (i) \emph{độ trung thực thực thể}, (ii)
-\emph{chất lượng diễn giải lợi ích}, và (iii) \emph{sức hấp dẫn
-marketing}. Điểm sau đó được chuẩn hoá về $[0, 1]$ và tổng hợp bằng
-trung bình cộng của ba đánh giá viên. Thỏa thuận liên đánh giá viên
-được kiểm định bằng Cohen's $\kappa$, yêu cầu $\kappa > 0{,}60$ cho
-mỗi cặp trước khi tổng hợp.
-
-\subsection{Kết quả tương quan}
-
-Bảng~\ref{tab:correlation} trình bày hệ số tương quan Pearson ($r$)
-và Spearman ($\rho$) giữa điểm pipeline và điểm con người.
-
-\begin{table}[htbp]
-  \centering
-  \caption{Hệ số tương quan giữa điểm pipeline và đánh giá con người
-    ($n_h = 50$).}
-  \label{tab:correlation}
-  \begin{tabular}{lcccc}
-    \toprule
-    \textbf{Chỉ số} & \textbf{Pearson $r$} & \textbf{$p$-value} & \textbf{Spearman $\rho$} & \textbf{$p$-value} \\
-    \midrule
-    Faithfulness & 0,831 & $<0{,}001$ & 0,814 & $<0{,}001$ \\
-    Expansion    & 0,762 & $<0{,}001$ & 0,748 & $<0{,}001$ \\
-    Vibe         & 0,703 & $<0{,}001$ & 0,691 & $<0{,}001$ \\
-    \textbf{Overall} & \textbf{0,794} & $<0{,}001$ & \textbf{0,779} & $<0{,}001$ \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-\textbf{Faithfulness} đạt tương quan cao nhất ($r = 0{,}831$) do tính
-khách quan của tiêu chí: thực thể có mặt hay không là sự kiện có thể
-kiểm chứng, cả pipeline lẫn người đều đồng thuận cao. \textbf{Vibe}
-có tương quan thấp nhất ($r = 0{,}703$), vẫn ở mức vừa-mạnh theo
-thang Cohen, do tính chủ quan của ``sức hấp dẫn'' marketing. Tất cả
-$p$-value $< 0{,}001$ xác nhận ý nghĩa thống kê của toàn bộ kết quả.
-
-Chỉ số \textbf{Overall} ($r = 0{,}794$) ổn định hơn bất kỳ chỉ số
-đơn lẻ nào --- đặc biệt so với Vibe khi xem độc lập --- xác nhận
-rằng tổ hợp tuyến tính ba lớp tạo ra tín hiệu đáng tin cậy cho phê
-duyệt tự động.
-
-\subsection{Phân tích ngưỡng phê duyệt $\theta = 0{,}75$}
-
-Tại ngưỡng $\theta = 0{,}75$ cho Overall, kết quả phân loại trên 50
-trường hợp kiểm thử:
-
-\begin{itemize}
-  \item \textbf{43/50 trường hợp đồng thuận} giữa pipeline và người
-    (độ chính xác phân loại 86\%).
-  \item \textbf{4 trường hợp false positive} (pipeline phê duyệt,
-    người từ chối): nguyên nhân chủ yếu là bài ``quá bóng bẩy'' so
-    với ngữ điệu tự nhiên của thương hiệu --- điểm Vibe cao nhưng
-    người đánh giá cảm thấy thiếu tính xác thực.
-  \item \textbf{3 trường hợp false negative} (pipeline từ chối, người
-    chấp thuận): bài dùng cấu trúc phi chuẩn nhưng sáng tạo mà luật
-    Markdown không nhận diện được; con người đánh giá cao về ý tưởng.
-\end{itemize}
-
-Tỉ lệ false positive 8\% và false negative 6\% nằm trong ngưỡng chấp
-nhận được cho bài toán sàng lọc nội dung tự động --- pipeline đủ tin
-cậy để thay thế bước kiểm duyệt sơ bộ thủ công, giải quyết bài toán
-\emph{Approval Step} đã đặt ra tại Chương~\ref{chap:thị-truong}.
+\textbf{\texttt{qwen3.5:4b} + SFT là lựa chọn tốt nhất trong nhóm
+mã nguồn mở hiện tại}, với Overall 0,687 so với 0,707 của GPT-5.4-mini
+($\Delta = -0{,}020$, $-2{,}8\%$). Chi phí vận hành thấp hơn đáng kể
+(mô hình cục bộ, không phụ thuộc API thương mại theo lượt gọi) mang
+lại ý nghĩa thực tiễn cho SME ngành F\&B Việt Nam.
