@@ -74,6 +74,15 @@ trường}\label{sec:phan-tich-san-pham}
   \end{itemize}
 \end{itemize}
 
+Một điểm hạn chế căn bản của Predis AI là thiếu khả năng tích hợp dữ
+liệu thương hiệu nội bộ: người dùng không thể cung cấp cho hệ thống
+thông tin về menu thực tế, giá cả địa phương, hay cách pha chế đặc
+trưng của quán. Hệ quả là nội dung sinh ra thường mang phong cách chung
+chung, thiếu chi tiết đặc thù phân biệt thương hiệu với đối thủ cạnh
+tranh --- đây là lý do tại sao chủ quán F\&B khó dùng Predis AI để xây
+dựng bản sắc thương hiệu lâu dài mà không phải viết lại phần lớn nội
+dung sau khi AI sinh.
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.7\textwidth]{images/predis.png}
@@ -238,6 +247,17 @@ dựa trên dữ liệu thương hiệu, (2) đánh giá chất lượng tự đ
 khoảng trống mà hệ thống AI Agent được đề xuất trong luận văn này hướng
 tới lấp đầy.
 
+Điểm mấu chốt từ bảng so sánh là \emph{không có bất kỳ công cụ nào}
+tích hợp đồng thời khả năng lưu trữ dữ liệu thương hiệu và cơ chế đánh
+giá chất lượng trước khi đăng. Đây không phải ngẫu nhiên: hai tính năng
+này đòi hỏi hiểu biết sâu về domain F\&B và khả năng kết hợp nhiều
+nguồn thông tin (menu, brand guidelines, lịch sử bài đăng) thành một
+bài viết nhất quán --- năng lực mà các công cụ hiện tại, dù mạnh về
+thiết kế hay lên lịch, chưa hướng tới. Thêm vào đó, hàng rào ``rủi ro
+vi phạm chính sách nền tảng'' mà AutoNuoi gây ra càng củng cố yêu cầu
+cần một giải pháp vừa tự động hóa thông minh vừa tuân thủ nguyên tắc
+nền tảng và bảo vệ thương hiệu dài hạn.
+
 \section{Khảo sát nhu cầu chủ doanh
 nghiệp}\label{sec:khao-sat}
 
@@ -377,6 +397,16 @@ F. Chatbot trả lời câu hỏi về các nội dung đã lưu trữ & 3.5/5 \
 \item
   Mong muốn AI có thể gợi ý \textbf{thời điểm vàng (prime time)} để đăng
   bài, tối ưu hóa lượng tương tác tại thị trường địa phương.
+\item
+  Mong muốn hệ thống \textbf{ghi nhớ phong cách thương hiệu} sau mỗi
+  lần duyệt bài --- tức là càng dùng, hệ thống càng hiểu ``gu'' của
+  quán và sinh nội dung sát hơn mà không cần chủ quán phải nhập lại
+  yêu cầu từ đầu mỗi chiến dịch.
+\item
+  Một số chủ quán bày tỏ mong muốn hệ thống có khả năng \textbf{phân
+  tích hiệu quả bài đăng} (lượt tiếp cận, tương tác) và từ đó tự
+  điều chỉnh phong cách sinh nội dung trong các chiến dịch tiếp theo,
+  hướng đến một vòng cải thiện không cần sự can thiệp thủ công liên tục.
 \end{itemize}
 
 \subsection{Kết luận khảo sát}
@@ -410,6 +440,15 @@ tính năng liên quan đến sáng tạo nội dung (tạo caption chuyên nghi
 phân tích cảm hứng, đề xuất trend địa phương) được ưu tiên cao hơn các
 tính năng truy xuất dữ liệu nội bộ.
 
+Ngoài ra, kết quả khảo sát còn cho thấy một xu hướng đáng chú ý: các
+chủ quán có kinh nghiệm sử dụng mạng xã hội lâu hơn có xu hướng đánh
+giá cao hơn các tính năng liên quan đến phân tích và tối ưu nội dung
+(Tính năng B, G), trong khi các chủ quán mới hơn ưu tiên tự động hóa
+đăng bài (Tính năng E) và tạo nội dung cơ bản (Tính năng C). Điều này
+gợi ý rằng hệ thống AI Agent cần được thiết kế với cơ chế \emph{tiệm
+tiến}: đơn giản với người mới bắt đầu, và cung cấp thêm công cụ phân
+tích cho người dùng đã quen với luồng làm việc cốt lõi.
+
 Kết quả khảo sát xác nhận bối cảnh và vấn đề đã nêu trong phần đặt vấn
 đề: các SME ngành F\&B hiện nay gặp khó khăn trong việc thực hiện
 marketing hiệu quả, và việc phát triển một AI Agent chuyên biệt là một
@@ -438,3 +477,13 @@ thực hiện lọc và chấm điểm nội dung theo quy tắc cứng, chỉ s
 và đánh giá định tính trước khi trình lên người dùng phê duyệt. Cách tiếp
 cận này kết hợp hiệu quả của tự động hóa với sự kiểm soát của con người,
 đảm bảo chất lượng và tính nhất quán của nội dung được đăng tải.
+
+Về mặt kỹ thuật, pipeline đánh giá đóng vai trò trung gian thông minh
+giữa AI sinh nội dung và người dùng cuối: thay vì hiển thị thô mọi bài
+AI tạo ra để người dùng tự phán xét, hệ thống chỉ trình lên những bài
+vượt ngưỡng chất lượng tối thiểu. Điều này không chỉ tiết kiệm thời
+gian duyệt bài mà còn giúp chủ quán tin tưởng hơn vào đầu ra của AI,
+vì họ biết rằng những gì họ thấy đã qua một lớp kiểm tra khách quan.
+Mối quan hệ giữa yêu cầu bước duyệt từ khảo sát và thiết kế pipeline
+đánh giá trong hệ thống sẽ được trình bày chi tiết tại
+Chương~\ref{chap:thuc-nghiem}.

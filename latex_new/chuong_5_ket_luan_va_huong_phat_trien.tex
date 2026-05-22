@@ -62,6 +62,19 @@ LLM còn loại bỏ rủi ro lộ dữ liệu thương hiệu và brand voice r
 thứ ba --- một mối quan tâm lớn của các chủ quán đã được nêu trong
 khảo sát.
 
+Để hiểu rõ hơn giá trị kinh tế của hướng tiếp cận này, hãy xem xét
+một kịch bản điển hình: một quán cà phê quy mô nhỏ sử dụng API LLM
+thương mại để sinh $30$ bài viết Facebook mỗi tuần sẽ phát sinh chi
+phí API dao động theo lượng token sử dụng, tích lũy thành khoản chi
+phí vận hành hàng tháng đáng kể trong dài hạn. Với mô hình
+\texttt{qwen3.5:4b} + SFT chạy cục bộ trên GPU consumer (VRAM
+$\geq 8$GB), chi phí vận hành sau đầu tư phần cứng ban đầu gần như
+bằng không. Đây là lợi thế cạnh tranh thực sự của hướng tiếp cận SLM
+in-house: chi phí dự đoán được, không có giới hạn lượt gọi, và dữ liệu
+thương hiệu không rời khỏi hệ thống nội bộ --- điều đặc biệt quan trọng
+với các SME F\&B coi thương hiệu và công thức pha chế là tài sản riêng
+biệt cần bảo vệ.
+
 \section{Đóng góp của đề tài}\label{sec:dong-gop}
 
 \subsection{Đóng góp về mặt kỹ thuật}
@@ -92,7 +105,12 @@ luyện reward model riêng.
     góp mở rộng so với DeepEval và Ragas vốn chưa có bộ chỉ số chuyên
     biệt cho nội dung marketing tiếng Việt. Pipeline này đồng thời
     đóng vai trò kép: cơ chế kiểm duyệt tự động trong vận hành và
-    reward signal trực tiếp cho GRPO.
+    reward signal trực tiếp cho GRPO. Điểm đặc biệt là tính
+    \emph{song dụng} này đảm bảo mô hình được tối ưu theo đúng tiêu
+    chí sẽ được ánh xạ trong sản xuất --- loại bỏ vấn đề ``metric
+    divergence'' thường gặp khi hàm reward huấn luyện khác với tiêu
+    chí đánh giá triển khai, đặc biệt trong các bài toán sinh văn bản
+    sáng tạo như marketing.
 
   \item \textbf{Schema cơ sở dữ liệu hỗ trợ vòng cải thiện liên tục.}
     Thiết kế ba tầng \texttt{campaign\_runs} $\rightarrow$
@@ -132,7 +150,10 @@ luyện reward model riêng.
     Đây là bằng chứng thực nghiệm rõ ràng rằng \emph{domain alignment}
     giữa dữ liệu huấn luyện RL và tác vụ mục tiêu quan trọng hơn bản
     thân thuật toán, định hướng cách thiết kế hàm reward cho các nghiên
-    cứu tiếp theo.
+    cứu tiếp theo. Bài học này có tính tổng quát vượt ra ngoài phạm vi
+    luận văn: bất kỳ nghiên cứu nào áp dụng GRPO hay PPO cho bài toán
+    sinh văn bản sáng tạo cần ưu tiên kiểm tra tính khớp miền của dữ
+    liệu huấn luyện reward trước khi đầu tư vào tinh chỉnh thuật toán.
   \item \textbf{Đề xuất phương pháp kiểm định tương quan với đánh giá
     con người.} Đề tài đề xuất sử dụng hệ số Pearson/Spearman để kiểm
     định mức độ tương quan giữa điểm pipeline tự động và đánh giá của
@@ -222,39 +243,21 @@ chéo miền), nhằm khắc phục reward hacking và hiện tượng suy giả
 Faithfulness; (iii)~thực nghiệm fine-tuning trên mô hình $9$B trở lên
 để xác định điểm bão hòa lợi ích của tinh chỉnh theo quy mô tham số.
 
-\paragraph{Hướng 2 --- Mở rộng đa phương thức (multi-modal).}
-Hệ thống hiện nay sinh ảnh độc lập với văn bản qua ImageAgent. Hướng
-phát triển là tích hợp đánh giá độ phù hợp giữa ảnh và văn bản (image
---text alignment) vào pipeline đánh giá; tiến xa hơn là sinh video
-ngắn (Reels) cho Facebook bằng các mô hình text-to-video mã nguồn mở.
-Pipeline đánh giá cần được mở rộng thêm các chỉ số đặc trưng cho
-video (nhịp cắt cảnh, độ dài hook đầu, độ rõ của CTA cuối).
-
-\paragraph{Hướng 3 --- Cá nhân hóa theo chi nhánh.}
-Một thương hiệu F\&B có nhiều chi nhánh thường có sự khác biệt nhỏ
-về menu, giá, đối tượng khách (sinh viên, dân văn phòng, gia đình).
-Schema hiện tại lưu brand voice ở cấp \texttt{projects}; hướng mở
-rộng là tách \texttt{brand\_voice} sang một cấp \texttt{branches} con
-của \texttt{projects}, cho phép mỗi chi nhánh có trọng số tinh chỉnh
-riêng (LoRA adapter cấp chi nhánh) trong khi vẫn chia sẻ mô hình nền
-chung. Cơ chế Mixture-of-Experts trình bày tại
-Mục~\ref{sec:llm-kiem-truc} là một hướng tham khảo về mặt kiến trúc.
-
-\paragraph{Hướng 4 --- Kiểm định trên dữ liệu F\&B thực tế quy mô
+\paragraph{Hướng 2 --- Kiểm định trên dữ liệu F\&B thực tế quy mô
 lớn.} Phối hợp với một chuỗi F\&B SME triển khai pilot $3$--$6$
 tháng, thu thập tối thiểu $1\,000$ bài đăng thực tế cùng dữ liệu
 tương tác (likes, comments, shares) để kiểm định mối tương quan
 giữa điểm pipeline và hiệu quả thực sự trên Facebook. Đây sẽ là
 bằng chứng mạnh nhất về giá trị thực tiễn của hệ thống, vượt khỏi
-phạm vi đánh giá trong phòng thí nghiệm.
-
-\paragraph{Hướng 5 --- Giảm rủi ro thiên lệch của judge model.}
-Triển khai cơ chế \emph{multi-judge ensemble}: thay vì một judge
-duy nhất, kết hợp ba judge khác họ mô hình (ví dụ GPT-4o-mini,
-Claude Haiku, một mô hình mã nguồn mở đã fine-tune) và lấy trung
-vị hoặc bỏ phiếu. Đồng thời định kỳ tái kiểm định tương quan giữa
-judge và đánh giá con người mỗi quý để phát hiện sớm hiện tượng
-trôi (drift) chất lượng đánh giá.
+phạm vi đánh giá trong phòng thí nghiệm. Dữ liệu engagement từ
+pilot này không chỉ phục vụ kiểm định hệ thống hiện tại mà còn tạo
+thành tập huấn luyện lý tưởng cho vòng GRPO tiếp theo: các bài thực
+có engagement cao sẽ đóng vai trò dữ liệu dương, loại bỏ hoàn toàn
+vấn đề lệch miền đã dẫn đến thất bại trong thực nghiệm hiện tại.
+Đây là vòng lặp cải thiện tự nhiên: hệ thống vận hành sinh dữ liệu,
+dữ liệu nuôi lại mô hình, mô hình cải thiện hệ thống --- đúng theo
+tinh thần thiết kế schema \texttt{content\_generation\_jobs} có ghi
+nhận quyết định duyệt bài và phản hồi của người dùng.
 
 \subsection{Lời kết}
 
@@ -270,3 +273,14 @@ F\&B Việt Nam. Các hướng phát triển nêu trên, đặc biệt là cải
 domain alignment cho GRPO, kiểm định tương quan với đánh giá con người,
 và pilot quy mô lớn với dữ liệu tương tác thực, sẽ là những bước tiếp
 theo cần thiết để chuyển hóa nghiên cứu này thành sản phẩm hoàn thiện.
+
+Về mặt rộng hơn, đề tài minh chứng cho một hướng tiếp cận khả thi trong
+ứng dụng AI vào doanh nghiệp nhỏ: không cần chờ đến khi mô hình AI
+hoàn hảo, cũng không cần ngân sách lớn để thuê API thương mại không
+giới hạn. Với việc kết hợp đúng đắn giữa mô hình tham số nhỏ được tinh
+chỉnh chuyên biệt, pipeline đánh giá tự động có công thức rõ ràng, và
+kiến trúc đa tác nhân linh hoạt, các SME ngành F\&B hoàn toàn có thể
+tiếp cận năng lực AI Marketing chuyên nghiệp với chi phí và độ phức tạp
+vận hành phù hợp với quy mô của họ. Đây là đóng góp có ý nghĩa không
+chỉ cho cộng đồng nghiên cứu mà còn cho hệ sinh thái khởi nghiệp công
+nghệ F\&B đang phát triển nhanh tại Việt Nam.

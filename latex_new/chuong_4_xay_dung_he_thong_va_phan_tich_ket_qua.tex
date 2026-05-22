@@ -46,6 +46,18 @@ với các thành phần tách biệt rõ trách nhiệm, giao tiếp qua messag
     mà không thay đổi code agent.
 \end{itemize}
 
+Lý do lựa chọn kiến trúc message queue (RabbitMQ + Celery) thay vì gọi
+trực tiếp là để tách biệt thời gian phản hồi HTTP với thời gian xử lý
+thực tế. Một yêu cầu tạo nội dung cho 10 bài viết có thể mất vài phút
+do phải gọi LLM nhiều lần; nếu xử lý đồng bộ trong luồng HTTP, request
+sẽ timeout. Kiến trúc async qua Celery cho phép trả về ngay một
+\texttt{job\_id} xác nhận, rồi người dùng nhận thông báo khi nội dung
+hoàn thành --- trải nghiệm phù hợp hơn với người dùng SME không muốn
+chờ màn hình loading. Ngoài ra, hàng đợi độc lập cho từng loại tác vụ
+(lập kế hoạch, sinh văn bản, sinh ảnh) cho phép điều chỉnh số lượng
+worker theo nhu cầu và retry chọn lọc khi một bước thất bại mà không
+phải chạy lại toàn bộ chiến dịch.
+
 \subsection{Cơ sở dữ liệu}\label{subsec:database}
 
 Schema cơ sở dữ liệu được thiết kế theo ba lớp logic: nhận dạng
@@ -294,6 +306,19 @@ Toàn bộ prompt thô được lưu vào trường \texttt{raw\_prompt} trong b
 \texttt{content\_generation\_jobs} để phục vụ debug và phân tích chi phí
 token qua Langfuse.
 
+Thiết kế bốn phần của template phản ánh một triết lý prompt engineering
+quan trọng: phân tách rõ giữa \emph{tri thức} (KNOWLEDGE BASE) và
+\emph{hành vi} (STYLE GUIDE, GOLDEN SAMPLES, LESSONS LEARNED). Phần tri
+thức cung cấp các sự kiện về sản phẩm và thương hiệu mà mô hình phải
+trung thực tuân thủ; phần hành vi định hướng cách mô hình diễn đạt các
+sự kiện đó theo phong cách phù hợp. Sự phân tách này quan trọng vì nó
+tương ứng với hai lớp lỗi chính cần kiểm soát: hallucination (vi phạm
+phần tri thức, được phát hiện bởi lớp Faithfulness) và off-brand tone
+(vi phạm phần hành vi, được đo bởi lớp Vibe). Pipeline đánh giá ba lớp
+được thiết kế để phát hiện và định lượng chính xác hai loại lỗi này,
+tạo thành vòng phản hồi có thể hành động (actionable feedback loop) cho
+quá trình cải thiện liên tục.
+
 \subsection{ImageAgent --- Sinh ảnh}
 
 ImageAgent nhận mô tả hình ảnh từ \texttt{ExecutionPlan} và sinh ảnh
@@ -500,6 +525,17 @@ là giọng điệu, cách neo giá/deal, và cấu trúc CTA --- thứ mà các
 hình nền chưa nắm vững qua tiền huấn luyện đa mục đích. Cả hai mô hình
 sinh văn bản ở chế độ \emph{nothinking} (tắt chain-of-thought) để phù
 hợp tốc độ suy diễn trong môi trường sản xuất, nhiệt độ $T = 0{,}4$.
+
+Về dữ liệu huấn luyện SFT: tập bài viết Facebook F\&B tiếng Việt được
+thu thập và kiểm duyệt thủ công từ các nhà hàng và quán cà phê tại
+Việt Nam, đảm bảo đa dạng về loại hình (đồ uống, ăn nhanh, ăn ngồi),
+phân khúc giá (bình dân, trung cấp), và phong cách thương hiệu (năng
+động, truyền thống, hiện đại). Mỗi mẫu bao gồm cặp (prompt với thông
+tin sản phẩm thực, bài viết mẫu đã kiểm duyệt), cho phép mô hình học
+ánh xạ từ thông tin thô đến bài viết hoàn chỉnh theo phong cách mong
+muốn. Tập dữ liệu được làm sạch để loại bỏ các bài có nội dung quảng
+cáo thái quá, thiếu thông tin sản phẩm cụ thể, hoặc mang văn phong AI
+rập khuôn dễ nhận ra.
 
 \subsection{Tập dữ liệu đánh giá}
 
@@ -720,6 +756,18 @@ trọng hơn bản thân thuật toán RL. Hướng khắc phục trong tương 
 dụng tập huấn luyện GRPO là chính các bài viết marketing F\&B có số
 liệu tương tác thực tế, thay vì tập review chéo miền.
 
+Nhìn ở góc độ tích cực, thực nghiệm GRPO thất bại này cung cấp một bài
+học thiết kế có giá trị hơn nhiều so với một kết quả thành công dễ
+dàng. Ba yêu cầu để GRPO hoạt động hiệu quả trong bài toán sinh văn bản
+marketing đã được xác định rõ qua thực nghiệm: (1) \emph{tập huấn luyện
+phải cùng domain với tác vụ mục tiêu} (bài marketing thương hiệu, không
+phải bài review của người dùng); (2) \emph{hàm reward phải phản ánh chất
+lượng thực sự, không chỉ tín hiệu hình thức dễ hacking} (pipeline đánh
+giá đa lớp phù hợp hơn các chỉ số engagement đơn lẻ); (3) \emph{ràng
+buộc KL phải đủ mạnh} tương ứng với độ lớn của khoảng cách miền. Các
+yêu cầu này là nền tảng cụ thể cho hướng phát triển GRPO được đề xuất
+tại Chương~\ref{chap:ket-luan}.
+
 % -----------------------------------------------------------------------
 \section{Tổng kết kết quả thực nghiệm}
 \label{sec:tong-ket-thuc-nghiem}
@@ -839,6 +887,17 @@ GPT-5.4-mini ($\Delta = -0{,}020$, $-2{,}8\%$). Chi phí vận hành thấp
 hơn đáng kể --- mô hình chạy cục bộ, không phụ thuộc API thương mại
 theo lượt gọi --- mang lại ý nghĩa thực tiễn cho SME ngành F\&B Việt
 Nam có ngân sách hạn chế.
+
+Điểm đáng chú ý là mặc dù khoảng cách Overall giữa \texttt{qwen3.5:4b}
++ SFT và GPT-5.4-mini chỉ là $2{,}8\%$, sự khác biệt không phân phối
+đều giữa các lớp: Faithfulness của mô hình tinh chỉnh thậm chí
+vượt mô hình thương mại ($0{,}637$ so với $0{,}659$ --- khoảng cách
+chỉ $-0{,}022$), trong khi Vibe vẫn còn cách biệt lớn hơn ($0{,}648$
+so với $0{,}645$). Điều này gợi ý rằng SFT đặc biệt hiệu quả trong
+việc định hình phong cách Facebook-native (Vibe) và khả năng bảo toàn
+thực thể (Faithfulness), nhưng cần thêm dữ liệu đa dạng hơn để cải
+thiện Expansion --- thành phần đòi hỏi khả năng suy luận và diễn giải
+lợi ích sản phẩm ở mức độ cao hơn.
 
 Chương 4 đã trình bày toàn bộ quá trình xây dựng và thực nghiệm hệ
 thống Marketing Agent: từ thiết kế kiến trúc đa dịch vụ và schema cơ

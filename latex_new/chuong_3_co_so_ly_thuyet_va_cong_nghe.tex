@@ -30,9 +30,21 @@ giảm bộ nhớ, hoặc mở rộng quy mô mà vẫn kiểm soát chi phí v�
 phù hợp tình huống triển khai thực tế tại doanh nghiệp vừa và nhỏ nơi
 tài nguyên tính toán còn hạn chế.
 
+Từ góc độ tác vụ marketing F\&B, điểm mạnh cốt lõi của LLM dạng
+Transformer là khả năng duy trì sự nhất quán về giọng văn và cấu trúc
+bài viết qua nhiều lượt sinh khác nhau. Một bài đăng Facebook hiệu quả
+cho quán ăn thường có độ dài $150$--$300$ từ, cấu trúc rõ ràng (hook
+đầu bài thu hút sự chú ý, phần thân giới thiệu sản phẩm/khuyến mãi, và
+CTA cuối bài kêu gọi hành động), và tone phù hợp thương hiệu --- tất cả
+đều trong tầm khả năng của LLM hiện đại, đặc biệt khi được dẫn hướng
+bằng few-shot examples và hướng dẫn phong cách cụ thể trong prompt. Đây
+là lý do kiến trúc Transformer, với khả năng xử lý ngữ cảnh dài và mô
+hình hóa phụ thuộc đa chiều, được chọn làm nền tảng thay vì các kiến
+trúc tuần tự cũ hơn.
+
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.72\textwidth]{images/transformer.png}
+    \includegraphics[width=0.9\textwidth]{images/transformer.png}
     \caption{Mô tả tổng quan cơ chế attention trong kiến trúc Transformer
     (minh hoạ; chi tiết triển khai có nhiều biến thể). Nguồn: tài liệu
     tham khảo tổng hợp, \url{https://heidloff.net/article/foundation-models-transformers-bert-and-gpt/}.}
@@ -150,16 +162,22 @@ marketing từ prompt có cấu trúc ổn định đặc biệt hưởng lợi 
 ``uốn'' nhẹ lớp tuyến tính mà không cần sao chép cả tỷ tham số.
 
 QLoRA kết hợp lượng tử hoá mô hình cơ sở ở dạng độ chính xác
-thấp (4-bit) khi tải/huấn luyện, đồng thời duy trì LoRA ở vài bit
-cao hơn cho phép nhảy gradient, giúp giảm bộ nhớ vật lý tới mức
-huấn luyện trên thiết bị tầm trung --- phù hợp tình huống nghiên cứu
-thực tế có một GPU. Luận văn ưu tiên trình bày bản chất toán--kỹ
-thuật: hạng thấp thay thế cập nhật đầy đủ, và lượng tử khi cần tối
-ưu tài nguyên, thay vì mô tả từng công cụ phần mềm cụ thể.
+thấp (4-bit, định dạng NF4) khi tải/huấn luyện, đồng thời duy trì LoRA
+ở vài bit cao hơn cho phép nhảy gradient, giúp giảm bộ nhớ vật lý tới
+mức huấn luyện trên thiết bị tầm trung --- phù hợp tình huống nghiên
+cứu thực tế có một GPU. Trong thực nghiệm của luận văn, QLoRA được cấu
+hình với hạng $r = 16$ và $\alpha = 32$ trên bảy module (query, key,
+value, output projection, gate, up và down projection của khối
+feed-forward). Với thiết lập này, số tham số huấn luyện chỉ chiếm
+khoảng $0{,}58\%$ tổng tham số của mô hình $2$B (tương đương $10{,}9$M
+tham số có thể học), trong khi hành vi sinh văn bản thay đổi đáng kể
+so với mô hình nền. Đây là bằng chứng thực tiễn cho hiệu quả của PEFT
+trong bài toán tinh chỉnh phong cách: không cần cập nhật toàn bộ mô
+hình để dạy nó cách viết theo phong cách Facebook F\&B Việt Nam.
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.7\textwidth]{images/LoRA.png}
+    \includegraphics[width=0.9\textwidth]{images/LoRA.png}
     \caption{Ý tưởng tách cập nhật hạng thấp (LoRA) tách khỏi trọng số
     gốc, tiết kiệm tham số huấn luyện. Nguồn: \url{https://pub.towardsai.net/low-rank-adaptation-lora-fedf37b92026}.}
     \label{fig:lora}
@@ -202,9 +220,21 @@ $\pi_{\mathrm{ref}}$ để tránh phân kỳ quá xa. Cơ chế này giảm ph�
 vận hành vào reward model cỡ lớn, phù hợp phạm vi luận văn tập trung
 định hình phong cách và hành vi của Agent mà vẫn an toàn về tài nguyên.
 
+Ưu điểm của GRPO so với PPO không chỉ là tiết kiệm tài nguyên. Cơ chế
+so sánh trong nhóm còn trực quan hơn với bài toán sinh nội dung sáng
+tạo: thay vì hỏi ``bài viết này có điểm tốt không?'' (cần thước đo
+tuyệt đối ổn định), GRPO hỏi ``trong nhóm bốn bài này, bài nào tốt
+hơn?'' (so sánh tương đối). Câu hỏi thứ hai dễ trả lời và ổn định hơn
+theo thống kê --- tương tự cách người dùng thực sự đánh giá nội dung
+marketing trong thực tế bằng cách so sánh các lựa chọn thay vì chấm
+điểm tuyệt đối từng bài. Đặc điểm này phù hợp đặc biệt với tác vụ sinh
+caption Facebook, nơi ranh giới giữa ``tốt'' và ``đủ tốt'' phụ thuộc
+nhiều vào ngữ cảnh thương hiệu và không dễ định nghĩa bằng một ngưỡng
+tuyệt đối cố định.
+
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.82\textwidth]{images/GRPO.png}
+    \includegraphics[width=1.0\textwidth]{images/GRPO.png}
     \caption{Minh họa cơ chế GRPO: với mỗi câu hỏi $q$, mô hình
     tham chiếu $\pi_{\mathrm{ref}}$ sinh nhóm $G$ ứng viên đầu ra
     $\{a_1,\ldots,a_G\}$; mỗi ứng viên nhận phần thưởng $r_i$ rồi
@@ -229,6 +259,16 @@ một mô hình mã nguồn mở cỡ vài tỷ tham số vào tầm tài nguyê
 nghiên cứu thực tế. Cấu hình cụ thể được trình bày ở Chương
 \ref{chap:thuc-nghiem}.
 
+Một điểm quan trọng cần lưu ý về dữ liệu SFT: chất lượng và tính đại
+diện của tập huấn luyện ảnh hưởng lớn đến kết quả tinh chỉnh, đặc biệt
+với bài toán định hướng phong cách. Bài viết marketing F\&B tiếng Việt
+đạt chuẩn cần đồng thời đáp ứng nhiều yêu cầu: phong cách gần gũi phù
+hợp Facebook, bảo toàn chính xác thông tin sản phẩm (giá, combo, thông
+số), và CTA rõ ràng phù hợp với đối tượng khách. Việc curation dữ liệu
+--- lọc bỏ bài thiếu chi tiết thực tế, bài mang văn phong AI rõ ràng,
+hoặc bài không có CTA --- là bước tiền xử lý không thể bỏ qua trước khi
+đưa vào \texttt{SFTTrainer}.
+
 \section{Retrieval-Augmented Generation (RAG)}\label{sec:rag}
 
 \subsection{Nền tảng pipeline}
@@ -243,9 +283,20 @@ cập nhật menu, giá, chính sách khuyến mãi hay ``giọng
 thương hiệu'' không nhất thiết qua từng vòng lặp fine-tune
 lớn, mà bằng cập nhật kho tài liệu và cơ sở truy hồi.
 
+Trong ngữ cảnh Marketing Agent, RAG đặc biệt có giá trị ở bài toán
+cá nhân hóa theo thương hiệu: cùng một mô hình nền đã được tinh chỉnh
+phong cách chung, nhưng thông tin sản phẩm cụ thể (tên món, giá, combo
+đặc trưng) của từng quán khác nhau hoàn toàn. Thay vì fine-tune riêng
+một mô hình cho mỗi thương hiệu --- cách tiếp cận tốn kém và không mở
+rộng được --- RAG cho phép một mô hình duy nhất phục vụ nhiều thương
+hiệu khác nhau bằng cách thay đổi ngữ cảnh truy hồi trong prompt.
+Đây là cơ chế tách bạch giữa \emph{năng lực ngôn ngữ} (học qua
+fine-tuning) và \emph{tri thức domain} (cung cấp qua RAG), phù hợp với
+mô hình SaaS cho nhiều SME F\&B.
+
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.72\textwidth]{images/rag.png}
+    \includegraphics[width=1.0\textwidth]{images/rag.png}
     \caption{Mô tả tổng quan: truy hồi tài liệu ngoài, kết
     hợp ngữ cảnh vào prompt, rồi sinh. Nguồn: \url{https://github.com/langchain-ai/rag-from-scratch}.}
     \label{fig:rag}
@@ -413,6 +464,15 @@ Quy trình kết hợp các lớp đánh giá và số hóa kết quả
 cùng với kiểm định tương quan giữa điểm tự động và đánh
 giá của chuyên gia.
 
+Một điểm đáng chú ý về thiết kế pipeline là sự phân tách giữa ba lớp
+không chỉ mang ý nghĩa đo lường mà còn có ý nghĩa chẩn đoán. Khi một
+bài viết không vượt ngưỡng phê duyệt, điểm thành phần của ba lớp cho
+biết chính xác điểm yếu: Faithfulness thấp gợi ý mô hình bịa đặt thông
+tin; Expansion thấp gợi ý bài chỉ liệt kê thông tin thô mà không diễn
+giải lợi ích; Vibe thấp gợi ý phong cách không phù hợp với Facebook F\&B.
+Thông tin chẩn đoán này có thể được dùng để điều chỉnh prompt trong lần
+sinh lại, tạo thành vòng lặp phản hồi tự động có định hướng.
+
 \section{Tác nhân (Agent) dựa trên mô hình ngôn ngữ lớn}\label{sec:agent}
 
 \subsection{Khái niệm Agent và vòng lặp suy diễn}
@@ -445,6 +505,15 @@ toàn bộ quy trình này vào một prompt duy nhất khó kiểm
 soát chất lượng và khó tinh chỉnh từng bước, trong khi
 cấu trúc Agent cho phép tách bạch và can thiệp ở từng giai
 đoạn.
+
+Quan trọng hơn, cấu trúc Agent cho phép mỗi bước sử dụng mô hình và
+cấu hình phù hợp với tính chất của nó: agent điều phối cần hiểu ý định
+ngôn ngữ tự nhiên (LLM lớn hơn, nhiệt độ thấp để ổn định); agent lập
+kế hoạch cần sáng tạo và đa dạng trong gợi ý chiến dịch (nhiệt độ cao
+hơn); agent sinh nội dung cần trung thực với thông tin sản phẩm (nhiệt
+độ thấp, có template). Kiến trúc đơn LLM buộc phải dùng một cấu hình
+cho tất cả, trong khi kiến trúc đa tác nhân cho phép tối ưu từng vai
+độc lập.
 
 \subsection{Một số mẫu thiết kế phổ biến}
 

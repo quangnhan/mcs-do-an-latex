@@ -19,6 +19,17 @@ không giải quyết được vấn đề thiếu ý tưởng sáng tạo. Sự
 trong nội dung và quản lý chiến dịch dẫn đến việc bỏ lỡ cơ hội thu hút
 khách hàng mới và giữ chân khách hàng hiện tại.
 
+Thực trạng này đặt ra bài toán cụ thể: làm thế nào để một chủ quán cà
+phê tại Hà Nội hay một nhà hàng gia đình ở TP.HCM có thể duy trì sự
+hiện diện nhất quán và chuyên nghiệp trên Facebook mà không cần thuê
+thêm nhân sự marketing hay bỏ ra hàng giờ mỗi ngày để soạn bài? Câu
+trả lời đòi hỏi sự kết hợp giữa tự động hóa nội dung thông minh và
+kiểm soát chất lượng có hệ thống --- hai yếu tố hiện vẫn chưa được bất
+kỳ công cụ thị trường nào đáp ứng đồng thời. Đặc biệt, việc tích hợp
+dữ liệu thương hiệu nội bộ (menu, giá cả, phong cách thương hiệu) vào
+quy trình sinh nội dung là yêu cầu then chốt để nội dung không chỉ
+đúng ngữ pháp mà còn phù hợp với bản sắc riêng của từng doanh nghiệp.
+
 Trong bối cảnh đó, việc ứng dụng công nghệ AI Agent dựa trên các mô hình
 ngôn ngữ lớn (LLM) mở ra một hướng giải quyết đột phá. Một AI Agent
 chuyên biệt có thể hỗ trợ xây dựng chiến lược và tạo ra nội dung
@@ -115,19 +126,37 @@ Phương pháp nghiên cứu gồm ba nhóm hoạt động chính:
   \textbf{Thiếu kỹ năng và thời gian của chủ quán F\&B:}
   Chủ quán thường không chuyên về marketing và công nghệ, yêu cầu giao
   diện cực kỳ đơn giản và quy trình tự động hóa cao độ, giảm thiểu tối
-  đa thao tác thủ công hàng ngày.
+  đa thao tác thủ công hàng ngày. Đây là ràng buộc thiết kế cốt lõi:
+  một hệ thống dù mạnh đến đâu nhưng đòi hỏi người dùng phải hiểu về
+  prompt engineering hay cấu hình API sẽ không có khả năng tiếp cận
+  thực tế với nhóm đối tượng này. Giao diện hội thoại tự nhiên (chat)
+  là hướng đến được xác định ngay từ giai đoạn khảo sát nhu cầu.
 
 \item
   \textbf{Chất lượng nội dung và tính xác thực:}
   Nội dung marketing F\&B đòi hỏi sự chân thực và nhất quán với giọng
   thương hiệu, trong khi nội dung do AI tạo sinh có nguy cơ bị cảm nhận
-  là thiếu tự nhiên hoặc không phù hợp.
+  là thiếu tự nhiên hoặc không phù hợp. Thêm vào đó, thuật toán hiển
+  thị của Facebook ưu tiên nội dung có mức độ tương tác cao (lượt thích,
+  bình luận, chia sẻ), đặt ra áp lực kép: nội dung phải vừa nhất quán
+  với giọng thương hiệu vừa đủ hấp dẫn để người dùng thực sự tương tác.
+  Đây là lý do pipeline đánh giá chất lượng đa lớp cần đo lường cả tính
+  trung thực với thông tin sản phẩm (Faithfulness), chất lượng diễn giải
+  lợi ích (Expansion), lẫn phong cách marketing phù hợp với Facebook
+  F\&B Việt Nam (Vibe).
 
 \item
   \textbf{Tính địa phương hóa:}
   Xu hướng F\&B và nội dung viral trên \textbf{Facebook} tại thị trường
   Việt Nam thay đổi liên tục; hệ thống phải tạo ra nội dung phù hợp văn
-  hóa địa phương, tránh biểu đạt lỗi thời hoặc không liên quan.
+  hóa địa phương, tránh biểu đạt lỗi thời hoặc không liên quan. Điều
+  này đòi hỏi hệ thống không chỉ sinh nội dung tiếng Việt chuẩn xác mà
+  còn phải nắm bắt ngữ điệu quen thuộc trong cộng đồng F\&B địa phương
+  và các tín hiệu văn hóa đặc thù như dịp lễ Việt Nam, xu hướng ẩm
+  thực vùng miền, và cách viết caption phổ biến theo từng thể loại quán
+  (cà phê, nhà hàng, đồ ăn nhanh). Đây là một trong những lý do chính
+  tại sao dòng mô hình mã nguồn mở đa ngôn ngữ hỗ trợ tiếng Việt được
+  ưu tiên lựa chọn cho thực nghiệm thay vì các mô hình chỉ có tiếng Anh.
 \end{itemize}
 
 \section{Bố cục luận văn}\label{sec:bo-cuc}
