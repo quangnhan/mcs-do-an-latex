@@ -17,7 +17,7 @@ với các thành phần tách biệt rõ trách nhiệm, giao tiếp qua messag
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.95\textwidth]{images/system_architecture.png}
+  \includegraphics[width=1.0\textwidth]{images/system_architecture.png}
   \caption{Kiến trúc tổng quan hệ thống Marketing Agent}
   \label{fig:system-architecture}
 \end{figure}
@@ -549,6 +549,71 @@ phương --- môi trường gần nhất với triển khai thực tế của h�
 Judge: GPT-5.4 Azure, cùng pipeline đánh giá ba lớp mô tả ở
 Mục~\ref{sec:pipeline-danh-gia}.
 
+\textbf{Tập huấn luyện SFT.} 500 mẫu định dạng instruction-tuning, mỗi
+mẫu gồm bốn trường: \texttt{instruction} (vai trò copywriter và ràng buộc
+phong cách), \texttt{title} (mô tả nhiệm vụ), \texttt{seed} (thông tin
+sản phẩm/chiến dịch), và \texttt{content} (bài viết hoàn chỉnh đã kiểm
+duyệt). Nội dung được một chuyên gia sinh bằng AI và hiệu chỉnh thủ công
+để đảm bảo chất lượng. Ví dụ minh họa một mẫu SFT:
+
+\begin{lstlisting}[language={},basicstyle=\scriptsize\ttfamily,
+  breaklines=true,frame=single,numbers=none,
+  caption={Ví dụ mẫu trong tập huấn luyện SFT (rút gọn).}]
+{
+  "id": 1,
+  "instruction": "Ban la copywriter marketing nguoi Viet,
+    giong than thien nhu freelancer, viet Facebook-native,
+    doan ngan, de doc va co CTA ro. Noi dung phuc vu buoc
+    audience research & insight, bam sat seed, khong hype
+    rong, khong bia uu dai hay claim ngoai du lieu.",
+  "title": "Viet post Facebook khao sat insight khach mua
+    nhanh cho MiniGo Mart -- hook di cho tien, gan, du mon.",
+  "seed": "Thuong hieu: MiniGo Mart -- sieu thi mini,
+    8 cua hang Ha Noi\nSan pham: Combo bua toi 5 mon cho
+    2 nguoi\nGia: 129.000d (goc 159.000d, -19%), freeship
+    2km\nDieu kien: 17h-20h, dat Facebook/Zalo, gioi han
+    40 combo/ngay\nDoi tuong: 24-38 tuoi, nhan vien van
+    phong, Cau Giay-Hai Ba Trung",
+  "content": "Tan lam roi ma van phai nghi 'toi nay an gi'
+    la chuyen rat quen voi dan van phong o Ha Noi...\n\n
+    MiniGo Mart dang thu nghiem Combo bua toi 5 mon cho 2
+    nguoi, uu tien kieu mua nhanh - du mon - khong phai di
+    xa. Bon minh muon nghe insight that tu moi nguoi o Cau
+    Giay va Hai Ba Trung: khi chon do an toi sau gio lam,
+    ban quan tam nhat dieu gi?\n\n[...] Inbox ngay neu ban
+    muon trai nghiem thu nhe."
+}
+\end{lstlisting}
+
+\textbf{Tập kiểm thử (test set).} 100 trường hợp chỉ chứa ba trường
+\texttt{instruction}, \texttt{title}, \texttt{seed} --- không có
+\texttt{content} --- để mô hình tự sinh đầu ra rồi đưa vào pipeline
+đánh giá. Ví dụ:
+
+\begin{lstlisting}[language={},basicstyle=\scriptsize\ttfamily,
+  breaklines=true,frame=single,numbers=none,
+  caption={Ví dụ mẫu trong tập kiểm thử (không có trường content).}]
+{
+  "id": 26,
+  "instruction": "Ban la copywriter marketing nguoi Viet,
+    giong founder startup F&B, viet Facebook-native dai
+    250-400 tu, ro offer, co hook, CTA cu the, khong hype
+    rong. Bam sat seed, uu tien insight di an nhom mua le,
+    neu loi ich thuc te va khong bia claim ngoai du lieu.",
+  "title": "Viet caption Facebook cho Noel & Nam Moi cua
+    Seoul Garden Buffet -- combo di nhom giam sau, chot
+    ban som.",
+  "seed": "Thuong hieu: Seoul Garden Buffet, 8 chi nhanh,
+    Ha Noi & TP.HCM\nSan pham: Buffet Noel & New Year,
+    90 mon, lau+nuong, 120 phut\nGia: 329.000d (goc
+    429.000d, -23%), tang 1 Pepsi ban 4 khach\nDieu kien:
+    20/12-01/01, dat fanpage/Zalo, toi da 100 ban/ngay\n
+    Doi tuong: 23-38 tuoi, dan van phong, nhom ban,
+    Q1, Q3, Cau Giay\nKPI: ROAS >=4,5; CPL <=18.000d;
+    fill rate >=85%"
+}
+\end{lstlisting}
+
 \subsection{Kết quả SFT}
 
 \textbf{qwen3.5:2b + SFT} ghi nhận cải thiện ở hai chiều Expansion
@@ -638,6 +703,41 @@ Trọng số cao hơn cho share ($1{,}5\times$) phản ánh cam kết sâu hơn;
 hàm logarithm nén phân phối lệch phải của engagement. Tập train
 dùng 256 mẫu, tập eval dùng 32 mẫu, lấy ngẫu nhiên từ 500 bài.
 
+Ví dụ một bản ghi thực từ tập Dining Review minh họa cấu trúc dữ liệu
+và phân bố tín hiệu tương tác:
+
+\begin{lstlisting}[language={},basicstyle=\scriptsize\ttfamily,
+  breaklines=true,frame=single,numbers=none,
+  caption={Ví dụ một dòng trong tập Dining Review (CSV, rút gọn).}]
+commentsCount: 22
+text: "CUNG YEN O BAC KINH.
+
+  Khong biet co ai giong nhu minh ko, la nghe thay Cung Yen cu so no
+  dong voi an chan, nham nhi,... nhung ma lan nay minh di tour nen tham
+  gia cung doan, ko ngo lai la 1 trai nghiem rat thu vi...
+
+  Gia thi tu 1.5tr den 3tr cho 1 nguoi. Minh quan sat thay do an mang
+  ra nhu nhau nen minh doan la gia bao gom ca chi phi cosplay va chenh
+  nhau o vi tri ngoi...
+
+  Mon minh thich nhat la soup bao ngu - hai sam, trui ui con hai sam no
+  tuoi nhu van dang con nam duoi day bien vay. Minh can 1 mieng ma thay
+  ro huong vi cua bien luon ay. Rat me.
+
+  Tum lai la nen di, rat nen di a.
+  #diningreview #cung_yen #backinh #trungquoc"
+likesCount: 38
+reactionLikeCount: 35
+reactionLoveCount: 3
+sharesCount: 0
+(reactionAngry/Care/Haha/Sad/Wow: 0)
+\end{lstlisting}
+
+Bản ghi trên có 22 bình luận, 38 lượt thích và tỉ lệ Love cao (3/38)
+--- tín hiệu cho thấy bài review dạng kể chuyện cá nhân, có cảm xúc
+thực, kết hợp hashtag chuyên biệt có khả năng tạo engagement tốt hơn
+bài viết quảng cáo thuần túy.
+
 \textbf{Chiến lược Prefix Completion.} Dataset không có cặp
 prompt--response rõ ràng. Giải pháp: câu đầu tiên của mỗi bài thực
 đóng vai trò \emph{state/prompt}, phần còn lại do model sinh ra và
@@ -696,7 +796,7 @@ cùng mô hình nền. Bảng~\ref{tab:grpo-config} tóm tắt siêu tham số.
   \small
   \caption{Siêu tham số huấn luyện GRPO.}
   \label{tab:grpo-config}
-  \begin{tabular}{ll}
+  \begin{tabular}{lp{0.62\textwidth}}
     \toprule
     \textbf{Tham số} & \textbf{Giá trị} \\
     \midrule
@@ -873,7 +973,7 @@ Ngược lại, \texttt{qwen3.5:2b} + RL ghi nhận Faithfulness chỉ $0{,}347$
 hiện tượng reward hacking rõ ràng khi mô hình học từ tín hiệu không
 được căn chỉnh với tác vụ mục tiêu.
 
-\textbf{GRPO với dữ liệu chéo miền gây hồi quy chất lượng.}
+\textbf{GRPO với dữ liệu chéo miền làm giảm chất lượng.}
 Overall $0{,}352$ của \texttt{qwen3.5:2b} + RL thấp hơn cả baseline
 $0{,}570$ ($-38{,}2\%$). Kết quả này phủ nhận giả thuyết rằng tín hiệu
 engagement từ tập Dining Review có thể thay thế nhãn kiểm duyệt trong
