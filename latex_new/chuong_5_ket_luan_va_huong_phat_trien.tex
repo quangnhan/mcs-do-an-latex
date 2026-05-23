@@ -82,12 +82,14 @@ biệt cần bảo vệ.
 Chương~\ref{chap:thuc-nghiem} trình bày hai giai đoạn thực nghiệm liên
 tiếp: (i) đánh giá mô hình nền (\texttt{qwen3.5:2b}, \texttt{4b},
 \texttt{9b}) trên pipeline đánh giá đa lớp để xác định phân khúc tham
-số phù hợp; (ii) fine-tuning chuyên biệt trên hai mô hình được chọn
-bằng cả SFT (QLoRA) và học tăng cường (GRPO) để định hình phong cách
-marketing F\&B tiếng Việt. Kết quả giai đoạn (i) xác định điểm khởi
-đầu chi phí--hiệu quả tốt nhất cho giai đoạn (ii), trong khi pipeline
-đánh giá đa lớp đóng vai trò reward signal cho GRPO mà không cần huấn
-luyện reward model riêng.
+số phù hợp; (ii) fine-tuning chuyên biệt trên các mô hình được chọn
+bằng cả SFT (QLoRA, trên 2B và 4B) và học tăng cường GRPO (trên 2B)
+để định hình phong cách marketing F\&B tiếng Việt. Kết quả giai đoạn
+(i) xác định điểm khởi đầu chi phí--hiệu quả tốt nhất cho giai đoạn
+(ii). Pipeline đánh giá đa lớp đóng vai trò khung đánh giá chung độc
+lập với phương pháp huấn luyện; trong khi đó, GRPO sử dụng một hàm
+reward rule-based riêng (xem Mục~\ref{sec:grpo-result}) không cần
+huấn luyện reward model.
 
 \begin{enumerate}
   \item \textbf{Kiến trúc đa tác nhân chuyên biệt cho marketing F\&B.}
@@ -103,14 +105,15 @@ luyện reward model riêng.
     Expansion, Vibe --- với công thức tổ hợp minh bạch giữa rule-based
     và LLM-as-a-Judge (Mục~\ref{sec:pipeline-danh-gia}). Đây là đóng
     góp mở rộng so với DeepEval và Ragas vốn chưa có bộ chỉ số chuyên
-    biệt cho nội dung marketing tiếng Việt. Pipeline này đồng thời
-    đóng vai trò kép: cơ chế kiểm duyệt tự động trong vận hành và
-    reward signal trực tiếp cho GRPO. Điểm đặc biệt là tính
-    \emph{song dụng} này đảm bảo mô hình được tối ưu theo đúng tiêu
-    chí sẽ được ánh xạ trong sản xuất --- loại bỏ vấn đề ``metric
-    divergence'' thường gặp khi hàm reward huấn luyện khác với tiêu
-    chí đánh giá triển khai, đặc biệt trong các bài toán sinh văn bản
-    sáng tạo như marketing.
+    biệt cho nội dung marketing tiếng Việt. Pipeline đóng vai trò cơ
+    chế kiểm duyệt tự động trong vận hành (auto-approval theo ngưỡng
+    $\theta$), đồng thời là khung đo lường thống nhất để so sánh các
+    phương pháp tinh chỉnh (SFT, GRPO) và mô hình thương mại tham
+    chiếu. Hướng phát triển sử dụng chính ba chiều F/E/V làm tín hiệu
+    reward cho GRPO --- thay vì reward rule-based chéo miền như trong
+    luận văn --- được đề xuất tại Mục~\ref{sec:han-che-huong-phat-trien}
+    để loại bỏ vấn đề ``metric divergence'' giữa tín hiệu huấn luyện
+    và tiêu chí đánh giá triển khai.
 
   \item \textbf{Schema cơ sở dữ liệu hỗ trợ vòng cải thiện liên tục.}
     Thiết kế ba tầng \texttt{campaign\_runs} $\rightarrow$
@@ -232,14 +235,18 @@ triển sau:
 
 \paragraph{Hướng 1 --- Mở rộng và cải thiện thực nghiệm fine-tuning.}
 Kết quả tại Chương~\ref{chap:thuc-nghiem} xác nhận SFT hiệu quả trong
-khi GRPO bị suy giảm do lệch miền. Hướng phát triển gồm ba nhánh:
+khi GRPO bị suy giảm do lệch miền. Hướng phát triển gồm bốn nhánh:
 (i)~mở rộng tập dữ liệu SFT từ $500$ lên $2{,}000$+ bài viết
 marketing F\&B đã kiểm duyệt, bao phủ đa dạng hơn về loại hình và
 phong cách thương hiệu, kỳ vọng cải thiện thêm Faithfulness và Vibe;
 (ii)~thiết kế lại tập huấn luyện GRPO sử dụng chính các bài đăng
 marketing F\&B có số liệu tương tác thực tế (thay vì tập Dining Review
 chéo miền), nhằm khắc phục reward hacking và hiện tượng suy giảm
-Faithfulness; (iii)~thực nghiệm fine-tuning trên mô hình $9$B trở lên
+Faithfulness; (iii)~thí nghiệm sử dụng chính ba chiều Faithfulness,
+Expansion, Vibe của pipeline đánh giá làm hàm reward cho GRPO ---
+tận dụng tính nhất quán giữa tín hiệu huấn luyện và tiêu chí đánh giá
+triển khai, đồng thời so sánh trực tiếp với reward rule-based chéo
+miền hiện tại; (iv)~thực nghiệm fine-tuning trên mô hình $9$B trở lên
 để xác định điểm bão hòa lợi ích của tinh chỉnh theo quy mô tham số.
 
 \paragraph{Hướng 2 --- Kiểm định trên dữ liệu F\&B thực tế quy mô

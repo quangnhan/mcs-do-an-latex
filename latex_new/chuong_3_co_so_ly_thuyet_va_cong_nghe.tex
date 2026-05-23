@@ -191,10 +191,14 @@ bằng nhãn tường minh --- chẳng hạn ``phong cách marketing đúng ch�
 F\&B'' --- học tăng cường (RL) cho phép tối ưu mô hình trực tiếp theo
 hàm thưởng đo được. Thay vì học từ câu trả lời mẫu đúng, mô hình
 nhận tín hiệu thưởng sau mỗi đầu ra và cập nhật tham số để tối đa hóa
-thưởng kỳ vọng. Trong ngữ cảnh tạo nội dung, hàm thưởng có thể là điểm
-Faithfulness, Expansion, hoặc Vibe từ pipeline đánh giá đa lớp (xem
-Mục~\ref{sec:eval-metrics}), đưa tín hiệu tự động này trực tiếp vào
-vòng huấn luyện mà không cần người gán nhãn tường minh cho từng bài.
+thưởng kỳ vọng. Trong ngữ cảnh tạo nội dung, hàm thưởng có thể được
+xây dựng từ nhiều nguồn: các quy tắc hình thức (độ dài, sự hiện diện
+của CTA, tỉ lệ ký tự tiếng Việt), tín hiệu tương tác từ dữ liệu lịch
+sử, hoặc trên nguyên tắc cả điểm Faithfulness/Expansion/Vibe từ
+pipeline đánh giá đa lớp (Mục~\ref{sec:eval-metrics}). Trong phạm vi
+luận văn, thực nghiệm GRPO sử dụng hàm thưởng rule-based (chi tiết
+tại Mục~\ref{sec:grpo-result}); việc dùng trực tiếp pipeline đánh giá
+làm reward được đề xuất như hướng phát triển tiếp theo.
 
 \subsubsection{Group Relative Policy Optimization (GRPO)}
 
@@ -339,8 +343,7 @@ Việc đăng nội dung tự động lên kênh Facebook yêu cầu
 một tầng chấm điểm / lọc trước bước phê
 duyệt cuối, phù hợp bối cảnh ``approval step'' đã
 phân tích ở chương nghiên cứu thị trường. Chương
-này tách ba lớp: quy tắc tường minh, chỉ số xác
-suất từ mô hình, và thẩm định theo bước
+này tách hai lớp: quy tắc tường minh và thẩm định theo bước
 tương tự thẩm phán bằng LLM, để Chương
 \ref{chap:thuc-nghiem} mô tả pipeline cụ
 thể (module, tham số, tương quan với
