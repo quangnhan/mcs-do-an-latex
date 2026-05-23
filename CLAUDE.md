@@ -1,4 +1,4 @@
-# CLAUDE.md — Luận văn Thạc sĩ: Marketing Agent F&B
+# CLAUDE.md — đồ án Thạc sĩ: Marketing Agent F&B
 
 ## Tổng quan đề tài
 
@@ -15,10 +15,10 @@
 
 ## Các repository liên quan
 
-### 1. `D:\Github\mcs-do-an-latex` — Luận văn LaTeX (repo này)
+### 1. `D:\Github\mcs-do-an-latex` — đồ án LaTeX (repo này)
 - `latex_new/` — source LaTeX chính
 - `source_code/marketing_model_eval.ipynb` — notebook đánh giá (bản sao/mirror từ eval repo)
-- `documents/13.4.2026_dan_y.md` — dàn ý luận văn chi tiết
+- `documents/13.4.2026_dan_y.md` — dàn ý đồ án chi tiết
 
 ### 2. `D:\Github\mcs-do-an` — Hệ thống Marketing Agent (source code thực tế)
 Stack: FastAPI + LangGraph + PostgreSQL + RabbitMQ/Celery + MinIO + Langfuse + LiteLLM
@@ -106,7 +106,7 @@ mcs-do-an-eval-llm/
 
 ---
 
-## Trạng thái các chương luận văn
+## Trạng thái các chương đồ án
 
 | Chương | Tên | Trạng thái |
 |--------|-----|-----------|

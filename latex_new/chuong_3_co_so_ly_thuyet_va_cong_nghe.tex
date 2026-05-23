@@ -9,7 +9,7 @@ tiệm cận hiệu suất mô hình thương mại lớn, và đánh giá chấ
 trước khi đăng bài. Các mục được sắp xếp theo thứ tự từ kiến trúc mô
 hình, thích ứng tác vụ, bổ sung tri thức bên ngoài đến chuẩn hóa chất
 lượng đầu ra, ăn khớp với thiết kế tổng thể hệ thống và nội dung thực
-nghiệm ở Chương~\ref{chap:thuc-nghiem}. Luận văn không mở rộng lịch sử
+nghiệm ở Chương~\ref{chap:thuc-nghiem}. Đồ án không mở rộng lịch sử
 NLP theo hướng từ mô hình túi từ (Bag-of-Words) hay RNN, mà tập trung
 vào mô hình ngôn ngữ lớn dạng Transformer cải tiến hiện đang được sử dụng
 rộng rãi trong cả nghiên cứu và triển khai.
@@ -60,7 +60,7 @@ chung một tập hợp head Key--Value (theo nhóm), giảm số lần tính to
 và tải bộ nhớ liên quan tới bản sao KV, đặc biệt hữu ích với số lượng
 head lớn khi tạo văn bản từng bước. Về mặt thực tiễn, GQA cân bằng giữa
 chất lượng biểu diễn (so với Multi-Query Attention còn mạnh hơn) và hiệu
-năng suy diễn (tốt hơn mô hình mỗi head một KV riêng). Luận văn cần bối
+năng suy diễn (tốt hơn mô hình mỗi head một KV riêng). Đồ án cần bối
 cảnh này khi mô tả lựa chọn hoặc so sánh các mô hình mã nguồn mở: nhiều
 biến thể tên gọi (ví dụ dòng mô hình tối ưu suy diễn) tích hợp GQA ở
 các tầng attention.
@@ -92,7 +92,7 @@ cân bằng dung lượng mô hình với chi phí suy diễn (FLOPs, độ
 trễ). Điều này liên quan trực tiếp tới tối ưu vận hành: doanh
 nghiệp có thể cân nhắc mô hình MoE khi cần dung lượng tri thức
 phong phú nhưng vẫn phải giới hạn GPU/VRAM. Các mô hình được tinh chỉnh
-trong luận văn (Qwen3.5 2B/4B) sử dụng kiến trúc dense tiêu chuẩn, không
+trong đồ án (Qwen3.5 2B/4B) sử dụng kiến trúc dense tiêu chuẩn, không
 áp dụng MoE; MoE được trình bày ở đây như nền tảng lý thuyết để hiểu toàn
 cảnh thiết kế mô hình mã nguồn mở hiện đại.
 
@@ -105,7 +105,7 @@ dưới 2B đến hơn 70B tham số cho phép lựa chọn linh hoạt giữa c
 suy diễn và năng lực ngôn ngữ, phù hợp với ràng buộc phần cứng của
 nghiên cứu trên một GPU đơn.
 
-Luận văn tập trung vào ba biến thể \textbf{Qwen3.5 2B}, \textbf{4B} và
+Đồ án tập trung vào ba biến thể \textbf{Qwen3.5 2B}, \textbf{4B} và
 \textbf{9B} làm mô hình cơ sở (baseline), trong đó 2B và 4B được tinh
 chỉnh thêm bằng SFT (QLoRA) và GRPO. Mục tiêu thực nghiệm là kiểm chứng
 khả năng đưa mô hình tham số nhỏ (2B--4B) tiệm cận hiệu suất của mô hình
@@ -128,7 +128,7 @@ Tinh chỉnh có giám sát (SFT) điều chỉnh mô hình dựa trên tập d�
 gồm các cặp đầu vào--đầu ra có nhãn: với mỗi mẫu $(x, y^*)$, mô hình
 cực đại hóa log-likelihood sinh ra $y^*$ từ $x$. Đây là bước nền tảng
 giúp mô hình tiền huấn luyện thích nghi với phong cách và định dạng
-đặc thù của tác vụ --- trong trường hợp luận văn là bài đăng marketing
+đặc thù của tác vụ --- trong trường hợp đồ án là bài đăng marketing
 F\&B tiếng Việt trên Facebook với tông giọng gần gũi, cấu trúc rõ ràng,
 và lời kêu gọi hành động cụ thể.
 
@@ -165,7 +165,7 @@ QLoRA kết hợp lượng tử hoá mô hình cơ sở ở dạng độ chính 
 thấp (4-bit, định dạng NF4) khi tải/huấn luyện, đồng thời duy trì LoRA
 ở vài bit cao hơn cho phép nhảy gradient, giúp giảm bộ nhớ vật lý tới
 mức huấn luyện trên thiết bị tầm trung --- phù hợp tình huống nghiên
-cứu thực tế có một GPU. Trong thực nghiệm của luận văn, QLoRA được cấu
+cứu thực tế có một GPU. Trong thực nghiệm của đồ án, QLoRA được cấu
 hình với hạng $r = 16$ và $\alpha = 32$ trên bảy module (query, key,
 value, output projection, gate, up và down projection của khối
 feed-forward). Với thiết lập này, số tham số huấn luyện chỉ chiếm
@@ -217,7 +217,7 @@ Chính sách $\pi_\theta$ được cập nhật để tăng xác suất sinh ứ
 $\hat{A}_i > 0$ và giảm xác suất sinh ứng viên có $\hat{A}_i < 0$, đồng
 thời có thêm ràng buộc KL-divergence so với chính sách tham chiếu
 $\pi_{\mathrm{ref}}$ để tránh phân kỳ quá xa. Cơ chế này giảm phụ thuộc
-vận hành vào reward model cỡ lớn, phù hợp phạm vi luận văn tập trung
+vận hành vào reward model cỡ lớn, phù hợp phạm vi đồ án tập trung
 định hình phong cách và hành vi của Agent mà vẫn an toàn về tài nguyên.
 
 Ưu điểm của GRPO so với PPO không chỉ là tiết kiệm tài nguyên. Cơ chế
@@ -327,12 +327,12 @@ dùng chung họ nếu cấu hình cho phép). Truy vấn từ
 người dùng/Agent cũng được cùng không gian vector; việc
 tìm kiếm tương tự theo tích vô hướng hoặc khoảng cách
 cosine, kèm top--$k$ ứng viên, là lớp nền
-của vector store. Ứng dụng cho luận văn: bảo đảm nội
+của vector store. Ứng dụng cho đồ án: bảo đảm nội
 dung sinh còn khớp thực thể (tên món, địa
 danh, tên thương hiệu) bằng cách ưu tiên cung cấp ngữ
 cảnh từ kho tài liệu đã lập chỉ mục, bổ sung cho phần
 tinh chỉnh phong cách ở mục
-\ref{sec:fine-tuning}. Trong phạm vi thực nghiệm của luận văn,
+\ref{sec:fine-tuning}. Trong phạm vi thực nghiệm của đồ án,
 tri thức thương hiệu được lưu trữ có cấu trúc trong cơ sở dữ liệu
 quan hệ và nạp trực tiếp vào prompt của Agent; việc tích hợp
 vector store và embedding đầy đủ là hướng mở rộng tiếp theo.
@@ -410,7 +410,7 @@ khỏi điểm Vibe tổng hợp.
 
 G-Eval đề xuất dùng chính LLM làm thẩm phán: cung cấp
 rubric (tiêu chí, thang điểm) kèm Chain-of-Thought ngắn
-để gán điểm chất lượng. Luận văn tích hợp G-Eval từ thư
+để gán điểm chất lượng. đồ án tích hợp G-Eval từ thư
 viện DeepEval cho lớp Faithfulness và Expansion, mỗi lớp
 có tiêu chí đặc thù (xem Chương~\ref{chap:thuc-nghiem}).
 
@@ -477,7 +477,7 @@ sinh lại, tạo thành vòng lặp phản hồi tự động có định hư�
 
 \subsection{Khái niệm Agent và vòng lặp suy diễn}
 
-Trong khuôn khổ luận văn, tác nhân (Agent) được hiểu là hệ
+Trong khuôn khổ đồ án, tác nhân (Agent) được hiểu là hệ
 thống gồm một mô hình ngôn ngữ lớn đóng vai bộ điều khiển,
 kèm tập công cụ (tool) bên ngoài, một dạng bộ nhớ ngắn hoặc
 dài hạn, và một vòng lặp suy diễn xen kẽ giữa quan sát --
@@ -576,7 +576,7 @@ khó truy vết.
     \label{fig:multi-agent}
 \end{figure}
 
-Hiện thực hóa cụ thể của các mẫu trên trong luận văn (sơ
+Hiện thực hóa cụ thể của các mẫu trên trong đồ án (sơ
 đồ trạng thái, danh mục công cụ, phân chia agent) được
 trình bày ở Chương~\ref{chap:thuc-nghiem}.
 

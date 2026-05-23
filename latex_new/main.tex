@@ -41,8 +41,28 @@
 \input{trang_bia}
 \hypersetup{pageanchor=true}
 
+% Front matter: mỗi trang một file riêng để dễ sửa
+\clearpage
+\input{loi_cam_doan}
+\clearpage
+\input{loi_cam_on}
+\clearpage
+\input{tom_tat}
+\clearpage
+
 % Mục lục (cần ít nhất hai lần pdflatex sau khi đổi cấu trúc chương)
 \tableofcontents
+
+% Danh sách hình vẽ và bảng (tạo tự động từ LaTeX)
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{Danh sách hình vẽ}
+\listoffigures
+
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{Danh sách bảng}
+\listoftables
 
 % Các chương thành phần
 \include{chuong_1_gioi_thieu_de_tai}
