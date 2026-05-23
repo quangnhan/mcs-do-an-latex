@@ -355,7 +355,7 @@ phiên làm việc độc lập về trạng thái hội thoại.
 \section{Khung đánh giá chất lượng đa lớp}\label{sec:pipeline-danh-gia}
 
 Để đánh giá chất lượng nội dung sinh ra một cách tự động hóa và có độ
-tin cậy cao, đồ án xây dựng pipeline đánh giá ba lớp độc lập dựa
+tin cậy cao, luận văn xây dựng pipeline đánh giá ba lớp độc lập dựa
 trên thư viện \textbf{DeepEval}. Mỗi lớp đo một chiều khác nhau của
 chất lượng bài viết marketing; điểm tổng hợp kết hợp tuyến tính kết
 quả từ cả ba lớp. Pipeline được hiện thực trong module
@@ -950,7 +950,7 @@ và minh họa trực quan ở Hình~\ref{fig:model-comparison}.
 \begin{table}[ht]
   \centering
   \small
-  \caption{Kiểm định thống kê cặp GPT-5.4-mini vs \texttt{qwen3.5:4b + SFT} ($n=100$); * = $p < 0{,}05$; in đậm = khác biệt có ý nghĩa thống kê.}
+  \caption{Kiểm định thống kê cặp GPT-5.4-mini vs \texttt{qwen3.5:4b + SFT} ($n=100$); * = $p < 0{,}05$; in đậm = khác biệt có ý nghĩa thống kê. Phân loại độ lớn hiệu ứng (Cohen's $d$): $|d|<0{,}2$ nhỏ; $0{,}2 \leq |d| < 0{,}5$ trung bình; $0{,}5 \leq |d| < 0{,}8$ lớn; $|d| \geq 0{,}8$ rất lớn.}
   \label{tab:statistical_test}
   \begin{tabular}{lccc}
     \toprule
@@ -960,19 +960,19 @@ và minh họa trực quan ở Hình~\ref{fig:model-comparison}.
     Faithfulness
       & $t=2{,}35,\ p=0{,}021^{*}$
       & $p=0{,}005^{*}$
-      & $0{,}23$ (nhỏ) \\
+      & $0{,}23$ (trung bình) \\
     Expansion
       & $\mathbf{t=4{,}93,\ p<0{,}001^{*}}$
       & $\mathbf{p<0{,}001^{*}}$
       & $\mathbf{0{,}49}$ (trung bình) \\
     Vibe
       & $t=-0{,}32,\ p=0{,}753$
-      & $p=0{,}987$
-      & $0{,}03$ (không đáng kể) \\
+      & $p=0{,}986$
+      & $-0{,}03$ (nhỏ) \\
     Overall
       & $\mathbf{t=3{,}67,\ p<0{,}001^{*}}$
       & $\mathbf{p<0{,}001^{*}}$
-      & $\mathbf{0{,}37}$ (nhỏ--trung bình) \\
+      & $\mathbf{0{,}37}$ (trung bình) \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -1028,8 +1028,8 @@ và minh họa trực quan ở Hình~\ref{fig:model-comparison}.
 \textbf{Vibe: hai mô hình tương đương về mặt thống kê.} Mặc dù mean
 của \texttt{qwen3.5:4b + SFT} ($0{,}648$) nhỉnh hơn không đáng kể so
 với \texttt{GPT-5.4-mini} ($0{,}645$), cả paired $t$-test ($p =
-0{,}753$) lẫn Wilcoxon ($p = 0{,}987$) đều xác nhận khoảng cách này
-\textbf{không có ý nghĩa thống kê} (Cohen's $d = 0{,}03$). Đây là phát
+0{,}753$) lẫn Wilcoxon ($p = 0{,}986$) đều xác nhận khoảng cách này
+\textbf{không có ý nghĩa thống kê} (Cohen's $d = -0{,}03$). Đây là phát
 hiện quan trọng nhất từ phân tích thống kê: SFT đã thành công định
 hình phong cách Facebook-native F\&B tiếng Việt ngang bằng mô hình
 thương mại.
@@ -1039,21 +1039,23 @@ với $0{,}817$ ($\Delta = -0{,}040$) là khác biệt thật: $t(99) =
 4{,}93$, $p < 0{,}001$, Cohen's $d = 0{,}49$ (mức trung bình). Đây là
 chiều cần cải thiện tiếp theo --- thành phần đòi hỏi khả năng suy
 luận và diễn giải lợi ích sản phẩm ở mức độ cao mà tinh chỉnh trên
-khoảng 2.000 mẫu chưa truyền tải đầy đủ.
+500 mẫu chưa truyền tải đầy đủ.
 
 \textbf{Faithfulness: khoảng cách nhỏ nhưng có ý nghĩa thống kê.}
 Mức $0{,}637$ so với $0{,}659$ ($\Delta = -0{,}022$; $p = 0{,}021$;
-$d = 0{,}23$, mức nhỏ) cho thấy mô hình SFT vẫn còn đôi khi bỏ sót
-thực thể so với GPT, song effect size nhỏ phản ánh khoảng cách thực
-tế khá hạn chế.
+$d = 0{,}23$, mức trung bình --- sát ngưỡng dưới) cho thấy mô hình
+SFT vẫn còn đôi khi bỏ sót thực thể so với GPT, song mức chênh lệch
+trung bình tuyệt đối chỉ $0{,}022$ điểm phản ánh khoảng cách thực tế
+khá hạn chế.
 
-\textbf{Overall: gap nhỏ--trung bình, chủ yếu do Expansion kéo xuống.}
+\textbf{Overall: gap nhỏ, chủ yếu do Expansion kéo xuống.}
 Điểm tổng thể đạt $0{,}687$ so với $0{,}707$ ($\Delta = -0{,}020$,
-$p < 0{,}001$, $d = 0{,}37$). Khoảng cách có ý nghĩa thống kê nhưng
-effect size ở ngưỡng nhỏ--trung bình, và như phân tích từng chỉ số
-cho thấy, nó được phân bổ gần như hoàn toàn vào Expansion --- chiều
-duy nhất có effect size trung bình; Vibe đã ngang bằng và Faithfulness
-chỉ chênh lệch không đáng kể.
+$p < 0{,}001$, $d = 0{,}37$, mức trung bình). Khoảng cách có ý nghĩa
+thống kê và như phân tích từng chỉ số cho thấy, nó tập trung chủ yếu
+ở Expansion (đóng góp khoảng $68\%$ vào khoảng cách Overall) --- chiều
+có effect size lớn nhất ($d = 0{,}49$, sát ngưỡng trên của mức trung
+bình); Vibe đã ngang bằng còn Faithfulness chỉ chênh lệch trung bình
+$0{,}022$ điểm.
 
 \textbf{\texttt{qwen3.5:4b} + SFT là lựa chọn tốt nhất trong nhóm
 mã nguồn mở hiện tại}, với Overall $0{,}687$ so với $0{,}707$ của
