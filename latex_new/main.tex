@@ -15,6 +15,9 @@
 \usepackage{float}
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.18}
+\usepackage{geometry}
+\usepackage{tikz}
+\usetikzlibrary{calc}
 
 \lstset{
   basicstyle=\small\ttfamily,
@@ -41,11 +44,16 @@
 \input{trang_bia}
 \hypersetup{pageanchor=true}
 
+% Front matter đánh số La Mã (i, ii, iii, ...)
+\pagenumbering{roman}
+
 % Front matter: mỗi trang một file riêng để dễ sửa
 \clearpage
 \input{loi_cam_doan}
 \clearpage
 \input{loi_cam_on}
+\clearpage
+\input{xac_nhan_giang_vien}
 \clearpage
 \input{tom_tat}
 \clearpage
@@ -63,6 +71,10 @@
 \phantomsection
 \addcontentsline{toc}{chapter}{Danh sách bảng}
 \listoftables
+
+% Nội dung chính: đánh số Ả Rập bắt đầu từ 1 tại Chương 1
+\cleardoublepage
+\pagenumbering{arabic}
 
 % Các chương thành phần
 \include{chuong_1_gioi_thieu_de_tai}

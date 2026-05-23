@@ -3,6 +3,14 @@
 \addcontentsline{toc}{chapter}{Tóm tắt}
 \chapter*{Tóm tắt}
 
-Trong bối cảnh các framework phát triển web bằng Python như FastAPI và Flask ngày càng phổ biến, đề tài này nghiên cứu việc ứng dụng AI Agent dựa trên mô hình ngôn ngữ lớn để tự động hóa quy trình tạo nội dung marketing cho SME ngành F\&B trên Facebook. Hệ thống đề xuất bao gồm pipeline sinh nội dung, đánh giá chất lượng đa lớp và cơ chế tích hợp tri thức thương hiệu.
+Các doanh nghiệp vừa và nhỏ (SME) ngành Thực phẩm và Đồ uống (F\&B) tại Việt Nam phụ thuộc nhiều vào Facebook để duy trì hiện diện thương hiệu, nhưng việc sản xuất nội dung marketing chất lượng với chi phí thấp và tần suất ổn định vẫn là thách thức lớn, trong khi các công cụ AI tổng quát chưa nắm bắt được đặc trưng ngành và phong cách giao tiếp tại Việt Nam.
 
-Từ kết quả nghiên cứu, đề xuất các hướng phát triển và kiểm định thực nghiệm phù hợp cho việc triển khai thực tế.
+Đồ án đề xuất một \textbf{hệ thống Marketing Agent chuyên biệt cho SME ngành F\&B} trên kiến trúc đa tác tử LangGraph, kết hợp FastAPI, PostgreSQL, RabbitMQ/Celery và MinIO, gồm bốn tác tử: \textit{CampaignAgent}, \textit{ContentPlanningAgent}, \textit{ContentAgent} và \textit{ImageAgent}, với người dùng giữ quyền phê duyệt trước khi sản xuất hàng loạt.
+
+Đóng góp cốt lõi thứ hai là \textbf{quy trình đánh giá chất lượng tự động đa lớp} trên DeepEval với ba chiều đo: \textit{Faithfulness}, \textit{Expansion} và \textit{Vibe}, điểm tổng hợp là trung bình ba chiều với ngưỡng phê duyệt $\theta = 0{,}75$.
+
+Đồ án \textbf{thực nghiệm so sánh ba mô hình họ Qwen} ở quy mô 2B, 4B và 9B tham số trên 100 mock case thuộc bốn danh mục sản phẩm. Faithfulness đồng đều cao ($\sim$0{,}99), Expansion tăng nhẹ theo quy mô, còn Vibe chỉ đạt $\sim$0{,}67 — cho thấy nhu cầu fine-tuning chuyên biệt. Đáng chú ý, phiên bản 2B đạt điểm tổng thể tương đương 9B, mở ra khả năng triển khai trên hạ tầng tài nguyên hạn chế.
+
+\vspace{0.8em}
+
+\noindent\textbf{Từ khóa:} Marketing Agent, LLM, LangGraph, Đánh giá tự động đa lớp, DeepEval, SME, F\&B, Sinh nội dung Facebook.
