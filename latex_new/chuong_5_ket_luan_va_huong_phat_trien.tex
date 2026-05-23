@@ -143,17 +143,16 @@ luyện reward model riêng.
     cùng kết quả sau fine-tuning SFT và GRPO trên dữ liệu F\&B thực tế.
     Đây là tài liệu tham chiếu hữu ích cho các nghiên cứu sau lựa chọn
     mô hình nền và phương pháp tinh chỉnh cho tác vụ tương tự.
-  \item \textbf{Phát hiện về tác động của domain alignment trong GRPO.}
-    Thực nghiệm GRPO với tập Dining Review (review nhà hàng --- chéo miền
-    so với marketing F\&B) dẫn đến sụt giảm Overall $-38{,}2\%$ so với
-    baseline, trong đó Faithfulness giảm $-42{,}1\%$ do reward hacking.
-    Đây là bằng chứng thực nghiệm rõ ràng rằng \emph{domain alignment}
-    giữa dữ liệu huấn luyện RL và tác vụ mục tiêu quan trọng hơn bản
-    thân thuật toán, định hướng cách thiết kế hàm reward cho các nghiên
-    cứu tiếp theo. Bài học này có tính tổng quát vượt ra ngoài phạm vi
-    luận văn: bất kỳ nghiên cứu nào áp dụng GRPO hay PPO cho bài toán
-    sinh văn bản sáng tạo cần ưu tiên kiểm tra tính khớp miền của dữ
-    liệu huấn luyện reward trước khi đầu tư vào tinh chỉnh thuật toán.
+  \item \textbf{Quan sát ban đầu về tác động của domain alignment trong
+    GRPO.} Thực nghiệm GRPO với tập Dining Review (review nhà hàng ---
+    chéo miền so với marketing F\&B) dẫn đến sụt giảm Overall $-38{,}2\%$
+    so với baseline, trong đó Faithfulness giảm $-42{,}1\%$. Đây là quan
+    sát ban đầu gợi ý rằng \emph{domain alignment} giữa dữ liệu huấn
+    luyện RL và tác vụ mục tiêu có thể là yếu tố quan trọng cần lưu ý
+    khi thiết kế hàm reward. Do phạm vi thực nghiệm RL trong luận văn
+    còn hạn chế (một cấu hình GRPO, một tập dữ liệu chéo miền), giả
+    thuyết này cần được kiểm chứng thêm bằng các thực nghiệm đối chứng
+    (ví dụ GRPO cùng miền) trước khi rút ra kết luận tổng quát.
   \item \textbf{Đề xuất phương pháp kiểm định tương quan với đánh giá
     con người.} Đề tài đề xuất sử dụng hệ số Pearson/Spearman để kiểm
     định mức độ tương quan giữa điểm pipeline tự động và đánh giá của
@@ -221,9 +220,9 @@ cần được nhìn nhận thẳng thắn:
     Lớp Faithfulness và Vibe đều dùng GPT-5.4 Azure làm judge. Sự thiên
     lệch tiềm ẩn của judge model (ví dụ: ưu tiên giọng văn ``bóng bẩy''
     hơn giọng văn tự nhiên) là một rủi ro hệ thống cần được giám sát.
-    Thêm vào đó, GPT-5.4-mini cũng đồng thời là điểm tham chiếu thương
-    mại trong bảng so sánh, nên cần lưu ý khi diễn giải điểm số tuyệt
-    đối của mô hình này.
+    Thêm vào đó, GPT-5.4-mini là điểm tham chiếu thương mại trong bảng
+    so sánh và cùng họ mô hình với judge GPT-5.4 Azure, nên cần lưu ý
+    khi diễn giải điểm số tuyệt đối của mô hình này.
 \end{enumerate}
 
 \subsection{Hướng phát triển tiếp theo}
@@ -269,7 +268,7 @@ mô hình theo hai hướng SFT và GRPO. Kết quả nổi bật --- \texttt{qw
 khi vận hành hoàn toàn cục bộ không phụ thuộc API thương mại --- không
 chỉ trả lời được câu hỏi nghiên cứu ban đầu mà còn mở ra một nền tảng
 kỹ thuật và quy trình có khả năng triển khai thực tế tại các SME ngành
-F\&B Việt Nam. Các hướng phát triển nêu trên, đặc biệt là cải thiện
+F\&B Việt Nam. Các hướng phát triển nêu trên, đặc biệt là kiểm chứng thêm vai trò của
 domain alignment cho GRPO, kiểm định tương quan với đánh giá con người,
 và pilot quy mô lớn với dữ liệu tương tác thực, sẽ là những bước tiếp
 theo cần thiết để chuyển hóa nghiên cứu này thành sản phẩm hoàn thiện.

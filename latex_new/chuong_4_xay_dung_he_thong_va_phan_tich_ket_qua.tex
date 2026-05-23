@@ -42,8 +42,9 @@ với các thành phần tách biệt rõ trách nhiệm, giao tiếp qua messag
     gọi LLM (prompt, response, latency, token count) phục vụ phân tích
     chi phí và debug.
   \item \textbf{LiteLLM Proxy}: Lớp trừu tượng hóa nhà cung cấp LLM,
-    cho phép chuyển đổi giữa OpenAI GPT-4o, GPT-4o-mini, Claude Sonnet
-    mà không thay đổi code agent.
+    cho phép cấu hình các mô hình của OpenAI (GPT-4o, GPT-4o-mini,
+    GPT-5-mini, GPT-5.4-mini, \texttt{gpt-image-1}) hoặc các nhà cung
+    cấp khác qua biến môi trường mà không thay đổi code agent.
 \end{itemize}
 
 Lý do lựa chọn kiến trúc message queue (RabbitMQ + Celery) thay vì gọi
@@ -527,15 +528,15 @@ sinh văn bản ở chế độ \emph{nothinking} (tắt chain-of-thought) để
 hợp tốc độ suy diễn trong môi trường sản xuất, nhiệt độ $T = 0{,}4$.
 
 Về dữ liệu huấn luyện SFT: tập bài viết Facebook F\&B tiếng Việt được
-thu thập và kiểm duyệt thủ công từ các nhà hàng và quán cà phê tại
-Việt Nam, đảm bảo đa dạng về loại hình (đồ uống, ăn nhanh, ăn ngồi),
-phân khúc giá (bình dân, trung cấp), và phong cách thương hiệu (năng
-động, truyền thống, hiện đại). Mỗi mẫu bao gồm cặp (prompt với thông
-tin sản phẩm thực, bài viết mẫu đã kiểm duyệt), cho phép mô hình học
-ánh xạ từ thông tin thô đến bài viết hoàn chỉnh theo phong cách mong
-muốn. Tập dữ liệu được làm sạch để loại bỏ các bài có nội dung quảng
-cáo thái quá, thiếu thông tin sản phẩm cụ thể, hoặc mang văn phong AI
-rập khuôn dễ nhận ra.
+một chuyên gia sinh ra với sự hỗ trợ của AI và hiệu chỉnh thủ công, hướng
+tới đa dạng về loại hình (đồ uống, ăn nhanh, ăn ngồi), phân khúc giá
+(bình dân, trung cấp), và phong cách thương hiệu (năng động, truyền
+thống, hiện đại). Mỗi mẫu bao gồm cặp (prompt với thông tin sản phẩm
+mô phỏng tình huống thực, bài viết mẫu đã hiệu chỉnh), cho phép mô hình
+học ánh xạ từ thông tin thô đến bài viết hoàn chỉnh theo phong cách
+mong muốn. Quá trình hiệu chỉnh thủ công nhằm loại bỏ các bài có nội
+dung quảng cáo thái quá, thiếu thông tin sản phẩm cụ thể, hoặc mang
+văn phong AI rập khuôn dễ nhận ra.
 
 \subsection{Tập dữ liệu đánh giá}
 
@@ -619,9 +620,9 @@ duyệt). Nội dung được một chuyên gia sinh bằng AI và hiệu chỉn
 \textbf{qwen3.5:2b + SFT} ghi nhận cải thiện ở hai chiều Expansion
 ($0{,}662 \to 0{,}754$, $+13{,}9\%$) và Vibe ($0{,}450 \to 0{,}587$,
 $+30{,}4\%$). Faithfulness gần như không thay đổi ($0{,}599 \to
-0{,}597$, $-0{,}2\%$). Overall đạt $0{,}646$ --- vượt baseline 2B
+0{,}597$, $-0{,}3\%$). Overall đạt $0{,}646$ --- vượt baseline 2B
 ($0{,}570$) nhưng còn cách đáng kể so với điểm tham chiếu thương mại
-GPT-5.4-mini ($0{,}707$, $\Delta = -9{,}2\%$). Kết quả gợi ý rằng với
+GPT-5.4-mini ($0{,}707$, $\Delta = -8{,}6\%$). Kết quả gợi ý rằng với
 2B tham số, capacity mô hình chưa đủ để nội tâm hóa toàn diện phong
 cách marketing Facebook-native F\&B từ bộ dữ liệu SFT có kích thước
 hạn chế.
@@ -641,13 +642,15 @@ khi được tinh chỉnh với dữ liệu domain-specific.
 \subsection{Động lực và tổng quan phương pháp}
 
 Bên cạnh SFT, học tăng cường (Reinforcement Learning) cung cấp hướng
-tiếp cận bổ sung: thay vì học từ nhãn kiểm duyệt, mô hình học trực
-tiếp từ \emph{tín hiệu tương tác thực tế} --- lượt thích, bình luận,
-chia sẻ --- của các bài đăng Facebook hiện có. Phương pháp GRPO
-(Group Relative Policy Optimization) được chọn vì (i)~không cần
-huấn luyện reward model riêng biệt, (ii)~không cần critic/value model
-như PPO, và (iii)~tương thích với hàm reward rule-based, tiết kiệm tài
-nguyên phù hợp với bối cảnh SME. Cơ sở lý thuyết GRPO đã được trình
+tiếp cận bổ sung: thay vì học từ nhãn kiểm duyệt, mô hình được tối ưu
+theo một \emph{hàm thưởng rule-based} xây dựng từ các đặc trưng hình
+thức có tương quan với tín hiệu tương tác (lượt thích, bình luận, chia
+sẻ) trong tập bài đăng Facebook hiện có --- thay vì sử dụng trực tiếp
+chỉ số tương tác làm phần thưởng. Phương pháp GRPO (Group Relative
+Policy Optimization) được chọn vì (i)~không cần huấn luyện reward
+model riêng biệt, (ii)~không cần critic/value model như PPO, và
+(iii)~tương thích với hàm reward rule-based, tiết kiệm tài nguyên phù
+hợp với bối cảnh SME. Cơ sở lý thuyết GRPO đã được trình
 bày tại Mục~\ref{subsec:rl} (xem Hình~\ref{fig:grpo}); phần này tập
 trung vào cấu hình thực nghiệm và phân tích kết quả.
 
@@ -854,23 +857,22 @@ hạn của phương pháp. Ba nguyên nhân chính được xác định:
     lượng của reference policy.
 \end{enumerate}
 
-Kết quả này xác nhận rằng \emph{sự khớp miền} (domain alignment) giữa
-dữ liệu huấn luyện GRPO và tác vụ mục tiêu là yếu tố then chốt, quan
-trọng hơn bản thân thuật toán RL. Hướng khắc phục trong tương lai: sử
-dụng tập huấn luyện GRPO là chính các bài viết marketing F\&B có số
-liệu tương tác thực tế, thay vì tập review chéo miền.
+Kết quả này gợi ý rằng \emph{sự khớp miền} (domain alignment) giữa
+dữ liệu huấn luyện GRPO và tác vụ mục tiêu có vai trò quan trọng, cần
+được kiểm chứng thêm bằng các thực nghiệm RL khác trong nghiên cứu
+tiếp theo. Hướng khắc phục đề xuất: sử dụng tập huấn luyện GRPO là
+chính các bài viết marketing F\&B có số liệu tương tác thực tế, thay
+vì tập review chéo miền.
 
-Nhìn ở góc độ tích cực, thực nghiệm GRPO thất bại này cung cấp một bài
-học thiết kế có giá trị hơn nhiều so với một kết quả thành công dễ
-dàng. Ba yêu cầu để GRPO hoạt động hiệu quả trong bài toán sinh văn bản
-marketing đã được xác định rõ qua thực nghiệm: (1) \emph{tập huấn luyện
-phải cùng domain với tác vụ mục tiêu} (bài marketing thương hiệu, không
-phải bài review của người dùng); (2) \emph{hàm reward phải phản ánh chất
-lượng thực sự, không chỉ tín hiệu hình thức dễ hacking} (pipeline đánh
-giá đa lớp phù hợp hơn các chỉ số engagement đơn lẻ); (3) \emph{ràng
-buộc KL phải đủ mạnh} tương ứng với độ lớn của khoảng cách miền. Các
-yêu cầu này là nền tảng cụ thể cho hướng phát triển GRPO được đề xuất
-tại Chương~\ref{chap:ket-luan}.
+Do phạm vi thực nghiệm RL trong luận văn còn hạn chế (chỉ một cấu hình
+GRPO với một tập dữ liệu chéo miền), các quan sát trên nên được hiểu
+như những gợi ý thiết kế cho nghiên cứu tiếp theo hơn là kết luận chắc
+chắn. Một số yếu tố có thể đáng lưu ý cho các thực nghiệm RL tương lai
+trong bài toán sinh văn bản marketing gồm: (i)~tính khớp miền giữa
+tập huấn luyện reward và tác vụ mục tiêu; (ii)~thiết kế hàm reward bao
+quát hơn các tín hiệu hình thức đơn lẻ; (iii)~cân nhắc cường độ ràng
+buộc KL theo khoảng cách miền. Các giả thuyết này là cơ sở cho hướng
+phát triển GRPO được đề xuất tại Chương~\ref{chap:ket-luan}.
 
 % -----------------------------------------------------------------------
 \section{Tổng kết kết quả thực nghiệm}
@@ -935,11 +937,12 @@ hiện tượng reward hacking rõ ràng khi mô hình học từ tín hiệu kh
 
 \textbf{GRPO với dữ liệu chéo miền làm giảm chất lượng tổng thể.}
 Overall $0{,}352$ của \texttt{qwen3.5:2b} + RL thấp hơn cả baseline
-$0{,}570$ ($-38{,}2\%$). Kết quả này phủ nhận giả thuyết rằng tín hiệu
-engagement từ tập Dining Review có thể thay thế nhãn kiểm duyệt trong
-bài toán tối ưu phong cách marketing. Tuy nhiên, đây là kết quả có giá
-trị thực nghiệm: nó đặt ra yêu cầu rõ ràng về \emph{domain alignment}
-khi thiết kế hàm reward cho RL trong bài toán sinh văn bản marketing.
+$0{,}570$ ($-38{,}2\%$). Kết quả này cho thấy hàm reward rule-based
+được xây dựng từ tập Dining Review chưa thay thế được nhãn kiểm duyệt
+trong bài toán tối ưu phong cách marketing. Tuy nhiên, đây là kết quả
+có giá trị quan sát: nó gợi ý cần lưu ý \emph{domain alignment} khi
+thiết kế hàm reward cho RL trong bài toán sinh văn bản marketing, và
+là điểm cần kiểm chứng thêm trong các thực nghiệm RL tiếp theo.
 
 Để xác định mô hình SFT tốt nhất có thực sự tiệm cận hiệu suất mô hình
 thương mại hay không, chúng tôi thực hiện kiểm định thống kê cặp giữa
@@ -1070,8 +1073,9 @@ sở dữ liệu, hiện thực hóa bốn agent bằng LangGraph, đến khung 
 giá chất lượng ba lớp, và kết quả so sánh hai hướng tinh chỉnh SFT và
 GRPO trên dữ liệu F\&B thực tế. Kết quả xác nhận rằng mô hình mã
 nguồn mở tham số nhỏ được tinh chỉnh đúng miền có thể tiệm cận hiệu
-suất mô hình thương mại lớn; đồng thời, thất bại của GRPO với dữ liệu
-chéo miền cung cấp bằng chứng thực nghiệm rõ ràng về tầm quan trọng
-của \emph{domain alignment} trong thiết kế hàm reward. Chương 5 sẽ
+suất mô hình thương mại lớn; đồng thời, kết quả không thuận lợi của
+GRPO với dữ liệu chéo miền gợi ý vai trò quan trọng của
+\emph{domain alignment} trong thiết kế hàm reward, một giả thuyết cần
+được kiểm chứng thêm trong các thực nghiệm RL tiếp theo. Chương 5 sẽ
 tổng kết đóng góp của đề tài, đánh giá hạn chế còn tồn tại và đề xuất
 hướng phát triển tiếp theo.

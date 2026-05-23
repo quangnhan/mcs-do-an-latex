@@ -33,9 +33,11 @@ tài nguyên tính toán còn hạn chế.
 Từ góc độ tác vụ marketing F\&B, điểm mạnh cốt lõi của LLM dạng
 Transformer là khả năng duy trì sự nhất quán về giọng văn và cấu trúc
 bài viết qua nhiều lượt sinh khác nhau. Một bài đăng Facebook hiệu quả
-cho quán ăn thường có độ dài $150$--$300$ từ, cấu trúc rõ ràng (hook
-đầu bài thu hút sự chú ý, phần thân giới thiệu sản phẩm/khuyến mãi, và
-CTA cuối bài kêu gọi hành động), và tone phù hợp thương hiệu --- tất cả
+cho quán ăn thường có độ dài $150$--$400$ từ tùy loại bài (caption ngắn
+cho ưu đãi flash, bài dài hơn cho ra mắt sản phẩm hoặc kể chuyện thương
+hiệu), cấu trúc rõ ràng (hook đầu bài thu hút sự chú ý, phần thân giới
+thiệu sản phẩm/khuyến mãi, và CTA cuối bài kêu gọi hành động), và tone
+phù hợp thương hiệu --- tất cả
 đều trong tầm khả năng của LLM hiện đại, đặc biệt khi được dẫn hướng
 bằng few-shot examples và hướng dẫn phong cách cụ thể trong prompt. Đây
 là lý do kiến trúc Transformer, với khả năng xử lý ngữ cảnh dài và mô
@@ -168,8 +170,8 @@ cứu thực tế có một GPU. Trong thực nghiệm của luận văn, QLoRA 
 hình với hạng $r = 16$ và $\alpha = 32$ trên bảy module (query, key,
 value, output projection, gate, up và down projection của khối
 feed-forward). Với thiết lập này, số tham số huấn luyện chỉ chiếm
-khoảng $0{,}58\%$ tổng tham số của mô hình $2$B (tương đương $10{,}9$M
-tham số có thể học), trong khi hành vi sinh văn bản thay đổi đáng kể
+khoảng $0{,}58\%$ tổng tham số của mô hình $2$B (thực tế là $1{,}89$B
+tham số, tương đương $10{,}9$M tham số có thể học), trong khi hành vi sinh văn bản thay đổi đáng kể
 so với mô hình nền. Đây là bằng chứng thực tiễn cho hiệu quả của PEFT
 trong bài toán tinh chỉnh phong cách: không cần cập nhật toàn bộ mô
 hình để dạy nó cách viết theo phong cách Facebook F\&B Việt Nam.
