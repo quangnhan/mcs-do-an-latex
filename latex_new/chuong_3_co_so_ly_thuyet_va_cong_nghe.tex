@@ -45,11 +45,10 @@ trúc tuần tự cũ hơn.
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.9\textwidth]{images/transformer.png}
-    \caption{Mô tả tổng quan cơ chế attention trong kiến trúc Transformer
-    (minh hoạ; chi tiết triển khai có nhiều biến thể). Nguồn: tài liệu
-    tham khảo tổng hợp, \url{https://heidloff.net/article/foundation-models-transformers-bert-and-gpt/}.}
+    \caption{Tổng quan cơ chế attention trong kiến trúc Transformer.\protect\footnotemark}
     \label{fig:transformer}
 \end{figure}
+\footnotetext{Nguồn: \url{https://heidloff.net/article/foundation-models-transformers-bert-and-gpt/}.}
 
 \subsection{Grouped-Query Attention (GQA)}
 
@@ -178,10 +177,10 @@ hình để dạy nó cách viết theo phong cách Facebook F\&B Việt Nam.
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.9\textwidth]{images/LoRA.png}
-    \caption{Ý tưởng tách cập nhật hạng thấp (LoRA) tách khỏi trọng số
-    gốc, tiết kiệm tham số huấn luyện. Nguồn: \url{https://pub.towardsai.net/low-rank-adaptation-lora-fedf37b92026}.}
+    \caption{Cập nhật hạng thấp LoRA tách khỏi trọng số gốc, tiết kiệm tham số huấn luyện.\protect\footnotemark}
     \label{fig:lora}
 \end{figure}
+\footnotetext{Nguồn: \url{https://pub.towardsai.net/low-rank-adaptation-lora-fedf37b92026}.}
 
 \subsection{Học tăng cường (Reinforcement Learning)}\label{subsec:rl}
 
@@ -235,12 +234,7 @@ tuyệt đối cố định.
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=1.0\textwidth]{images/GRPO.png}
-    \caption{Minh họa cơ chế GRPO: với mỗi câu hỏi $q$, mô hình
-    tham chiếu $\pi_{\mathrm{ref}}$ sinh nhóm $G$ ứng viên đầu ra
-    $\{a_1,\ldots,a_G\}$; mỗi ứng viên nhận phần thưởng $r_i$ rồi
-    được chuẩn hóa thành lợi thế tương đối
-    $\hat{A}_i = \frac{r_i - \mathrm{mean}(r)}{\mathrm{std}(r)}$
-    để cập nhật chính sách $\pi_\theta$.}
+    \caption{Cơ chế GRPO: sinh nhóm $G$ ứng viên từ chính sách tham chiếu, chấm thưởng và chuẩn hoá thành lợi thế tương đối để cập nhật chính sách.}
     \label{fig:grpo}
 \end{figure}
 
@@ -297,10 +291,10 @@ mô hình SaaS cho nhiều SME F\&B.
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=1.0\textwidth]{images/rag.png}
-    \caption{Mô tả tổng quan: truy hồi tài liệu ngoài, kết
-    hợp ngữ cảnh vào prompt, rồi sinh. Nguồn: \url{https://github.com/langchain-ai/rag-from-scratch}.}
+    \caption{Pipeline RAG: truy hồi tài liệu ngoài, ghép ngữ cảnh vào prompt, rồi sinh.\protect\footnotemark}
     \label{fig:rag}
 \end{figure}
+\footnotetext{Nguồn: \url{https://github.com/langchain-ai/rag-from-scratch}.}
 
 \subsection{Chunking và tối ưu theo tài liệu F\&B}
 
@@ -491,9 +485,7 @@ hoặc sinh phản hồi cuối.
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.7\textwidth]{images/ai_agent.png}
-    \caption{Cấu trúc tổng quát của một tác nhân dựa trên LLM:
-    bộ điều khiển (LLM), tập công cụ ngoài, bộ nhớ và vòng
-    lặp suy diễn quan sát -- suy luận -- hành động.}
+    \caption{Cấu trúc tổng quát của một tác nhân dựa trên LLM.}
     \label{fig:ai-agent}
 \end{figure}
 
@@ -527,9 +519,7 @@ cho việc gỡ lỗi khi đầu ra không đạt yêu cầu.
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.55\textwidth]{images/react_agent.png}
-    \caption{Vòng lặp ReAct: Agent phát đi hành động lên công
-    cụ ngoài và đọc lại quan sát trước khi quyết định bước
-    tiếp theo hoặc sinh đầu ra.}
+    \caption{Vòng lặp ReAct: hành động $\to$ quan sát $\to$ suy luận.}
     \label{fig:react-agent}
 \end{figure}
 
@@ -570,9 +560,7 @@ khó truy vết.
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.95\textwidth]{images/multiple_agent.png}
-    \caption{Một số mô hình tổ chức kiến trúc đa tác nhân:
-    tập trung qua một agent điều phối (trái), liên lạc ngang
-    hàng giữa các agent (giữa), và phân cấp theo tầng (phải).}
+    \caption{Ba kiểu tổ chức kiến trúc đa tác nhân: tập trung (trái), ngang hàng (giữa), phân cấp (phải).}
     \label{fig:multi-agent}
 \end{figure}
 

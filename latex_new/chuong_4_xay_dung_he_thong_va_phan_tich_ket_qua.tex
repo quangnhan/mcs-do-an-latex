@@ -18,7 +18,7 @@ với các thành phần tách biệt rõ trách nhiệm, giao tiếp qua messag
 \begin{figure}[H]
   \centering
   \includegraphics[width=1.0\textwidth]{images/system_architecture.png}
-  \caption{Kiến trúc tổng quan hệ thống Marketing Agent}
+  \caption{Kiến trúc tổng quan hệ thống Marketing Agent.}
   \label{fig:system-architecture}
 \end{figure}
 
@@ -796,15 +796,18 @@ cùng mô hình nền. Bảng~\ref{tab:grpo-config} tóm tắt siêu tham số.
   \small
   \caption{Siêu tham số huấn luyện GRPO.}
   \label{tab:grpo-config}
-  \begin{tabular}{lp{0.62\textwidth}}
+  \begin{tabular}{p{0.32\textwidth}p{0.58\textwidth}}
     \toprule
     \textbf{Tham số} & \textbf{Giá trị} \\
     \midrule
     Mô hình nền & \texttt{qwen3.5:2b} \\
-    Quantization & QLoRA 16-bit (NF4, double quant, bf16 compute) \\
+    Quantization & QLoRA 16-bit (NF4, double quant,
+                   bf16 compute) \\
     LoRA & $r=16$, $\alpha=32$, dropout $=0$;
-           7 module (q/k/v/o proj, gate/up/down proj) \\
-    Tham số có thể huấn luyện & $10{,}9$M / $1{,}89$B ($0{,}58\%$) \\
+           7 module (q/k/v/o proj,
+           gate/up/down proj) \\
+    Tham số có thể huấn luyện &
+      $10{,}9$M / $1{,}89$B ($0{,}58\%$) \\
     \midrule
     Số completions mỗi prompt ($G$) & 4 \\
     Độ dài completion tối đa & 256 token \\
@@ -812,7 +815,8 @@ cùng mô hình nền. Bảng~\ref{tab:grpo-config} tóm tắt siêu tham số.
     Hệ số KL penalty ($\beta$) & $0{,}04$ \\
     \midrule
     Epochs & 1 \\
-    Batch size / gradient accumulation & 1 / 4 (effective batch = 4) \\
+    Batch size / gradient accumulation &
+      1 / 4 (effective batch = 4) \\
     Learning rate & $3 \times 10^{-6}$ \\
     Số mẫu train / eval & 256 / 32 \\
     \bottomrule
@@ -882,14 +886,13 @@ là điểm tham chiếu thương mại.
 \begin{table}[htbp]
   \centering
   \small
-  \caption{So sánh tổng hợp mô hình nền, SFT và GRPO trên tập F\&B
-    thực tế ($n=100$, judge: GPT-5.4 Azure). In đậm: cao nhất mỗi cột
-    trong nhóm mã nguồn mở.}
+  \setlength{\tabcolsep}{4pt}
+  \caption{So sánh mô hình nền, SFT và GRPO trên tập F\&B ($n=100$, judge: GPT-5.4 Azure); in đậm = giá trị tốt nhất trong nhóm mã nguồn mở.}
   \label{tab:final-comparison}
   \begin{tabular}{lcccccc}
     \toprule
     \textbf{Mô hình} & \textbf{Faith.} & \textbf{Expan.}
-      & \textbf{Vibe} & \textbf{Overall} & \textbf{Overall Var} & \textbf{Overall Std} \\
+      & \textbf{Vibe} & \textbf{Overall} & \textbf{Var} & \textbf{Std} \\
     \midrule
     GPT-5.4-mini
       & 0,659 & 0,817 & 0,645 & 0,707 & 0,0030 & 0,0547 \\
@@ -911,79 +914,89 @@ là điểm tham chiếu thương mại.
   \end{tabular}
 \end{table}
 
+\textbf{SFT cải thiện Vibe rõ rệt ở cả hai kích thước.}
+\texttt{qwen3.5:2b} + SFT tăng Vibe từ $0{,}450$ lên $0{,}587$ ($+30{,}4\%$);
+\texttt{qwen3.5:4b} + SFT từ $0{,}502$ lên $0{,}648$ ($+29{,}1\%$). Đây là
+lớp hưởng lợi nhiều nhất từ tinh chỉnh có giám sát, xác nhận rằng
+giọng điệu Facebook-native F\&B có thể học được từ dữ liệu kiểm duyệt.
+
+\textbf{Expansion cải thiện rõ trên 2B, ổn định trên 4B.}
+\texttt{qwen3.5:2b} + SFT tăng từ $0{,}662$ lên $0{,}754$ ($+0{,}092$), trong
+khi \texttt{qwen3.5:4b} + SFT giữ nguyên ($0{,}768 \to 0{,}777$) vì mô
+hình 4B đã có năng lực diễn giải nội sinh từ tiền huấn luyện.
+
+\textbf{Faithfulness ổn định qua SFT, sụt giảm nghiêm trọng sau GRPO.}
+Cả hai mô hình SFT không giảm Faithfulness đáng kể (2B: $-0{,}002$;
+4B: $+0{,}041$), xác nhận SFT không làm mất khả năng bảo toàn thực thể.
+Ngược lại, \texttt{qwen3.5:2b} + RL ghi nhận Faithfulness chỉ $0{,}347$
+--- thấp hơn $0{,}252$ điểm so với baseline ($-42{,}1\%$) --- cho thấy
+hiện tượng reward hacking rõ ràng khi mô hình học từ tín hiệu không
+được căn chỉnh với tác vụ mục tiêu.
+
+\textbf{GRPO với dữ liệu chéo miền làm giảm chất lượng tổng thể.}
+Overall $0{,}352$ của \texttt{qwen3.5:2b} + RL thấp hơn cả baseline
+$0{,}570$ ($-38{,}2\%$). Kết quả này phủ nhận giả thuyết rằng tín hiệu
+engagement từ tập Dining Review có thể thay thế nhãn kiểm duyệt trong
+bài toán tối ưu phong cách marketing. Tuy nhiên, đây là kết quả có giá
+trị thực nghiệm: nó đặt ra yêu cầu rõ ràng về \emph{domain alignment}
+khi thiết kế hàm reward cho RL trong bài toán sinh văn bản marketing.
+
+Để xác định mô hình SFT tốt nhất có thực sự tiệm cận hiệu suất mô hình
+thương mại hay không, chúng tôi thực hiện kiểm định thống kê cặp giữa
+\texttt{qwen3.5:4b + SFT} và \texttt{GPT-5.4-mini} trên cùng $n = 100$
+trường hợp. Kết quả được trình bày ở Bảng~\ref{tab:statistical_test}
+và minh họa trực quan ở Hình~\ref{fig:model-comparison}.
+
 \begin{table}[ht]
   \centering
   \small
-  \caption{Kiểm định thống kê so sánh cặp GPT-5.4-mini và \texttt{qwen3.5:4b + SFT} ($n=100$). Dấu * biểu thị $p < 0{,}05$.}
+  \caption{Kiểm định thống kê cặp GPT-5.4-mini vs \texttt{qwen3.5:4b + SFT} ($n=100$); * = $p < 0{,}05$; in đậm = khác biệt có ý nghĩa thống kê.}
   \label{tab:statistical_test}
-  \begin{tabular}{lcccc}
+  \begin{tabular}{lccc}
     \toprule
     \textbf{Chỉ số} & \textbf{Paired $t$-test} & \textbf{Wilcoxon}
-      & \textbf{Cohen's $d$} & \textbf{Kết luận} \\
+      & \textbf{Cohen's $d$} \\
     \midrule
     Faithfulness
       & $t=2{,}35,\ p=0{,}021^{*}$
       & $p=0{,}005^{*}$
-      & $0{,}23$ (nhỏ)
-      & Có ý nghĩa thống kê \\
+      & $0{,}23$ (nhỏ) \\
     Expansion
       & $\mathbf{t=4{,}93,\ p<0{,}001^{*}}$
       & $\mathbf{p<0{,}001^{*}}$
-      & $\mathbf{0{,}49}$ (trung bình)
-      & \textbf{Có ý nghĩa thống kê} \\
+      & $\mathbf{0{,}49}$ (trung bình) \\
     Vibe
       & $t=-0{,}32,\ p=0{,}753$
       & $p=0{,}987$
-      & $0{,}03$ (không đáng kể)
-      & \textcolor{gray}{Không có ý nghĩa thống kê} \\
+      & $0{,}03$ (không đáng kể) \\
     Overall
       & $\mathbf{t=3{,}67,\ p<0{,}001^{*}}$
       & $\mathbf{p<0{,}001^{*}}$
-      & $\mathbf{0{,}37}$ (nhỏ--trung bình)
-      & \textbf{Có ý nghĩa thống kê} \\
+      & $\mathbf{0{,}37}$ (nhỏ--trung bình) \\
     \bottomrule
   \end{tabular}
 \end{table}
-
-Bảng~\ref{tab:statistical_test} trình bày kết quả kiểm định cặp giữa
-\texttt{GPT-5.4-mini} và \texttt{qwen3.5:4b + SFT} trên cùng $n=100$
-trường hợp. Phát hiện quan trọng nhất từ phân tích thống kê là hai mô
-hình \textbf{tương đương nhau về Vibe}. Mặc dù mean của
-\texttt{qwen3.5:4b + SFT} (0,648) nhỉnh hơn \texttt{GPT-5.4-mini}
-(0,645), kiểm định paired $t$-test ($p = 0{,}753$) và Wilcoxon
-($p = 0{,}987$) đều xác nhận khoảng cách này \textbf{không có ý nghĩa
-thống kê} (Cohen's $d = 0{,}03$). Kết quả này xác nhận SFT đã thành
-ghiệp định hình phong cách Facebook-native F\&B tiếng Việt ngang bằng
-mô hình thương mại.
-
-Ngược lại, khoảng cách Expansion (0,777 so với 0,817, $\Delta = -0{,}040$)
-là có thật và đáng kể: $t(99) = 4{,}93$, $p < 0{,}001$, Cohen's
-$d = 0{,}49$ (mức trung bình). Đây là chiều cần cải thiện tiếp theo.
-
-Faithfulness ghi nhận khoảng cách nhỏ có ý nghĩa thống kê ($p =
-0{,}021$; $d = 0{,}23$, mức nhỏ), cho thấy mô hình SFT vẫn còn đôi khi
-bỏ sót thực thể so với GPT.
-
-Điểm tổng thể Overall đạt 0,687 so với 0,707 ($\Delta = -0{,}020$,
-$p < 0{,}001$, $d = 0{,}37$). Khoảng cách này có ý nghĩa thống kê, song
-mức effect size ở ngưỡng nhỏ--trung bình, chủ yếu do Expansion kéo
-xuống, trong khi Vibe đã đạt mức tương đương thương mại.
 
 \begin{figure}[ht]
   \centering
   \begin{tikzpicture}
     \begin{axis}[
       width=0.92\textwidth,
-      height=7cm,
+      height=7.5cm,
       ybar,
       ybar legend,
       bar width=14pt,
       enlarge x limits=0.20,
-      ymin=0, ymax=1.0,
+      ymin=0, ymax=1.05,
       ylabel={Điểm đánh giá},
       symbolic x coords={Faithfulness, Expansion, Vibe, Overall},
       xtick=data,
-      legend pos=north east,
+      legend style={
+        at={(0.5,-0.18)},
+        anchor=north,
+        legend columns=2,
+        /tikz/every even column/.append style={column sep=0.6cm},
+      },
     ]
       \addplot+[draw=blue!60, fill=blue!60, error bars/.cd, y dir=both, y explicit] coordinates {
         (Faithfulness,0.6588) +- (0,0.0196)
@@ -1008,56 +1021,46 @@ xuống, trong khi Vibe đã đạt mức tương đương thương mại.
         \footnotesize $p<0{,}001^{*}$};
     \end{axis}
   \end{tikzpicture}
-  \caption{So sánh GPT-5.4-mini và \texttt{qwen3.5:4b + SFT} theo bốn
-    chỉ số chất lượng ($n=100$). Error bars biểu thị khoảng tin cậy
-    95\%; dấu * chỉ $p < 0{,}05$ (paired $t$-test).}
+  \caption{So sánh GPT-5.4-mini và \texttt{qwen3.5:4b + SFT} theo bốn chỉ số ($n=100$); error bars: CI 95\%; * = $p<0{,}05$ (paired $t$-test).}
   \label{fig:model-comparison}
 \end{figure}
 
-\textbf{SFT cải thiện Vibe rõ rệt ở cả hai kích thước.}
-\texttt{qwen3.5:2b} + SFT tăng Vibe từ $0{,}450$ lên $0{,}587$ ($+30{,}4\%$);
-\texttt{qwen3.5:4b} + SFT từ $0{,}502$ lên $0{,}648$ ($+29{,}1\%$). Đây là
-lớp hưởng lợi nhiều nhất từ tinh chỉnh có giám sát, xác nhận rằng
-giọng điệu Facebook-native F\&B có thể học được từ dữ liệu kiểm duyệt.
+\textbf{Vibe: hai mô hình tương đương về mặt thống kê.} Mặc dù mean
+của \texttt{qwen3.5:4b + SFT} ($0{,}648$) nhỉnh hơn không đáng kể so
+với \texttt{GPT-5.4-mini} ($0{,}645$), cả paired $t$-test ($p =
+0{,}753$) lẫn Wilcoxon ($p = 0{,}987$) đều xác nhận khoảng cách này
+\textbf{không có ý nghĩa thống kê} (Cohen's $d = 0{,}03$). Đây là phát
+hiện quan trọng nhất từ phân tích thống kê: SFT đã thành công định
+hình phong cách Facebook-native F\&B tiếng Việt ngang bằng mô hình
+thương mại.
 
-\textbf{Expansion cải thiện rõ trên 2B, ổn định trên 4B.}
-\texttt{qwen3.5:2b} + SFT tăng từ $0{,}662$ lên $0{,}754$ ($+0{,}092$), trong
-khi \texttt{qwen3.5:4b} + SFT giữ nguyên ($0{,}768 \to 0{,}777$) vì mô
-hình 4B đã có năng lực diễn giải nội sinh từ tiền huấn luyện.
+\textbf{Expansion: khoảng cách thực sự và đáng kể.} Mức $0{,}777$ so
+với $0{,}817$ ($\Delta = -0{,}040$) là khác biệt thật: $t(99) =
+4{,}93$, $p < 0{,}001$, Cohen's $d = 0{,}49$ (mức trung bình). Đây là
+chiều cần cải thiện tiếp theo --- thành phần đòi hỏi khả năng suy
+luận và diễn giải lợi ích sản phẩm ở mức độ cao mà tinh chỉnh trên
+khoảng 2.000 mẫu chưa truyền tải đầy đủ.
 
-\textbf{Faithfulness ổn định qua SFT, sụt giảm nghiêm trọng sau GRPO.}
-Cả hai mô hình SFT không giảm Faithfulness đáng kể (2B: $-0{,}002$;
-4B: $+0{,}041$), xác nhận SFT không làm mất khả năng bảo toàn thực thể.
-Ngược lại, \texttt{qwen3.5:2b} + RL ghi nhận Faithfulness chỉ $0{,}347$
---- thấp hơn $0{,}252$ điểm so với baseline ($-42{,}1\%$) --- cho thấy
-hiện tượng reward hacking rõ ràng khi mô hình học từ tín hiệu không
-được căn chỉnh với tác vụ mục tiêu.
+\textbf{Faithfulness: khoảng cách nhỏ nhưng có ý nghĩa thống kê.}
+Mức $0{,}637$ so với $0{,}659$ ($\Delta = -0{,}022$; $p = 0{,}021$;
+$d = 0{,}23$, mức nhỏ) cho thấy mô hình SFT vẫn còn đôi khi bỏ sót
+thực thể so với GPT, song effect size nhỏ phản ánh khoảng cách thực
+tế khá hạn chế.
 
-\textbf{GRPO với dữ liệu chéo miền làm giảm chất lượng.}
-Overall $0{,}352$ của \texttt{qwen3.5:2b} + RL thấp hơn cả baseline
-$0{,}570$ ($-38{,}2\%$). Kết quả này phủ nhận giả thuyết rằng tín hiệu
-engagement từ tập Dining Review có thể thay thế nhãn kiểm duyệt trong
-bài toán tối ưu phong cách marketing. Tuy nhiên, đây là kết quả có giá
-trị thực nghiệm: nó đặt ra yêu cầu rõ ràng về \emph{domain alignment}
-khi thiết kế hàm reward cho RL trong bài toán sinh văn bản marketing.
+\textbf{Overall: gap nhỏ--trung bình, chủ yếu do Expansion kéo xuống.}
+Điểm tổng thể đạt $0{,}687$ so với $0{,}707$ ($\Delta = -0{,}020$,
+$p < 0{,}001$, $d = 0{,}37$). Khoảng cách có ý nghĩa thống kê nhưng
+effect size ở ngưỡng nhỏ--trung bình, và như phân tích từng chỉ số
+cho thấy, nó được phân bổ gần như hoàn toàn vào Expansion --- chiều
+duy nhất có effect size trung bình; Vibe đã ngang bằng và Faithfulness
+chỉ chênh lệch không đáng kể.
 
 \textbf{\texttt{qwen3.5:4b} + SFT là lựa chọn tốt nhất trong nhóm
 mã nguồn mở hiện tại}, với Overall $0{,}687$ so với $0{,}707$ của
-GPT-5.4-mini ($\Delta = -0{,}020$, $-2{,}8\%$). Chi phí vận hành thấp
-hơn đáng kể --- mô hình chạy cục bộ, không phụ thuộc API thương mại
-theo lượt gọi --- mang lại ý nghĩa thực tiễn cho SME ngành F\&B Việt
-Nam có ngân sách hạn chế.
-
-Điểm đáng chú ý là mặc dù khoảng cách Overall giữa \texttt{qwen3.5:4b}
-+ SFT và GPT-5.4-mini chỉ là $2{,}8\%$, sự khác biệt không phân phối
-đều giữa các lớp: Faithfulness của mô hình tinh chỉnh thậm chí
-vượt mô hình thương mại ($0{,}637$ so với $0{,}659$ --- khoảng cách
-chỉ $-0{,}022$), trong khi Vibe vẫn còn cách biệt lớn hơn ($0{,}648$
-so với $0{,}645$). Điều này gợi ý rằng SFT đặc biệt hiệu quả trong
-việc định hình phong cách Facebook-native (Vibe) và khả năng bảo toàn
-thực thể (Faithfulness), nhưng cần thêm dữ liệu đa dạng hơn để cải
-thiện Expansion --- thành phần đòi hỏi khả năng suy luận và diễn giải
-lợi ích sản phẩm ở mức độ cao hơn.
+GPT-5.4-mini ($\Delta = -0{,}020$, chỉ $-2{,}8\%$). Cộng thêm chi phí
+vận hành thấp hơn đáng kể --- mô hình chạy cục bộ, không phụ thuộc API
+thương mại theo lượt gọi --- đây là kết quả có ý nghĩa thực tiễn rõ
+ràng cho SME ngành F\&B Việt Nam có ngân sách hạn chế.
 
 Chương 4 đã trình bày toàn bộ quá trình xây dựng và thực nghiệm hệ
 thống Marketing Agent: từ thiết kế kiến trúc đa dịch vụ và schema cơ
@@ -1065,7 +1068,8 @@ sở dữ liệu, hiện thực hóa bốn agent bằng LangGraph, đến khung 
 giá chất lượng ba lớp, và kết quả so sánh hai hướng tinh chỉnh SFT và
 GRPO trên dữ liệu F\&B thực tế. Kết quả xác nhận rằng mô hình mã
 nguồn mở tham số nhỏ được tinh chỉnh đúng miền có thể tiệm cận hiệu
-suất mô hình thương mại lớn, đồng thời cung cấp bằng chứng thực
-nghiệm rõ ràng về tầm quan trọng của domain alignment trong thiết kế
-hàm reward cho RL. Chương 5 sẽ tổng kết đóng góp của đề tài, đánh giá
-hạn chế còn tồn tại và đề xuất hướng phát triển tiếp theo.
+suất mô hình thương mại lớn; đồng thời, thất bại của GRPO với dữ liệu
+chéo miền cung cấp bằng chứng thực nghiệm rõ ràng về tầm quan trọng
+của \emph{domain alignment} trong thiết kế hàm reward. Chương 5 sẽ
+tổng kết đóng góp của đề tài, đánh giá hạn chế còn tồn tại và đề xuất
+hướng phát triển tiếp theo.
