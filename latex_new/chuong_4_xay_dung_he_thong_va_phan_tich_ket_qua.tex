@@ -66,8 +66,7 @@ Schema cơ sở dữ liệu được thiết kế theo ba lớp logic: nhận d�
 dung (job pipeline). Tất cả bảng dùng UUID làm khóa chính để hỗ trợ
 phân tán sau này.
 
-\subsubsection{Lớp nhận dạng và tri thức thương hiệu}
-
+\paragraph{Lớp nhận dạng và tri thức thương hiệu.}
 \begin{itemize}
   \item \textbf{\texttt{organizations}}: Tổ chức cấp cao nhất. Mỗi tổ
     chức sở hữu nhiều dự án và người dùng.
@@ -84,8 +83,7 @@ phân tán sau này.
     nội dung, agent tra cứu bảng này để lấy thông tin sản phẩm liên quan.
 \end{itemize}
 
-\subsubsection{Lớp hội thoại}
-
+\paragraph{Lớp hội thoại.}
 \begin{itemize}
   \item \textbf{\texttt{chat\_sessions}}: Phiên hội thoại giữa người dùng
     và CampaignAgent, gắn với một dự án. Trạng thái:
@@ -97,8 +95,7 @@ phân tán sau này.
     vụ Celery liên quan.
 \end{itemize}
 
-\subsubsection{Lớp pipeline tạo nội dung}
-
+\paragraph{Lớp pipeline tạo nội dung.}
 Đây là phần cốt lõi của schema, thiết kế theo mô hình job queue phân cấp
 ba tầng để cho phép retry độc lập ở mỗi bước.
 

@@ -133,8 +133,7 @@ giúp mô hình tiền huấn luyện thích nghi với phong cách và định 
 F\&B tiếng Việt trên Facebook với tông giọng gần gũi, cấu trúc rõ ràng,
 và lời kêu gọi hành động cụ thể.
 
-\subsubsection{Giới hạn tinh chỉnh toàn bộ tham số và vai trò của PEFT}
-
+\paragraph{Giới hạn tinh chỉnh toàn bộ tham số và vai trò của PEFT.}
 Khi tài nguyên hạn chế, việc huấn luyện lại toàn bộ tham số LLM
 thường không khả thi. Các kỹ thuật tinh chỉnh hiệu quả tham
 số (Parameter-Efficient Fine-Tuning, PEFT) chỉ cập nhật (hoặc thêm)
@@ -144,8 +143,7 @@ luyện. Điều này phù hợp bài toán định hướng phong cách marketi
 (tông giọng, cấu trúc câu, ràng buộc từ vựng) từ một tập mẫu hữu
 hạn, thay vì mô hình hoá lại toàn bộ thống kê ngôn ngữ.
 
-\subsubsection{LoRA và QLoRA}
-
+\paragraph{LoRA và QLoRA.}
 Low-Rank Adaptation (LoRA) bổ sung cập nhật có hạng thấp lên
 một tầng tuyến tính đã cố định trọng số trước. Với ma trận trọng số
 gốc $W_0 \in \mathbb{R}^{d_{\mathrm{out}} \times d_{\mathrm{in}}}$,
@@ -200,8 +198,7 @@ pipeline đánh giá đa lớp (Mục~\ref{sec:eval-metrics}). Trong phạm vi
 tại Mục~\ref{sec:grpo-result}); việc dùng trực tiếp pipeline đánh giá
 làm reward được đề xuất như hướng phát triển tiếp theo.
 
-\subsubsection{Group Relative Policy Optimization (GRPO)}
-
+\paragraph{Group Relative Policy Optimization (GRPO).}
 Các phương pháp dựa trên PPO và RLHF truyền thống thường cần một reward
 model tách biệt huấn luyện trước, phát sinh chi phí cỡ bậc tương tự mô
 hình chính. Group Relative Policy Optimization (GRPO) giải quyết vấn đề
