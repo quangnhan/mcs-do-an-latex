@@ -1,4 +1,4 @@
-# MCS đồ án LaTeX
+# MCS đề án LaTeX
 
 Kho chứa bản báo cáo LaTeX. Bản đang dùng nằm trong thư mục **`latex_new/`**; **`latex_old/`** là bản soạn thảo / tham chiếu trước đó.
 
