@@ -1,0 +1,18 @@
+\begin{frame}{Khung đánh giá chất lượng đa lớp}
+  \centering
+  \begin{tikzpicture}[node distance=0.8cm, every node/.style={font=\small}]
+    \node[draw, rounded corners, fill=softblue, text width=2.8cm, minimum height=1.25cm, align=center] (faith) {\textbf{Faithfulness}\\Đúng thông tin};
+    \node[draw, rounded corners, fill=softgreen, right=of faith, text width=2.8cm, minimum height=1.25cm, align=center] (exp) {\textbf{Expansion}\\Mở rộng hợp lý};
+    \node[draw, rounded corners, fill=softorange, right=of exp, text width=2.8cm, minimum height=1.25cm, align=center] (vibe) {\textbf{Vibe}\\Phong cách F\&B};
+    \node[draw, rounded corners, fill=softred, below=1.0cm of exp, text width=3.6cm, minimum height=1.45cm, align=center] (overall) {\textbf{Overall Score}\\$\frac{F + E + V}{3}$, $\theta = 0{,}75$};
+
+    \draw[-{Stealth}, thick] (faith.south) -- (overall.north west);
+    \draw[-{Stealth}, thick] (exp.south) -- (overall.north);
+    \draw[-{Stealth}, thick] (vibe.south) -- (overall.north east);
+  \end{tikzpicture}
+
+  \vspace{0.6em}
+  \begin{block}{Vai trò}
+    Pipeline đánh giá vừa hỗ trợ auto-approval, vừa tạo thước đo thống nhất để so sánh baseline, SFT và GRPO.
+  \end{block}
+\end{frame}

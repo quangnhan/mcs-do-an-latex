@@ -1,0 +1,39 @@
+\begin{frame}{Kết quả thực nghiệm chính}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.66\textwidth}
+      \centering
+      \begin{tikzpicture}
+        \begin{axis}[
+          ybar,
+          ymin=0,
+          ymax=0.8,
+          width=\linewidth,
+          height=0.64\textheight,
+          bar width=14pt,
+          symbolic x coords={2B,4B,4B+SFT,GPT},
+          xtick=data,
+          ylabel={Overall},
+          nodes near coords,
+          nodes near coords style={font=\scriptsize},
+          every axis plot/.append style={fill=bkblue!65},
+          tick label style={font=\scriptsize},
+          label style={font=\small}
+        ]
+          \addplot coordinates {(2B,0.570) (4B,0.622) (4B+SFT,0.687) (GPT,0.707)};
+        \end{axis}
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.31\textwidth}
+      \begin{block}{Kết quả nổi bật}
+        \begin{itemize}
+          \item 4B + SFT đạt 0,687 Overall
+          \item GPT-5.4-mini đạt 0,707
+          \item Chênh lệch khoảng 2,8\%
+        \end{itemize}
+      \end{block}
+      \begin{alertblock}{Điểm đáng chú ý}
+        Vibe của 4B + SFT tương đương mô hình thương mại.
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}

@@ -1,0 +1,19 @@
+\begin{frame}{Kiến trúc hệ thống Marketing Agent}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.70\textwidth}
+      \centering
+      \includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{system_architecture.png}
+    \end{column}
+    \begin{column}{0.28\textwidth}
+      \begin{block}{Agent}
+        Campaign, Planning, Content, Image
+      \end{block}
+      \begin{block}{Hạ tầng}
+        FastAPI, PostgreSQL, RabbitMQ/Celery, MinIO
+      \end{block}
+      \begin{block}{Ý nghĩa}
+        Tách trách nhiệm, retry độc lập, mở rộng theo từng giai đoạn.
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}

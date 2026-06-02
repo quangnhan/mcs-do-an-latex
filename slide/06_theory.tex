@@ -1,0 +1,25 @@
+\begin{frame}{Cơ sở lý thuyết cần thiết}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.34\textwidth}
+      \metriccard{softblue}{LLM / Qwen3.5}{Sinh văn bản theo ngữ cảnh, phù hợp thử nghiệm mô hình mở}
+    \end{column}
+    \begin{column}{0.34\textwidth}
+      \metriccard{softgreen}{SFT / QLoRA}{Học từ cặp input-output đã kiểm duyệt với chi phí thấp}
+    \end{column}
+    \begin{column}{0.28\textwidth}
+      \metriccard{softorange}{RL Alignment}{RLHF, DPO, GRPO phụ thuộc tín hiệu preference/reward}
+    \end{column}
+  \end{columns}
+
+  \vspace{1.2em}
+  \centering
+  \begin{tikzpicture}[node distance=1cm, every node/.style={font=\small}]
+    \node[draw, rounded corners, fill=softblue, minimum width=2.3cm] (base) {Base LLM};
+    \node[draw, rounded corners, fill=softgreen, right=of base, minimum width=2.3cm] (sft) {SFT};
+    \node[draw, rounded corners, fill=softorange, right=of sft, minimum width=2.5cm] (pref) {Preference};
+    \node[draw, rounded corners, fill=softred, right=of pref, minimum width=2.1cm] (rl) {RL/DPO};
+    \draw[-{Stealth}, thick] (base) -- (sft);
+    \draw[-{Stealth}, thick] (sft) -- (pref);
+    \draw[-{Stealth}, thick] (pref) -- (rl);
+  \end{tikzpicture}
+\end{frame}

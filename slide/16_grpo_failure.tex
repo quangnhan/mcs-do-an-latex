@@ -1,0 +1,34 @@
+\begin{frame}{Phân tích thất bại GRPO và bài học}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.62\textwidth}
+      \centering
+      \begin{tikzpicture}
+        \begin{axis}[
+          ybar,
+          ymin=0,
+          ymax=0.65,
+          width=\linewidth,
+          height=0.62\textheight,
+          bar width=18pt,
+          symbolic x coords={Baseline,GRPO},
+          xtick=data,
+          ylabel={Overall},
+          nodes near coords,
+          nodes near coords style={font=\scriptsize},
+          tick label style={font=\scriptsize},
+          every axis plot/.append style={fill=softred, draw=bkblue}
+        ]
+          \addplot coordinates {(Baseline,0.570) (GRPO,0.352)};
+        \end{axis}
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.34\textwidth}
+      \begin{alertblock}{Reward mismatch}
+        Reward chủ yếu đo độ khớp hoặc trung thực với dữ liệu mẫu, không chứa đủ tín hiệu tương tác thật.
+      \end{alertblock}
+      \begin{block}{Kết quả}
+        Overall giảm 38,2\%, Faithfulness giảm 42,1\%.
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}

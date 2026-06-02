@@ -1,0 +1,27 @@
+\begin{frame}{Hướng tiếp cận khả thi: SFT trước, preference sau}
+  \centering
+  \begin{tikzpicture}[
+    node distance=0.75cm,
+    every node/.style={font=\small},
+    box/.style={draw, rounded corners, minimum height=1cm, align=center}
+  ]
+    \node[box, fill=softblue, text width=2.5cm] (prompt) {Cùng campaign brief};
+    \node[box, fill=softgreen, right=1cm of prompt, text width=2.2cm, yshift=0.75cm] (a) {Output A};
+    \node[box, fill=softorange, right=1cm of prompt, text width=2.2cm, yshift=-0.75cm] (b) {Output B};
+    \node[box, fill=softred, right=1.1cm of a, yshift=-0.75cm, text width=2.6cm] (human) {Human\\preference};
+    \node[box, fill=softblue, right=1.1cm of human, text width=2.7cm] (dataset) {Preference\\dataset};
+    \node[box, fill=softgreen, below=1cm of dataset, text width=2.7cm] (train) {Reward model\\DPO / RL};
+
+    \draw[-{Stealth}, thick] (prompt) -- (a);
+    \draw[-{Stealth}, thick] (prompt) -- (b);
+    \draw[-{Stealth}, thick] (a) -- (human);
+    \draw[-{Stealth}, thick] (b) -- (human);
+    \draw[-{Stealth}, thick] (human) -- (dataset);
+    \draw[-{Stealth}, thick] (dataset) -- (train);
+  \end{tikzpicture}
+
+  \vspace{1em}
+  \begin{block}{Lợi ích}
+    Cặp chosen/rejected cùng prompt được tạo từ thao tác duyệt bài tự nhiên, không cần đăng thử nội dung lên Facebook.
+  \end{block}
+\end{frame}

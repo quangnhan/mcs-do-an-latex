@@ -1,0 +1,24 @@
+\begin{frame}{Thiết kế thực nghiệm}
+  \centering
+  \begin{tikzpicture}[
+    node distance=0.9cm,
+    every node/.style={font=\small},
+    box/.style={draw, rounded corners, text width=3.0cm, minimum height=1.3cm, align=center}
+  ]
+    \node[box, fill=softblue] (base) {\textbf{Baseline}\\Qwen3.5 2B, 4B, 9B};
+    \node[box, fill=softgreen, right=of base] (sft) {\textbf{SFT / QLoRA}\\Qwen3.5 2B, 4B};
+    \node[box, fill=softorange, right=of sft] (grpo) {\textbf{GRPO}\\Qwen3.5 2B\\reward rule-based};
+    \node[box, fill=softred, below=1.2cm of sft] (eval) {\textbf{Evaluation}\\100 trường hợp F\&B\\F/E/V + Overall};
+
+    \draw[-{Stealth}, thick] (base) -- (sft);
+    \draw[-{Stealth}, thick] (sft) -- (grpo);
+    \draw[-{Stealth}, thick] (base.south) -- (eval.north west);
+    \draw[-{Stealth}, thick] (sft.south) -- (eval.north);
+    \draw[-{Stealth}, thick] (grpo.south) -- (eval.north east);
+  \end{tikzpicture}
+
+  \vspace{1em}
+  \begin{block}{Mục tiêu thực nghiệm}
+    Đo tác động của tinh chỉnh có giám sát và học tăng cường đối với chất lượng nội dung marketing F\&B tiếng Việt.
+  \end{block}
+\end{frame}

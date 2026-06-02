@@ -1,0 +1,29 @@
+\begin{frame}{Vì sao engagement reward không scalable}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.48\textwidth}
+      \centering
+      \begin{tikzpicture}[node distance=0.7cm, every node/.style={font=\small}]
+        \node[draw, rounded corners, fill=softgreen, text width=3.8cm, align=center] (task) {Code / Toán};
+        \node[draw, rounded corners, fill=softgreen, below=of task, text width=3.8cm, align=center] (verify) {Verifier tức thì\\test case / đáp án};
+        \node[draw, rounded corners, fill=softgreen, below=of verify, text width=3.8cm, align=center] (reward) {Reward rõ ràng};
+        \draw[-{Stealth}, thick] (task) -- (verify);
+        \draw[-{Stealth}, thick] (verify) -- (reward);
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \centering
+      \begin{tikzpicture}[node distance=0.7cm, every node/.style={font=\small}]
+        \node[draw, rounded corners, fill=softorange, text width=3.8cm, align=center] (content) {Marketing content};
+        \node[draw, rounded corners, fill=softorange, below=of content, text width=3.8cm, align=center] (publish) {Phải đăng lên Facebook};
+        \node[draw, rounded corners, fill=softred, below=of publish, text width=3.8cm, align=center] (risk) {Chậm, nhiễu, rủi ro kinh doanh};
+        \draw[-{Stealth}, thick] (content) -- (publish);
+        \draw[-{Stealth}, thick] (publish) -- (risk);
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+
+  \vspace{1em}
+  \begin{block}{Kết luận}
+    Like, share, comment, angry là tín hiệu thực tế nhưng không thể dùng như reward online có thể mở rộng trong bối cảnh SME.
+  \end{block}
+\end{frame}

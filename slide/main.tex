@@ -1,0 +1,69 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T5]{fontenc}
+\usepackage[vietnamese]{babel}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usetikzlibrary{arrows.meta,positioning,fit,calc,shapes.geometric}
+\pgfplotsset{compat=1.18}
+\graphicspath{{images/}}
+
+\usetheme{Madrid}
+\usecolortheme{default}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+\setbeamerfont{frametitle}{series=\bfseries,size=\large}
+\setbeamerfont{title}{series=\bfseries,size=\Large}
+
+\definecolor{bkblue}{RGB}{24,79,141}
+\definecolor{softblue}{RGB}{232,241,250}
+\definecolor{softorange}{RGB}{252,239,221}
+\definecolor{softgreen}{RGB}{231,246,235}
+\definecolor{softred}{RGB}{252,231,231}
+\setbeamercolor{structure}{fg=bkblue}
+\setbeamercolor{frametitle}{fg=bkblue}
+
+\newcommand{\metriccard}[3]{%
+  \begin{tikzpicture}
+    \node[draw=bkblue!40, rounded corners=4pt, fill=#1, text width=0.9\linewidth, minimum height=1.4cm, align=center] {
+      \textbf{#2}\\[0.25em]
+      {\small #3}
+    };
+  \end{tikzpicture}%
+}
+
+\title{Phát triển Marketing Agent cho SME ngành F\&B}
+\subtitle{Đề án tốt nghiệp}
+\author{Võ Quang Nhân}
+\institute{Trường Đại học Bách Khoa -- ĐHQG TP.HCM}
+\date{Tháng 05/2026}
+
+\begin{document}
+
+\input{01_title}
+\input{02_context}
+\input{03_problem}
+\input{04_research_questions}
+\input{05_contributions_method}
+\input{06_theory}
+\input{07_system_architecture}
+\input{08_workflow}
+\input{09_evaluation}
+\input{10_experiment_design}
+\input{11_results}
+\input{12_sft_role}
+\input{13_rlhf_dpo_grpo}
+\input{14_reward_model_issue}
+\input{15_engagement_reward}
+\input{16_grpo_failure}
+\input{17_preference_solution}
+\input{18_contributions}
+\input{19_limitations_future}
+\input{20_conclusion}
+
+\end{document}
