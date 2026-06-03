@@ -1,4 +1,4 @@
-\begin{frame}{Cơ sở lý thuyết cần thiết}
+\begin{frame}[t]{Cơ sở lý thuyết cần thiết}
   \begin{columns}[T,onlytextwidth]
     \begin{column}{0.34\textwidth}
       \metriccard{softblue}{LLM / Qwen3.5}{Sinh văn bản theo ngữ cảnh, phù hợp thử nghiệm mô hình mở}
@@ -11,7 +11,7 @@
     \end{column}
   \end{columns}
 
-  \vspace{1.2em}
+  \vspace{0.6em}
   \centering
   \begin{tikzpicture}[node distance=1cm, every node/.style={font=\small}]
     \node[draw, rounded corners, fill=softblue, minimum width=2.3cm] (base) {Base LLM};
@@ -22,4 +22,13 @@
     \draw[-{Stealth}, thick] (sft) -- (pref);
     \draw[-{Stealth}, thick] (pref) -- (rl);
   \end{tikzpicture}
+
+  \eqblock{%
+    \begin{align*}
+      \mathcal{L}_{\text{SFT}} &= -\mathbb{E}_{(x,y^*)}\bigl[\log \pi_\theta(y^* \mid x)\bigr],\\
+      W &= W_0 + BA,\quad B \in \mathbb{R}^{d_{\mathrm{out}}\times r},\;
+      A \in \mathbb{R}^{r\times d_{\mathrm{in}}},\; r \ll d,\\
+      \hat{A}_i &= \dfrac{r_i - \mathrm{mean}(r)}{\mathrm{std}(r)} \quad \text{(GRPO)}
+    \end{align*}%
+  }
 \end{frame}

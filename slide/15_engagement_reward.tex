@@ -1,8 +1,8 @@
-\begin{frame}{Vì sao engagement reward không scalable}
+\begin{frame}[t]{Vì sao engagement reward không scalable}
   \begin{columns}[T,onlytextwidth]
     \begin{column}{0.48\textwidth}
       \centering
-      \begin{tikzpicture}[node distance=0.7cm, every node/.style={font=\small}]
+      \begin{tikzpicture}[node distance=0.85cm, every node/.style={font=\small}]
         \node[draw, rounded corners, fill=softgreen, text width=3.8cm, align=center] (task) {Code / Toán};
         \node[draw, rounded corners, fill=softgreen, below=of task, text width=3.8cm, align=center] (verify) {Verifier tức thì\\test case / đáp án};
         \node[draw, rounded corners, fill=softgreen, below=of verify, text width=3.8cm, align=center] (reward) {Reward rõ ràng};
@@ -12,7 +12,7 @@
     \end{column}
     \begin{column}{0.48\textwidth}
       \centering
-      \begin{tikzpicture}[node distance=0.7cm, every node/.style={font=\small}]
+      \begin{tikzpicture}[node distance=0.85cm, every node/.style={font=\small}]
         \node[draw, rounded corners, fill=softorange, text width=3.8cm, align=center] (content) {Marketing content};
         \node[draw, rounded corners, fill=softorange, below=of content, text width=3.8cm, align=center] (publish) {Phải đăng lên Facebook};
         \node[draw, rounded corners, fill=softred, below=of publish, text width=3.8cm, align=center] (risk) {Chậm, nhiễu, rủi ro kinh doanh};
@@ -22,8 +22,12 @@
     \end{column}
   \end{columns}
 
-  \vspace{1em}
-  \begin{block}{Kết luận}
-    Like, share, comment, angry là tín hiệu thực tế nhưng không thể dùng như reward online có thể mở rộng trong bối cảnh SME.
-  \end{block}
+  \eqblock{%
+    \begin{align*}
+      e_{\text{raw}} &= L + 0{,}5C + 1{,}5S + R_{\text{like}} + 1{,}2 R_{\text{love}}
+      + 0{,}8(R_{\text{haha}}+R_{\text{care}}+R_{\text{wow}}) - 0{,}5 R_{\text{angry}} - 0{,}3 R_{\text{sad}}\\
+      e &= \ln(1 + \max(e_{\text{raw}}, 0)),\quad
+      \max_\theta \mathbb{E}[r] \not\approx \max_\theta \mathbb{E}[\text{Overall}] \;\text{(SME)}
+    \end{align*}
+  }
 \end{frame}

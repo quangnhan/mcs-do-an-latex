@@ -6,7 +6,7 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{array}
-\usepackage{amsmath}
+\usepackage{amsmath,amssymb}
 \usepackage{tikz}
 \usepackage{pgfplots}
 \usetikzlibrary{arrows.meta,positioning,fit,calc,shapes.geometric}
@@ -27,6 +27,13 @@
 \definecolor{softred}{RGB}{252,231,231}
 \setbeamercolor{structure}{fg=bkblue}
 \setbeamercolor{frametitle}{fg=bkblue}
+
+\newcommand{\eqblock}[1]{%
+  \begin{block}{Công thức}
+    \footnotesize
+    #1
+  \end{block}%
+}
 
 \newcommand{\metriccard}[3]{%
   \begin{tikzpicture}

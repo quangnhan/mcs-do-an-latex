@@ -1,22 +1,25 @@
-\begin{frame}{Đóng góp của đề tài}
+\begin{frame}[t]{Đóng góp của đề tài}
   \centering
-  \begin{tikzpicture}[node distance=1cm, every node/.style={font=\small}]
-    \node[draw, rounded corners, fill=softblue, text width=3.2cm, minimum height=2.2cm, align=center] (c1) {
+  \begin{tikzpicture}[node distance=1.1cm, every node/.style={font=\small}]
+    \node[draw, rounded corners, fill=softblue, text width=3.3cm, minimum height=2.6cm, align=center] (c1) {
       \textbf{Kiến trúc}\\
-      Multi-agent chuyên biệt cho marketing F\&B
+      Multi-agent LangGraph\\
+      $\pi_\theta$ cho F\&B SME
     };
-    \node[draw, rounded corners, fill=softgreen, right=of c1, text width=3.2cm, minimum height=2.2cm, align=center] (c2) {
+    \node[draw, rounded corners, fill=softgreen, right=of c1, text width=3.3cm, minimum height=2.6cm, align=center] (c2) {
       \textbf{Đánh giá}\\
-      Faithfulness, Expansion, Vibe
+      $F, E, V$, $\text{Overall}$\\
+      judge + rule-based
     };
-    \node[draw, rounded corners, fill=softorange, right=of c2, text width=3.2cm, minimum height=2.2cm, align=center] (c3) {
+    \node[draw, rounded corners, fill=softorange, right=of c2, text width=3.3cm, minimum height=2.6cm, align=center] (c3) {
       \textbf{Thực nghiệm}\\
-      SFT/GRPO và bài học preference
+      4B+SFT: $0{,}687$\\
+      GRPO: bài học $\mathcal{D}$
     };
   \end{tikzpicture}
 
-  \vspace{1em}
-  \begin{block}{Đóng góp quy trình}
-    Dữ liệu duyệt bài trong vận hành có thể trở thành nguồn preference hợp lệ cho vòng cải thiện liên tục.
-  \end{block}
+  \eqblock{%
+    Đóng góp quy trình: $\mathcal{D}_{\text{pref}}=\{(x,y_w,y_l)\}$ từ duyệt bài $\Rightarrow$
+    DPO / reward model mà không cần engagement online.
+  }
 \end{frame}

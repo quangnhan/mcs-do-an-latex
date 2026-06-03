@@ -1,18 +1,17 @@
-\begin{frame}{Kiến trúc hệ thống Marketing Agent}
+\begin{frame}[t]{Kiến trúc hệ thống Marketing Agent}
   \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.70\textwidth}
+    \begin{column}{0.68\textwidth}
       \centering
-      \includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{system_architecture.png}
+      \includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{system_architecture.png}
     \end{column}
-    \begin{column}{0.28\textwidth}
-      \begin{block}{Agent}
-        Campaign, Planning, Content, Image
+    \begin{column}{0.30\textwidth}
+      \begin{block}{Agent \& luồng}
+        $x \!\to\! plan \!\to\! y \!\to\! img$\\
+        Campaign, Content, Image agents
       \end{block}
-      \begin{block}{Hạ tầng}
-        FastAPI, PostgreSQL, RabbitMQ/Celery, MinIO
-      \end{block}
-      \begin{block}{Ý nghĩa}
-        Tách trách nhiệm, retry độc lập, mở rộng theo từng giai đoạn.
+      \begin{block}{Hạ tầng \& đánh giá}
+        FastAPI, PostgreSQL, Celery, MinIO\\
+        $F,E,V$; duyệt nếu $\text{Overall}\geq\theta$
       \end{block}
     \end{column}
   \end{columns}

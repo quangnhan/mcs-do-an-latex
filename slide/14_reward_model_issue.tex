@@ -1,9 +1,9 @@
-\begin{frame}{Vì sao post rời rạc không đủ cho reward model}
+\begin{frame}[t]{Vì sao post rời rạc không đủ cho reward model}
   \centering
   \begin{tikzpicture}[
-    node distance=0.75cm,
+    node distance=0.9cm,
     every node/.style={font=\small},
-    box/.style={draw, rounded corners, text width=2.5cm, minimum height=1cm, align=center}
+    box/.style={draw, rounded corners, text width=2.7cm, minimum height=1.2cm, align=center}
   ]
     \node[box, fill=softblue] (pa) {Prompt A};
     \node[box, fill=softgreen, right=1cm of pa] (oa) {Post A\\score cao};
@@ -17,8 +17,8 @@
     \draw[-{Stealth}, thick, dashed] (ob) -- (wrong);
   \end{tikzpicture}
 
-  \vspace{1em}
-  \begin{alertblock}{Vấn đề lý thuyết}
-    Chosen/rejected chỉ có ý nghĩa khi hai output cùng xuất phát từ một prompt. Ghép hai post khác prompt khiến reward model học tương quan giả.
-  \end{alertblock}
+  \eqblock{%
+    Hợp lệ: $\mathcal{D} = \{(x, y^+, y^-)\}$, $P(y^+ \succ y^- \mid x) = \sigma(r(x,y^+)-r(x,y^-))$.\\
+    Ghép sai: $(x_A, y_A^+) + (x_B, y_B^-)$ $\Rightarrow$ $\nabla_\phi \mathcal{L}$ học tương quan giả giữa prompt.
+  }
 \end{frame}

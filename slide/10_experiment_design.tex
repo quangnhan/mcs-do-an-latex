@@ -1,9 +1,9 @@
-\begin{frame}{Thiết kế thực nghiệm}
+\begin{frame}[t]{Thiết kế thực nghiệm}
   \centering
   \begin{tikzpicture}[
     node distance=0.9cm,
     every node/.style={font=\small},
-    box/.style={draw, rounded corners, text width=3.0cm, minimum height=1.3cm, align=center}
+    box/.style={draw, rounded corners, text width=3.0cm, minimum height=1.35cm, align=center}
   ]
     \node[box, fill=softblue] (base) {\textbf{Baseline}\\Qwen3.5 2B, 4B, 9B};
     \node[box, fill=softgreen, right=of base] (sft) {\textbf{SFT / QLoRA}\\Qwen3.5 2B, 4B};
@@ -17,8 +17,9 @@
     \draw[-{Stealth}, thick] (grpo.south) -- (eval.north east);
   \end{tikzpicture}
 
-  \vspace{1em}
-  \begin{block}{Mục tiêu thực nghiệm}
-    Đo tác động của tinh chỉnh có giám sát và học tăng cường đối với chất lượng nội dung marketing F\&B tiếng Việt.
-  \end{block}
+  \eqblock{%
+    QLoRA: $W=W_0+BA$, $r=16$, $\alpha=32$, NF4; $\approx 0{,}58\%$ params trainable (2B).\\
+    Judge: GPT-5.4 Azure; metric $\text{Overall}(y_i)$ trên $n=100$; so sánh
+    $\mathbb{E}[\text{Overall}]$ baseline / SFT / GRPO.
+  }
 \end{frame}

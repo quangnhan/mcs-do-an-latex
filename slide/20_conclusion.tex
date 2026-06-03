@@ -1,19 +1,19 @@
-\begin{frame}{Kết luận}
+\begin{frame}[t]{Kết luận}
   \centering
-  \begin{tikzpicture}[node distance=0.65cm, every node/.style={font=\small}]
-    \node[draw, rounded corners, fill=softblue, text width=8.5cm, minimum height=0.95cm, align=center] (k1) {
-      \textbf{1.} Marketing Agent có thể chuyên biệt hóa cho SME F\&B bằng kiến trúc đa tác nhân.
+  \begin{tikzpicture}[node distance=0.75cm, every node/.style={font=\small}]
+    \node[draw, rounded corners, fill=softblue, text width=9.2cm, minimum height=1.15cm, align=center] (k1) {
+      \textbf{1.} Agent $\pi_\theta$ chuyên biệt F\&B --- kiến trúc đa tác nhân khả thi cho SME.
     };
-    \node[draw, rounded corners, fill=softgreen, below=of k1, text width=8.5cm, minimum height=0.95cm, align=center] (k2) {
-      \textbf{2.} Pipeline F/E/V giúp đo lường chất lượng nội dung và so sánh mô hình một cách nhất quán.
+    \node[draw, rounded corners, fill=softgreen, below=of k1, text width=9.2cm, minimum height=1.15cm, align=center] (k2) {
+      \textbf{2.} $\text{Overall}=\tfrac{1}{3}(F+E+V)$: 4B+SFT đạt $0{,}687$ vs GPT $0{,}707$ ($\Delta \approx -2{,}8\%$).
     };
-    \node[draw, rounded corners, fill=softorange, below=of k2, text width=8.5cm, minimum height=0.95cm, align=center] (k3) {
-      \textbf{3.} Muốn tối ưu RL đúng cần dữ liệu preference cùng prompt, không chỉ engagement rời rạc.
+    \node[draw, rounded corners, fill=softorange, below=of k2, text width=9.2cm, minimum height=1.15cm, align=center] (k3) {
+      \textbf{3.} RL cần $\mathcal{D}=\{(x,y^+,y^-)\}$; GRPO chéo miền: Overall $0{,}570 \to 0{,}352$.
     };
   \end{tikzpicture}
 
-  \vspace{0.55em}
-  \begin{block}{Thông điệp cuối}
-    SLM mã nguồn mở sau tinh chỉnh có tiềm năng thay thế một phần API thương mại trong bài toán hẹp, nếu được đặt trong vòng đánh giá và thu thập preference phù hợp.
-  \end{block}
+  \eqblock{%
+    SLM sau SFT có thể thay một phần API thương mại trong bài toán hẹp, nếu gắn vòng
+    $\text{evaluate} \to \text{approve} \to \mathcal{D}_{\text{pref}} \to \text{fine-tune}$.
+  }
 \end{frame}

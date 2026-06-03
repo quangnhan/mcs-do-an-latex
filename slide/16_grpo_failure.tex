@@ -1,6 +1,6 @@
-\begin{frame}{Phân tích thất bại GRPO và bài học}
+\begin{frame}[t]{Phân tích thất bại GRPO và bài học}
   \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.62\textwidth}
+    \begin{column}{0.58\textwidth}
       \centering
       \begin{tikzpicture}
         \begin{axis}[
@@ -8,7 +8,7 @@
           ymin=0,
           ymax=0.65,
           width=\linewidth,
-          height=0.62\textheight,
+          height=0.55\textheight,
           bar width=18pt,
           symbolic x coords={Baseline,GRPO},
           xtick=data,
@@ -22,10 +22,14 @@
         \end{axis}
       \end{tikzpicture}
     \end{column}
-    \begin{column}{0.34\textwidth}
-      \begin{alertblock}{Reward mismatch}
-        Reward chủ yếu đo độ khớp hoặc trung thực với dữ liệu mẫu, không chứa đủ tín hiệu tương tác thật.
-      \end{alertblock}
+    \begin{column}{0.40\textwidth}
+      \eqblock{%
+        \begin{align*}
+          \mathcal{L}_{\text{GRPO}} &= -\tfrac{1}{G}\sum_i A_i \log \pi_\theta(y_i \mid x)\\
+          &\quad + \beta\, D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_{\text{ref}})
+        \end{align*}
+        $\beta=0{,}04$; $r_i$ chéo miền $\not\approx F/E/V \Rightarrow A_i$ sai hướng.
+      }
       \begin{block}{Kết quả}
         Overall giảm 38,2\%, Faithfulness giảm 42,1\%.
       \end{block}

@@ -1,31 +1,32 @@
-\begin{frame}{Câu hỏi nghiên cứu, mục tiêu và phạm vi}
+\begin{frame}[t]{Câu hỏi nghiên cứu, mục tiêu và phạm vi}
   \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.58\textwidth}
+    \begin{column}{0.55\textwidth}
       \begin{enumerate}
-        \item Có thể xây dựng Marketing Agent chuyên biệt cho SME F\&B không?
-        \item Có thể đánh giá chất lượng nội dung bằng pipeline tự động đa lớp không?
-        \item SFT và RL ảnh hưởng thế nào đến chất lượng sinh nội dung?
+        \item Có thể xây dựng Marketing Agent $\pi_\theta$ chuyên biệt cho SME F\&B không?
+        \item Có thể đánh giá bằng $\text{Overall}=\tfrac{1}{3}(F+E+V)$ tự động không?
+        \item SFT và RL ảnh hưởng thế nào đến $\mathbb{E}[\text{Overall}]$ trên tập thực tế?
       \end{enumerate}
     \end{column}
-    \begin{column}{0.38\textwidth}
+    \begin{column}{0.41\textwidth}
       \begin{block}{Phạm vi}
         \begin{itemize}
-          \item Nội dung Facebook
-          \item SME ngành F\&B
-          \item Tiếng Việt
-          \item Có bước phê duyệt
+          \item Nội dung Facebook, SME F\&B, tiếng Việt
+          \item Có bước phê duyệt: $\text{Overall} \geq \theta$
+          \item Thực nghiệm: $n=100$ trường hợp F\&B
         \end{itemize}
+      \end{block}
+      \begin{block}{Liên kết RQ}
+        RQ1: $x \to y$;\; RQ2: $\text{Overall}$;\; RQ3: $\Delta$ sau SFT/GRPO.
       \end{block}
     \end{column}
   \end{columns}
-
-  \vspace{0.8em}
+  \vspace{0.4em}
   \centering
   \begin{tikzpicture}[every node/.style={font=\small}]
-    \node[draw, rounded corners, fill=softblue, minimum width=2.8cm, minimum height=0.9cm] (system) {Hệ thống};
-    \node[draw, rounded corners, fill=softgreen, right=0.7cm of system, minimum width=2.8cm, minimum height=0.9cm] (eval) {Đánh giá};
-    \node[draw, rounded corners, fill=softorange, right=0.7cm of eval, minimum width=2.8cm, minimum height=0.9cm] (learning) {Huấn luyện};
-    \draw[-{Stealth}] (system) -- (eval);
-    \draw[-{Stealth}] (eval) -- (learning);
+    \node[draw, rounded corners, fill=softblue, minimum width=3.0cm, minimum height=1.0cm] (system) {Hệ thống $\pi_\theta$};
+    \node[draw, rounded corners, fill=softgreen, right=0.8cm of system, minimum width=3.0cm, minimum height=1.0cm] (eval) {Đánh giá $F/E/V$};
+    \node[draw, rounded corners, fill=softorange, right=0.8cm of eval, minimum width=3.0cm, minimum height=1.0cm] (learning) {Huấn luyện SFT/GRPO};
+    \draw[-{Stealth}, thick] (system) -- (eval);
+    \draw[-{Stealth}, thick] (eval) -- (learning);
   \end{tikzpicture}
 \end{frame}

@@ -1,6 +1,6 @@
-\begin{frame}{Kết quả thực nghiệm chính}
+\begin{frame}[t]{Kết quả thực nghiệm chính}
   \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.66\textwidth}
+    \begin{column}{0.62\textwidth}
       \centering
       \begin{tikzpicture}
         \begin{axis}[
@@ -8,7 +8,7 @@
           ymin=0,
           ymax=0.8,
           width=\linewidth,
-          height=0.64\textheight,
+          height=0.58\textheight,
           bar width=14pt,
           symbolic x coords={2B,4B,4B+SFT,GPT},
           xtick=data,
@@ -23,17 +23,23 @@
         \end{axis}
       \end{tikzpicture}
     \end{column}
-    \begin{column}{0.31\textwidth}
-      \begin{block}{Kết quả nổi bật}
-        \begin{itemize}
-          \item 4B + SFT đạt 0,687 Overall
-          \item GPT-5.4-mini đạt 0,707
-          \item Chênh lệch khoảng 2,8\%
-        \end{itemize}
+    \begin{column}{0.36\textwidth}
+      \scriptsize
+      \begin{tabular}{@{}lcccc@{}}
+        \toprule
+        Mô hình & $F$ & $E$ & $V$ & O \\
+        \midrule
+        GPT-mini & 0,66 & 0,82 & 0,65 & \textbf{0,71} \\
+        4B & 0,60 & 0,77 & 0,50 & 0,62 \\
+        4B+SFT & 0,64 & 0,78 & 0,65 & \textbf{0,69} \\
+        2B+RL & 0,35 & 0,47 & 0,25 & 0,35 \\
+        \bottomrule
+      \end{tabular}
+      \vspace{0.4em}
+      \begin{block}{So sánh}
+        $\Delta_{\text{O}} = 0{,}687 - 0{,}707 \approx -2{,}8\%$;\\
+        Vibe 4B+SFT $\approx$ GPT ($0{,}648$ vs $0{,}645$).
       \end{block}
-      \begin{alertblock}{Điểm đáng chú ý}
-        Vibe của 4B + SFT tương đương mô hình thương mại.
-      \end{alertblock}
     \end{column}
   \end{columns}
 \end{frame}

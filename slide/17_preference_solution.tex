@@ -1,9 +1,9 @@
-\begin{frame}{Hướng tiếp cận khả thi: SFT trước, preference sau}
+\begin{frame}[t]{Hướng tiếp cận khả thi: SFT trước, preference sau}
   \centering
   \begin{tikzpicture}[
-    node distance=0.75cm,
+    node distance=0.9cm,
     every node/.style={font=\small},
-    box/.style={draw, rounded corners, minimum height=1cm, align=center}
+    box/.style={draw, rounded corners, minimum height=1.2cm, align=center}
   ]
     \node[box, fill=softblue, text width=2.5cm] (prompt) {Cùng campaign brief};
     \node[box, fill=softgreen, right=1cm of prompt, text width=2.2cm, yshift=0.75cm] (a) {Output A};
@@ -20,8 +20,9 @@
     \draw[-{Stealth}, thick] (dataset) -- (train);
   \end{tikzpicture}
 
-  \vspace{1em}
-  \begin{block}{Lợi ích}
-    Cặp chosen/rejected cùng prompt được tạo từ thao tác duyệt bài tự nhiên, không cần đăng thử nội dung lên Facebook.
+  \begin{block}{Lợi ích \& công thức}
+    $\pi_\theta^{\text{SFT}} \Rightarrow \{y_a,y_b\} \sim \pi_\theta(\cdot\mid x)$,
+    $y_w \succ y_l \Rightarrow \mathcal{D}_{\text{pref}}$ cho $\mathcal{L}_{\text{DPO}}$ / $r_\phi$.\\
+    $\forall (x, y_w, y_l) \in \mathcal{D}_{\text{pref}}$: cùng campaign brief $x$.
   \end{block}
 \end{frame}

@@ -1,5 +1,6 @@
-\begin{frame}{Từ RLHF đến DPO và GRPO: yêu cầu dữ liệu}
+\begin{frame}[t]{Từ RLHF đến DPO và GRPO: yêu cầu dữ liệu}
   \centering
+  \small
   \begin{tabular}{>{\bfseries}p{0.18\linewidth}p{0.30\linewidth}p{0.34\linewidth}}
     \toprule
     Phương pháp & Tín hiệu học & Điều kiện quan trọng \\
@@ -10,14 +11,22 @@
     \bottomrule
   \end{tabular}
 
-  \vspace{1.2em}
-  \begin{tikzpicture}[node distance=1cm, every node/.style={font=\small}]
-    \node[draw, rounded corners, fill=softblue, minimum width=2.4cm] (rlhf) {RLHF};
-    \node[draw, rounded corners, fill=softgreen, right=of rlhf, minimum width=2.4cm] (dpo) {DPO};
-    \node[draw, rounded corners, fill=softorange, right=of dpo, minimum width=2.4cm] (grpo) {GRPO};
-    \node[draw, rounded corners, fill=softred, below=0.9cm of dpo, minimum width=5.8cm, align=center] (data) {Cốt lõi: preference hoặc reward phải đúng cấu trúc};
+  \vspace{0.3em}
+  \begin{tikzpicture}[node distance=0.9cm, every node/.style={font=\small}]
+    \node[draw, rounded corners, fill=softblue, minimum width=2.5cm, minimum height=0.9cm] (rlhf) {RLHF};
+    \node[draw, rounded corners, fill=softgreen, right=of rlhf, minimum width=2.5cm, minimum height=0.9cm] (dpo) {DPO};
+    \node[draw, rounded corners, fill=softorange, right=of dpo, minimum width=2.5cm, minimum height=0.9cm] (grpo) {GRPO};
     \draw[-{Stealth}, thick] (rlhf) -- (dpo);
     \draw[-{Stealth}, thick] (dpo) -- (grpo);
-    \draw[-{Stealth}, thick] (data) -- (dpo);
   \end{tikzpicture}
+  \eqblock{%
+    \begin{align*}
+      P(y^+ \succ y^- \mid x) &= \sigma\bigl(r_\phi(x,y^+) - r_\phi(x,y^-)\bigr),\;
+      \mathcal{L}_{\text{DPO}} \propto -\log\sigma(\beta\,\Delta\log\pi)\\
+      \Delta\log\pi &= \log\tfrac{\pi_\theta(y^+\mid x)}{\pi_{\text{ref}}(y^+\mid x)}
+      - \log\tfrac{\pi_\theta(y^-\mid x)}{\pi_{\text{ref}}(y^-\mid x)},\;
+      A_i = \dfrac{r_i - \bar{r}}{\sigma_r + \varepsilon}
+    \end{align*}
+    {\scriptsize Cùng prompt $x$; DPO (Rafailov et al.)}
+  }
 \end{frame}

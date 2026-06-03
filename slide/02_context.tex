@@ -1,23 +1,27 @@
-\begin{frame}{Bối cảnh và động cơ nghiên cứu}
+\begin{frame}[t]{Bối cảnh và động cơ nghiên cứu}
   \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.42\textwidth}
+    \begin{column}{0.40\textwidth}
       \begin{block}{SME F\&B}
         Phụ thuộc Facebook để duy trì hiện diện thương hiệu, nhưng thiếu nguồn lực sản xuất nội dung đều đặn.
       \end{block}
       \begin{block}{Khoảng trống}
-        Công cụ AI tổng quát chưa nắm tốt ngữ cảnh địa phương, đặc trưng ngành và giọng thương hiệu.
+        Công cụ AI tổng quát: $\pi_{\text{base}}(y \mid x)$ chưa tối ưu theo
+        ngữ cảnh địa phương, đặc trưng ngành và giọng thương hiệu.
+      \end{block}
+      \begin{block}{Hướng giải pháp}
+        $\max_\theta \mathbb{E}_x[\text{Overall}(\pi_\theta(x))]$ trên brief F\&B.
       \end{block}
     \end{column}
-    \begin{column}{0.54\textwidth}
+    \begin{column}{0.56\textwidth}
       \centering
-      \begin{tikzpicture}[scale=0.86, transform shape, node distance=1.0cm, every node/.style={font=\small}]
-        \node[draw, rounded corners, fill=softblue, minimum width=4.4cm, minimum height=1cm] (need) {Nhu cầu nội dung ổn định};
-        \node[draw, rounded corners, fill=softorange, below=of need, minimum width=4.4cm, minimum height=1cm] (cost) {Chi phí và nhân lực hạn chế};
-        \node[draw, rounded corners, fill=softred, below=of cost, minimum width=4.4cm, minimum height=1cm] (generic) {AI tổng quát chưa chuyên biệt};
-        \node[draw, rounded corners, fill=softgreen, right=1.2cm of cost, minimum width=3.2cm, minimum height=2.2cm, align=center] (goal) {\textbf{Marketing Agent}\\chuyên biệt F\&B};
-        \draw[-{Stealth}] (need.east) -- (goal.north west);
-        \draw[-{Stealth}] (cost.east) -- (goal.west);
-        \draw[-{Stealth}] (generic.east) -- (goal.south west);
+      \begin{tikzpicture}[node distance=0.95cm, every node/.style={font=\small}]
+        \node[draw, rounded corners, fill=softblue, minimum width=4.4cm, minimum height=1.1cm] (need) {Nhu cầu nội dung ổn định};
+        \node[draw, rounded corners, fill=softorange, below=of need, minimum width=4.4cm, minimum height=1.1cm] (cost) {Chi phí và nhân lực hạn chế};
+        \node[draw, rounded corners, fill=softred, below=of cost, minimum width=4.4cm, minimum height=1.1cm] (generic) {AI tổng quát chưa chuyên biệt};
+        \node[draw, rounded corners, fill=softgreen, right=1.0cm of cost, minimum width=3.0cm, minimum height=2.2cm, align=center] (goal) {\textbf{Marketing Agent}\\F\&B};
+        \draw[-{Stealth}, thick] (need.east) -- (goal.north west);
+        \draw[-{Stealth}, thick] (cost.east) -- (goal.west);
+        \draw[-{Stealth}, thick] (generic.east) -- (goal.south west);
       \end{tikzpicture}
     \end{column}
   \end{columns}

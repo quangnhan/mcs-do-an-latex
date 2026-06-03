@@ -1,9 +1,9 @@
-\begin{frame}{Vai trò của SFT trong hệ thống}
+\begin{frame}[t]{Vai trò của SFT trong hệ thống}
   \centering
   \begin{tikzpicture}[
-    node distance=1.2cm,
+    node distance=1.3cm,
     every node/.style={font=\small},
-    box/.style={draw, rounded corners, text width=3.1cm, minimum height=1.4cm, align=center}
+    box/.style={draw, rounded corners, text width=3.4cm, minimum height=1.7cm, align=center}
   ]
     \node[box, fill=softblue] (before) {\textbf{Before SFT}\\Phụ thuộc nhiều vào prompt\\giọng văn chưa ổn định};
     \node[box, fill=softgreen, right=of before] (sft) {\textbf{SFT}\\Học từ dữ liệu F\&B\\đã kiểm duyệt};
@@ -12,8 +12,12 @@
     \draw[-{Stealth}, thick] (sft) -- (after);
   \end{tikzpicture}
 
-  \vspace{1.2em}
+  \vspace{0.6em}
   \begin{block}{Thông điệp}
     SFT không phải điểm dừng cuối, mà là bước nền để tạo các ứng viên đủ tốt cho thu thập preference hợp lệ.
   \end{block}
+  \eqblock{%
+    $\mathcal{L}_{\text{SFT}} = -\mathbb{E}_{(x,y^*)}\bigl[\log \pi_\theta(y^* \mid x)\bigr]$ trên
+    $\{(x_i, y_i^*)\}$ F\&B đã duyệt $\Rightarrow$ sinh $\{y_1,\ldots,y_G\} \sim \pi_\theta(\cdot \mid x)$ cùng brief.
+  }
 \end{frame}
