@@ -17,8 +17,16 @@
 \usecolortheme{default}
 \setbeamertemplate{navigation symbols}{}
 \setbeamertemplate{footline}[frame number]
-\setbeamerfont{frametitle}{series=\bfseries,size=\large}
+\setbeamerfont{frametitle}{series=\bfseries,size=\normalsize}
 \setbeamerfont{title}{series=\bfseries,size=\Large}
+
+% Cho phép frametitle xuống dòng tự động thay vì bị clip
+\setbeamertemplate{frametitle}{%
+  \nointerlineskip
+  \begin{beamercolorbox}[wd=\paperwidth,sep=0.3cm,left]{frametitle}%
+    \usebeamerfont{frametitle}\insertframetitle\strut
+  \end{beamercolorbox}%
+}
 
 \definecolor{bkblue}{RGB}{24,79,141}
 \definecolor{softblue}{RGB}{232,241,250}
@@ -26,7 +34,12 @@
 \definecolor{softgreen}{RGB}{231,246,235}
 \definecolor{softred}{RGB}{252,231,231}
 \setbeamercolor{structure}{fg=bkblue}
-\setbeamercolor{frametitle}{fg=bkblue}
+\setbeamercolor{frametitle}{fg=white}
+\setbeamercolor{title}{fg=white,bg=bkblue}
+\setbeamercolor{subtitle}{fg=white,bg=bkblue!75}
+\setbeamercolor{author in title page}{fg=bkblue}
+\setbeamercolor{institute in title page}{fg=bkblue}
+\setbeamercolor{date in title page}{fg=bkblue}
 
 \newcommand{\eqblock}[1]{%
   \begin{block}{Công thức}
@@ -50,25 +63,44 @@
 \institute{Trường Đại học Bách Khoa -- ĐHQG TP.HCM}
 \date{Tháng 05/2026}
 
+\AtBeginSection[]{
+  \begin{frame}{Nội dung trình bày}
+    \tableofcontents[currentsection,hideallsubsections]
+  \end{frame}
+}
+
 \begin{document}
 
 \input{01_title}
+\input{00_agenda}
+
+\section{Bối cảnh \& Vấn đề}
 \input{02_context}
 \input{03_problem}
+
+\section{Câu hỏi \& Phương pháp}
 \input{04_research_questions}
 \input{05_contributions_method}
+
+\section{Lý thuyết \& Kiến trúc}
 \input{06_theory}
 \input{07_system_architecture}
 \input{08_workflow}
+
+\section{Thực nghiệm \& Kết quả}
 \input{09_evaluation}
 \input{10_experiment_design}
 \input{11_results}
+
+\section{Phân tích chuyên sâu}
 \input{12_sft_role}
 \input{13_rlhf_dpo_grpo}
 \input{14_reward_model_issue}
 \input{15_engagement_reward}
 \input{16_grpo_failure}
 \input{17_preference_solution}
+
+\section{Đóng góp \& Kết luận}
 \input{18_contributions}
 \input{19_limitations_future}
 \input{20_conclusion}
