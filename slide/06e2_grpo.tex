@@ -1,0 +1,21 @@
+\begin{frame}[t]{GRPO: sinh nhóm câu trả lời, học từ xếp hạng tương đối}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.38\textwidth}
+      \begin{block}{Cơ chế hoạt động}
+        \small
+        \begin{itemize}
+          \item Với mỗi prompt $q$, sinh ra $G$ câu trả lời
+          \item Tính reward $r_i$ cho từng câu
+          \item Chuẩn hóa: $\tilde{r}_i = \frac{r_i - \text{mean}(r)}{\text{std}(r)}$
+          \item Model học ưu tiên câu có reward cao hơn trung bình nhóm
+          \item Không cần reward model riêng biệt
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.58\textwidth}
+      \centering
+      \vspace{0.2cm}
+      \includegraphics[width=\linewidth]{GRPO.png}
+    \end{column}
+  \end{columns}
+\end{frame}

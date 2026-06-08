@@ -1,0 +1,43 @@
+\begin{frame}[t]{RLHF: học từ cặp bài tốt -- bài kém do người chọn}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.50\textwidth}
+      \begin{block}{Ý tưởng}
+        \small
+        \begin{itemize}
+          \item SFT chỉ dạy model \textit{bắt chước} mẫu, chưa biết bài nào \textit{tốt hơn}
+          \item RLHF bổ sung tín hiệu: ``với cùng prompt, bài A tốt hơn bài B''
+          \item Model học tăng xác suất sinh $y^+$, giảm xác suất sinh $y^-$
+        \end{itemize}
+      \end{block}
+      \begin{block}{Vấn đề của RLHF truyền thống}
+        \small
+        \begin{itemize}
+          \item Phải huấn luyện thêm một \textbf{reward model} riêng biệt
+          \item Sau đó dùng PPO để tối ưu policy -- phức tạp, dễ mất ổn định
+          \item Chi phí tính toán cao, khó triển khai
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \centering
+      \vspace{0.3cm}
+      \begin{tikzpicture}[node distance=0.7cm, every node/.style={font=\small}]
+        \node[draw, rounded corners, fill=softblue,
+              text width=3.4cm, minimum height=0.9cm, align=center] (human)
+          {Người dùng so sánh\\hai bài cùng prompt};
+        \node[draw, rounded corners, fill=softblue!40,
+              below=of human, text width=3.4cm, minimum height=0.9cm, align=center] (pref)
+          {Dữ liệu sở thích\\$y^+$ vs.\ $y^-$};
+        \node[draw, rounded corners, fill=softorange,
+              below=of pref, text width=3.4cm, minimum height=0.9cm, align=center] (rm)
+          {Huấn luyện Reward Model};
+        \node[draw, rounded corners, fill=softred,
+              below=of rm, text width=3.4cm, minimum height=0.9cm, align=center] (ppo)
+          {Tối ưu policy (PPO)};
+        \draw[-{Stealth}, thick] (human) -- (pref);
+        \draw[-{Stealth}, thick] (pref) -- (rm);
+        \draw[-{Stealth}, thick] (rm) -- (ppo);
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}

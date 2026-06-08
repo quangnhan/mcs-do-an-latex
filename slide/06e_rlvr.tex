@@ -1,0 +1,43 @@
+\begin{frame}[t]{RLVR: học từ tín hiệu reward tự động, không cần người gán nhãn}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.50\textwidth}
+      \begin{block}{RLVR là gì?}
+        \small
+        \begin{itemize}
+          \item Thay người gán nhãn bằng hàm reward tự động
+          \item Phù hợp khi có tiêu chí rõ ràng: toán (đúng/sai), code (chạy được không)
+          \item Mở rộng dữ liệu huấn luyện mà không cần người chấm
+        \end{itemize}
+      \end{block}
+      \begin{block}{Khác RLHF ở điểm nào?}
+        \small
+        \begin{itemize}
+          \item RLHF: người so sánh -- chậm, tốn kém
+          \item RLVR: hàm tự động -- nhanh, rẻ hơn
+          \item Đánh đổi: cần tiêu chí đánh giá định lượng được
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \centering
+      \vspace{0.3cm}
+      \begin{tikzpicture}[node distance=0.7cm, every node/.style={font=\small}]
+        \node[draw, rounded corners, fill=softblue,
+              text width=3.2cm, minimum height=0.9cm, align=center] (prompt)
+          {Prompt $x$};
+        \node[draw, rounded corners, fill=softblue!40,
+              below=of prompt, text width=3.2cm, minimum height=0.9cm, align=center] (group)
+          {Sinh nhóm $N$ câu};
+        \node[draw, rounded corners, fill=softgreen,
+              below=of group, text width=3.2cm, minimum height=0.9cm, align=center] (score)
+          {Tính reward tự động};
+        \node[draw, rounded corners, fill=softorange,
+              below=of score, text width=3.2cm, minimum height=0.9cm, align=center] (train)
+          {Huấn luyện (GRPO)};
+        \draw[-{Stealth}, thick] (prompt) -- (group);
+        \draw[-{Stealth}, thick] (group) -- (score);
+        \draw[-{Stealth}, thick] (score) -- (train);
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
