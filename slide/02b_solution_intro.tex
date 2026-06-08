@@ -1,0 +1,35 @@
+\begin{frame}[t]{Giải pháp đề xuất: Marketing Agent chuyên biệt cho F\&B Việt Nam}
+  \vspace{0.3cm}
+  \centering
+  \begin{tikzpicture}[node distance=1.8cm, every node/.style={font=\small}]
+    \node[draw, rounded corners, fill=softblue,
+          text width=2.6cm, minimum height=2.2cm, align=center] (brief)
+      {\textbf{Chủ quán}\\[0.4em]
+       {\footnotesize Cung cấp thông tin:\\brief, sản phẩm,\\thương hiệu}};
+    \node[draw, rounded corners, fill=softgreen,
+          text width=3.0cm, minimum height=2.2cm, align=center,
+          right=1.8cm of brief] (agent)
+      {\textbf{Marketing Agent}\\[0.4em]
+       {\footnotesize AI sinh nội dung\\chuyên biệt\\F\&B Việt Nam}};
+    \node[draw, rounded corners, fill=softorange,
+          text width=2.6cm, minimum height=2.2cm, align=center,
+          right=1.8cm of agent] (post)
+      {\textbf{Bài đăng Facebook}\\[0.4em]
+       {\footnotesize Caption + ảnh\\sẵn sàng đăng\\đã kiểm duyệt}};
+    \draw[-{Stealth}, very thick, bkblue] (brief) -- (agent);
+    \draw[-{Stealth}, very thick, bkblue] (agent) -- (post);
+  \end{tikzpicture}
+
+  \vspace{0.55cm}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.32\textwidth}
+      \centering\metriccard{softblue}{Tiết kiệm thời gian}{Không cần rành marketing -- Agent tự soạn nội dung}
+    \end{column}
+    \begin{column}{0.32\textwidth}
+      \centering\metriccard{softorange}{Chi phí hợp lý}{Không cần thuê agency, chạy trên mô hình nhỏ}
+    \end{column}
+    \begin{column}{0.32\textwidth}
+      \centering\metriccard{softgreen}{Chuyên biệt F\&B}{Hiểu ngữ cảnh ẩm thực và văn hóa Việt Nam}
+    \end{column}
+  \end{columns}
+\end{frame}

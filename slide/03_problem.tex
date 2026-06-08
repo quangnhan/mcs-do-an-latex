@@ -1,40 +1,38 @@
-\begin{frame}[t]{Bài toán: Tối ưu hóa sinh nội dung F\&B từ brief đến bài đăng}
+\begin{frame}[t]{Bài toán: Brief vào -- bài đăng ra -- đạt ngưỡng chất lượng}
+  \vspace{0.5cm}
+  \centering
+  \begin{tikzpicture}[node distance=0.7cm, every node/.style={font=\small}]
+    \node[draw, rounded corners, fill=softblue,
+          text width=2.6cm, minimum height=2.2cm, align=center] (input)
+      {\textbf{Đầu vào}\\[0.4em]
+       {\footnotesize Sản phẩm, brief chiến dịch, phong cách thương hiệu}};
+    \node[draw, rounded corners, fill=softgreen,
+          right=0.7cm of input, text width=2.6cm, minimum height=2.2cm, align=center] (agent)
+      {\textbf{Marketing Agent}\\[0.4em]
+       {\footnotesize AI sinh nội dung chuyên biệt F\&B}};
+    \node[draw, rounded corners, fill=softorange,
+          right=0.7cm of agent, text width=2.6cm, minimum height=2.2cm, align=center] (output)
+      {\textbf{Bài đăng}\\[0.4em]
+       {\footnotesize Caption + ảnh minh họa Facebook}};
+    \node[draw, rounded corners, fill=softred,
+          right=0.7cm of output, text width=2.6cm, minimum height=2.2cm, align=center] (eval)
+      {\textbf{Kiểm duyệt}\\[0.4em]
+       {\footnotesize Đạt đủ 3 tiêu chí F, E, V mới chấp nhận}};
+    \draw[-{Stealth}, thick] (input)  -- (agent);
+    \draw[-{Stealth}, thick] (agent)  -- (output);
+    \draw[-{Stealth}, thick] (output) -- (eval);
+  \end{tikzpicture}
+
+  \vspace{0.6cm}
   \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.45\textwidth}
-      \textbf{Đầu vào} $x = (b, s, m)$
-      \begin{itemize}
-        \item $b$: campaign brief, title
-        \item $s$: seed content (giá, combo, thông số)
-        \item $m$: metadata thương hiệu, ràng buộc Facebook
-      \end{itemize}
-
-      \textbf{Đầu ra} $y = (plan, caption, img)$
-      \begin{itemize}
-        \item Kế hoạch nội dung, caption F\&B
-        \item Ảnh minh họa và metadata đăng bài
-      \end{itemize}
-      \begin{block}{Mục tiêu}
-        $\max_\theta \mathbb{E}_x[\text{Overall}(\pi_\theta(x))]$,
-        $\text{Overall}=\tfrac{1}{3}(F+E+V)$.
-      \end{block}
+    \begin{column}{0.32\textwidth}
+      \centering\metriccard{softblue}{F -- Faithfulness}{Nội dung trung thực với brief, không bịa thêm}
     \end{column}
-    \begin{column}{0.52\textwidth}
-      \centering
-      \begin{tikzpicture}[node distance=0.7cm, every node/.style={font=\small}]
-        \node[draw, rounded corners, fill=softblue, text width=3.6cm, minimum height=0.9cm, align=center] (input) {Campaign brief $x$};
-        \node[draw, rounded corners, fill=softgreen, below=of input, text width=3.6cm, minimum height=0.9cm, align=center] (agent) {Marketing Agent $\pi_\theta$};
-        \node[draw, rounded corners, fill=softorange, below=of agent, text width=3.6cm, minimum height=0.9cm, align=center] (output) {Post candidate $y$};
-        \node[draw, rounded corners, fill=softred, below=of output, text width=3.6cm, minimum height=0.9cm, align=center] (constraints) {$F,E,V$ $\Rightarrow$ Overall};
-        \draw[-{Stealth}, thick] (input) -- (agent);
-        \draw[-{Stealth}, thick] (agent) -- (output);
-        \draw[-{Stealth}, thick] (constraints) -- (output);
-      \end{tikzpicture}
-
-      \begin{alertblock}{Ràng buộc}
-        \footnotesize
-        $\pi_\theta: x \mapsto y$;\;
-        $\text{Overall}(y)=\tfrac{F+E+V}{3}\geq\theta$.
-      \end{alertblock}
+    \begin{column}{0.32\textwidth}
+      \centering\metriccard{softorange}{E -- Expansion}{Thông tin được mở rộng tự nhiên, hấp dẫn}
+    \end{column}
+    \begin{column}{0.32\textwidth}
+      \centering\metriccard{softgreen}{V -- Vibe}{Giọng văn phù hợp phong cách thương hiệu}
     \end{column}
   \end{columns}
 \end{frame}

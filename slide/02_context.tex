@@ -1,28 +1,19 @@
-\begin{frame}[t]{SME F\&B cần marketing ổn định nhưng thiếu công cụ và nguồn lực phù hợp}
-  \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.40\textwidth}
-      \begin{block}{SME F\&B}
-        Phụ thuộc Facebook để duy trì hiện diện thương hiệu, nhưng thiếu nguồn lực sản xuất nội dung đều đặn.
-      \end{block}
-      \begin{block}{Khoảng trống}
-        Công cụ AI tổng quát: $\pi_{\text{base}}(y \mid x)$ chưa tối ưu theo
-        ngữ cảnh địa phương, đặc trưng ngành và giọng thương hiệu.
-      \end{block}
-      \begin{block}{Hướng giải pháp}
-        $\max_\theta \mathbb{E}_x[\text{Overall}(\pi_\theta(x))]$ trên brief F\&B.
-      \end{block}
-    \end{column}
-    \begin{column}{0.56\textwidth}
-      \centering
-      \begin{tikzpicture}[node distance=0.95cm, every node/.style={font=\small}]
-        \node[draw, rounded corners, fill=softblue, minimum width=4.4cm, minimum height=1.1cm] (need) {Nhu cầu nội dung ổn định};
-        \node[draw, rounded corners, fill=softorange, below=of need, minimum width=4.4cm, minimum height=1.1cm] (cost) {Chi phí và nhân lực hạn chế};
-        \node[draw, rounded corners, fill=softred, below=of cost, minimum width=4.4cm, minimum height=1.1cm] (generic) {AI tổng quát chưa chuyên biệt};
-        \node[draw, rounded corners, fill=softgreen, right=1.0cm of cost, minimum width=3.0cm, minimum height=2.2cm, align=center] (goal) {\textbf{Marketing Agent}\\F\&B};
-        \draw[-{Stealth}, thick] (need.east) -- (goal.north west);
-        \draw[-{Stealth}, thick] (cost.east) -- (goal.west);
-        \draw[-{Stealth}, thick] (generic.east) -- (goal.south west);
-      \end{tikzpicture}
-    \end{column}
-  \end{columns}
+\begin{frame}[t]{Ba rào cản marketing của SME ngành F\&B Việt Nam}
+  \vspace{0.7cm}
+  \centering
+  \begin{tikzpicture}[node distance=1.0cm, every node/.style={font=\small}]
+    \node[draw, rounded corners, fill=softblue,
+          text width=3.6cm, minimum height=2.6cm, align=center] (p1)
+      {\textbf{Thiếu kỹ năng \& thời gian}\\[0.5em]
+       {\footnotesize Chủ quán chuyên ẩm thực, không rành marketing;
+        dưới 3~giờ/tuần dành cho mạng xã hội}};
+    \node[draw, rounded corners, fill=softorange,
+          text width=3.6cm, minimum height=2.6cm, align=center, right=1.0cm of p1] (p2)
+      {\textbf{Chi phí \& công cụ không phù hợp}\\[0.5em]
+       {\footnotesize Agency quá đắt; công cụ tự làm rời rạc, nội dung ngẫu hứng thiếu chiến lược}};
+    \node[draw, rounded corners, fill=softred,
+          text width=3.6cm, minimum height=2.6cm, align=center, right=1.0cm of p2] (p3)
+      {\textbf{AI tổng quát chưa đủ}\\[0.5em]
+       {\footnotesize Không tối ưu cho F\&B Việt Nam; không lưu được dữ liệu thương hiệu nội bộ}};
+  \end{tikzpicture}
 \end{frame}
