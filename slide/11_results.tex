@@ -1,6 +1,6 @@
-\begin{frame}[t]{Kết quả: 4B+SFT đạt 0.687 Overall, cách GPT chỉ 2.8\%}
+\begin{frame}[t]{Kết quả thực nghiệm}
   \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.62\textwidth}
+    \begin{column}{0.50\textwidth}
       \centering
       \begin{tikzpicture}
         \begin{axis}[
@@ -8,37 +8,53 @@
           ymin=0,
           ymax=0.8,
           width=\linewidth,
-          height=0.58\textheight,
-          bar width=14pt,
-          symbolic x coords={2B,4B,4B+SFT,GPT},
+          height=0.62\textheight,
+          bar width=9pt,
+          symbolic x coords={2B,2B+SFT,2B+RL,4B,4B+SFT,9B,GPT},
           xtick=data,
+          x tick label style={rotate=40,anchor=east,font=\tiny},
           ylabel={Overall},
           nodes near coords,
-          nodes near coords style={font=\scriptsize},
+          nodes near coords style={font=\tiny},
           every axis plot/.append style={fill=bkblue!65},
           tick label style={font=\scriptsize},
           label style={font=\small}
         ]
-          \addplot coordinates {(2B,0.570) (4B,0.622) (4B+SFT,0.687) (GPT,0.707)};
+          \addplot coordinates {(2B,0.570) (2B+SFT,0.646) (2B+RL,0.352)
+            (4B,0.622) (4B+SFT,0.687) (9B,0.634) (GPT,0.707)};
         \end{axis}
       \end{tikzpicture}
     \end{column}
-    \begin{column}{0.36\textwidth}
+    \begin{column}{0.48\textwidth}
+      \centering
       \scriptsize
-      \begin{tabular}{@{}lcccc@{}}
+      \setlength{\tabcolsep}{3pt}
+      \begin{tabular}{@{}lcccccc@{}}
         \toprule
-        Mô hình & $F$ & $E$ & $V$ & O \\
+        Mô hình & F & E & V & O & Var & Std \\
         \midrule
-        GPT-mini & 0,66 & 0,82 & 0,65 & \textbf{0,71} \\
-        4B & 0,60 & 0,77 & 0,50 & 0,62 \\
-        4B+SFT & 0,64 & 0,78 & 0,65 & \textbf{0,69} \\
-        2B+RL & 0,35 & 0,47 & 0,25 & 0,35 \\
+        GPT-5.4-mini & 0,659 & 0,817 & 0,645 & 0,707 & 0,0030 & 0,0547 \\
+        \midrule
+        qwen3.5:2b & 0,599 & 0,662 & 0,450 & 0,570 & 0,0043 & 0,0653 \\
+        2b + SFT & 0,597 & 0,754 & 0,587 & 0,646 & 0,0041 & 0,0636 \\
+        2b + RL & 0,347 & 0,465 & 0,245 & 0,352 & 0,0058 & 0,0762 \\
+        qwen3.5:4b & 0,596 & 0,768 & 0,502 & 0,622 & 0,0044 & 0,0662 \\
+        4b + SFT & \textbf{0,637} & \textbf{0,777} & \textbf{0,648} & \textbf{0,687} & \textbf{0,0027} & \textbf{0,0518} \\
+        \midrule
+        qwen3.5:9b & 0,584 & 0,780 & 0,538 & 0,634 & 0,0040 & 0,0633 \\
         \bottomrule
       \end{tabular}
+
+      \vspace{0.5em}
+      {\scriptsize\itshape F: Faithfulness, E: Expansion, V: Vibe, O: Overall.
+      $n=100$, judge GPT-5.4 Azure. In đậm = tốt nhất nhóm mã nguồn mở.}
+
       \vspace{0.4em}
-      \begin{block}{So sánh}
-        $\Delta_{\text{O}} = 0{,}687 - 0{,}707 \approx -2{,}8\%$;\\
-        Vibe 4B+SFT $\approx$ GPT ($0{,}648$ vs $0{,}645$).
+      \begin{block}{Nhận xét}
+        \scriptsize
+        4B+SFT đạt Overall $0{,}687$, chỉ cách GPT-5.4-mini $2{,}8\%$;
+        Vibe ($0{,}648$) đã ngang GPT ($0{,}645$). GRPO chéo miền làm
+        giảm chất lượng ($-38{,}2\%$).
       \end{block}
     \end{column}
   \end{columns}
