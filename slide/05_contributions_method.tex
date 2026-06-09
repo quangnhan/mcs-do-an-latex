@@ -4,15 +4,18 @@
   \begin{tikzpicture}[node distance=1.0cm, every node/.style={font=\small}]
     \node[draw, rounded corners, fill=softblue,
           text width=3.3cm, minimum height=3.2cm, align=center] (system)
-      {\textbf{(1) Kiến trúc}\\[0.6em]
-       {\footnotesize Hệ thống đa tác nhân tự động hóa toàn bộ quy trình từ brief đến bài đăng}};
+      {\textbf{(1) Kiến trúc đa tác nhân}\\[0.6em]
+       {\footnotesize Hệ thống tự động hóa toàn bộ quy trình từ brief đến bài đăng}\\[0.5em]
+       {\scriptsize\itshape\color{bkblue}$\hookrightarrow$ Trả lời RQ\,1}};
     \node[draw, rounded corners, fill=softgreen,
           right=1.0cm of system, text width=3.3cm, minimum height=3.2cm, align=center] (eval)
-      {\textbf{(2) Đánh giá}\\[0.6em]
-       {\footnotesize Bộ tiêu chí F, E, V tự động -- không cần người chấm từng bài}};
+      {\textbf{(2) Đánh giá tự động}\\[0.6em]
+       {\footnotesize Bộ tiêu chí F, E, V -- không cần người chấm từng bài}\\[0.5em]
+       {\scriptsize\itshape\color{bkblue}$\hookrightarrow$ Trả lời RQ\,2}};
     \node[draw, rounded corners, fill=softorange,
           right=1.0cm of eval, text width=3.3cm, minimum height=3.2cm, align=center] (learn)
-      {\textbf{(3) Vòng học}\\[0.6em]
-       {\footnotesize Thu thập phản hồi người dùng để Agent tự cải thiện theo thời gian}};
+      {\textbf{(3) Vòng học SFT + RL}\\[0.6em]
+       {\footnotesize Thu thập phản hồi người dùng để Agent cải thiện theo thời gian}\\[0.5em]
+       {\scriptsize\itshape\color{bkblue}$\hookrightarrow$ Trả lời RQ\,3}};
   \end{tikzpicture}
 \end{frame}
