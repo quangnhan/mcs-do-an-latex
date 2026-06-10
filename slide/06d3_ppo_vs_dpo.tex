@@ -1,0 +1,61 @@
+\begin{frame}[t]{PPO vs DPO: so sánh mục tiêu tối ưu}
+  \begin{columns}[T,onlytextwidth]
+    % ---- PPO ----
+    \begin{column}{0.48\textwidth}
+      \begin{block}{PPO (2 bước)}
+        \scriptsize
+        \textbf{Bước 1 -- huấn luyện Reward Model:}
+        \[
+          r_\phi(x,y) \;\approx\;
+          \log\frac{p(y^+\succ y^-\mid x)}{p(y^-\succ y^+\mid x)}
+        \]
+        \textbf{Bước 2 -- tối ưu policy với KL-penalty:}
+        \[
+          \max_{\pi_\theta}\;
+          \mathbb{E}_{y\sim\pi_\theta}\!\bigl[r_\phi(x,y)\bigr]
+          \;-\;
+          \beta\,D_{\mathrm{KL}}\!\bigl[\pi_\theta \,\|\, \pi_{\mathrm{ref}}\bigr]
+        \]
+        \vspace{2pt}
+        \textcolor{red!70!black}{$\Rightarrow$ reward model và policy là \textbf{hai mạng riêng}, cần PPO để cầu nối}
+      \end{block}
+    \end{column}
+
+    % ---- DPO ----
+    \begin{column}{0.48\textwidth}
+      \begin{block}{DPO (1 bước)}
+        \scriptsize
+        \textbf{Insight: reward tối ưu \textit{ngầm} trong policy:}
+        \[
+          r^*(x,y) \;=\;
+          \beta\log\frac{\pi_\theta(y\mid x)}{\pi_{\mathrm{ref}}(y\mid x)}
+          + \beta\log Z(x)
+        \]
+        \textbf{Loss tối ưu trực tiếp (bỏ $r_\phi$ và PPO):}
+        \[
+          \mathcal{L}_{\mathrm{DPO}} = -\mathbb{E}\!\left[
+            \log\sigma\!\left(
+              \beta\log\frac{\pi_\theta(y^+|x)}{\pi_{\mathrm{ref}}(y^+|x)}
+              -
+              \beta\log\frac{\pi_\theta(y^-|x)}{\pi_{\mathrm{ref}}(y^-|x)}
+            \right)
+          \right]
+        \]
+        \textcolor{green!50!black}{$\Rightarrow$ chỉ \textbf{một mạng} $\pi_\theta$, tối ưu end-to-end trên cặp $(y^+,y^-)$}
+      \end{block}
+    \end{column}
+  \end{columns}
+
+  \vspace{4pt}
+  \begin{block}{}
+    \centering\scriptsize
+    \begin{tabular}{lcc}
+      \textbf{Tiêu chí} & \textbf{PPO} & \textbf{DPO} \\
+      \hline
+      Số mạng cần huấn luyện & 2 (reward + policy) & 1 (policy) \\
+      Tín hiệu học               & scalar reward $r_\phi$ & log-ratio trực tiếp \\
+      Độ phức tạp triển khai     & Cao (on-policy sampling) & Thấp (supervised-style) \\
+      Ổn định huấn luyện         & Dễ dao động              & Ổn định hơn \\
+    \end{tabular}
+  \end{block}
+\end{frame}

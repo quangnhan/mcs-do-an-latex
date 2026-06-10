@@ -1,0 +1,58 @@
+\begin{frame}[t]{Thừa nhận thất bại GRPO: reward 1 neuron sai lý thuyết}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.42\textwidth}
+      \centering\scriptsize
+      \begin{tabular}{@{}lccc@{}}
+        \toprule
+        & Baseline & GRPO & $\Delta$ \\
+        \midrule
+        Faithfulness & 0,599 & 0,347 & $-42{,}1\%$ \\
+        Expansion    & 0,662 & 0,465 & $-29{,}8\%$ \\
+        Vibe         & 0,450 & 0,245 & $-45{,}6\%$ \\
+        \textbf{Overall} & \textbf{0,570} & \textbf{0,352} & $\mathbf{-38{,}2\%}$ \\
+        \bottomrule
+      \end{tabular}
+
+      \vspace{0.5em}
+      \begin{block}{Kiến trúc reward model}
+        \scriptsize
+        XLM-RoBERTa\\[0.2em]
+        $\downarrow$\\[0.2em]
+        \texttt{Linear}$(H,\;1)$ $\to r \in \mathbb{R}$\\[0.3em]
+        Huấn luyện trên tập Dining Review\\
+        (cross-domain với marketing)
+      \end{block}
+    \end{column}
+
+    \begin{column}{0.56\textwidth}
+      \scriptsize
+      \textbf{Tại sao 1 neuron sai về lý thuyết với GRPO?}
+      \vspace{0.3em}
+      \begin{enumerate}\setlength\itemsep{4pt}
+        \item \textbf{Variance collapse:}
+          $r_i \approx \text{const}$ trong nhóm $G$
+          $\Rightarrow \sigma_r \approx 0
+          \Rightarrow A_i = \frac{r_i-\bar{r}}{\sigma_r+\varepsilon} \approx 0$
+          --- mất tín hiệu học.
+
+        \item \textbf{1 scalar $\not\Leftrightarrow$ (F, E, V):}
+          Không phân biệt được ``Faithfulness cao, Vibe thấp'' với ngược lại
+          $\Rightarrow$ policy không biết chiều nào cần tối ưu.
+
+        \item \textbf{Reward hacking:}
+          Model tìm shortcut maximize $r$ bằng thêm emoji và CTA máy móc,
+          bỏ qua bảo toàn thực thể.
+
+        \item \textbf{Out-of-distribution:}
+          Scorer trained trên review tiêu dùng, marketing content nằm ngoài
+          phân phối $\Rightarrow r_i$ không tin cậy.
+      \end{enumerate}
+    \end{column}
+  \end{columns}
+
+  \eqblock{%
+    Verifiable (code/toán): $r_i \in \{0,1\}$, $\sigma_r \approx 0{,}5$ $\Rightarrow$ tín hiệu mạnh.\\
+    Cross-domain 1 neuron: $\sigma_r \approx 0$ $\Rightarrow$ nhiễu.
+    Phân tích thiết kế đúng $\downarrow$.
+  }
+\end{frame}

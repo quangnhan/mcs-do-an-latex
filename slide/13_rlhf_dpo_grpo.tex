@@ -1,32 +1,46 @@
-\begin{frame}[t]{RLHF, DPO và GRPO đều yêu cầu cặp $(y^+, y^-)$ từ cùng một prompt}
-  \centering
-  \small
-  \begin{tabular}{>{\bfseries}p{0.18\linewidth}p{0.30\linewidth}p{0.34\linewidth}}
-    \toprule
-    Phương pháp & Tín hiệu học & Điều kiện quan trọng \\
-    \midrule
-    RLHF & Reward model từ preference & Hai output phải cùng prompt gốc \\
-    DPO & Cặp chosen/rejected & Preference pair phải hợp lệ \\
-    GRPO & Reward theo nhóm output & Reward nên kiểm chứng được hoặc rất đáng tin cậy \\
-    \bottomrule
-  \end{tabular}
+\begin{frame}[t]{GRPO phù hợp verifiable reward --- DPO phù hợp text generation}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.48\textwidth}
+      \centering
+      \begin{tikzpicture}[
+        node distance=0.75cm,
+        every node/.style={font=\small},
+        box/.style={draw, rounded corners, text width=4.0cm, minimum height=0.95cm, align=center}
+      ]
+        \node[box, fill=softgreen] (t1) {Code / Toán học};
+        \node[box, fill=softgreen, below=of t1] (r1) {$r_i \in \{0,1\}$, kiểm chứng được};
+        \node[box, fill=softgreen, below=of r1] (s1) {$\sigma_r \approx 0{,}5$ \textbf{(GRPO hiệu quả)}};
+        \draw[-{Stealth}] (t1) -- (r1);
+        \draw[-{Stealth}] (r1) -- (s1);
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \centering
+      \begin{tikzpicture}[
+        node distance=0.75cm,
+        every node/.style={font=\small},
+        box/.style={draw, rounded corners, text width=4.0cm, minimum height=0.95cm, align=center}
+      ]
+        \node[box, fill=softorange] (t2) {Marketing content};
+        \node[box, fill=softorange, below=of t2] (r2) {Chất lượng đa chiều (F, E, V)};
+        \node[box, fill=softblue, below=of r2] (s2) {Cần preference pairs \textbf{(DPO phù hợp hơn)}};
+        \draw[-{Stealth}] (t2) -- (r2);
+        \draw[-{Stealth}] (r2) -- (s2);
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
 
-  \vspace{0.3em}
-  \begin{tikzpicture}[node distance=0.9cm, every node/.style={font=\small}]
-    \node[draw, rounded corners, fill=softblue, minimum width=2.5cm, minimum height=0.9cm] (rlhf) {RLHF};
-    \node[draw, rounded corners, fill=softgreen, right=of rlhf, minimum width=2.5cm, minimum height=0.9cm] (dpo) {DPO};
-    \node[draw, rounded corners, fill=softorange, right=of dpo, minimum width=2.5cm, minimum height=0.9cm] (grpo) {GRPO};
-    \draw[-{Stealth}, thick] (rlhf) -- (dpo);
-    \draw[-{Stealth}, thick] (dpo) -- (grpo);
-  \end{tikzpicture}
+  \vspace{0.4em}
+  \begin{block}{Vấn đề cốt lõi}
+    \scriptsize
+    GRPO yêu cầu reward $r_i$ có phương sai đủ lớn \emph{trong nhóm $G$ cùng prompt}.
+    Text marketing không có verifiable reward $\Rightarrow$ không thỏa mãn điều kiện này.
+    DPO tối ưu trực tiếp từ cặp $(x, y^+, y^-)$ mà \textbf{không cần scalar reward}.
+  \end{block}
+
   \eqblock{%
-    \begin{align*}
-      P(y^+ \succ y^- \mid x) &= \sigma\bigl(r_\phi(x,y^+) - r_\phi(x,y^-)\bigr),\;
-      \mathcal{L}_{\text{DPO}} \propto -\log\sigma(\beta\,\Delta\log\pi)\\
-      \Delta\log\pi &= \log\tfrac{\pi_\theta(y^+\mid x)}{\pi_{\text{ref}}(y^+\mid x)}
-      - \log\tfrac{\pi_\theta(y^-\mid x)}{\pi_{\text{ref}}(y^-\mid x)},\;
-      A_i = \dfrac{r_i - \bar{r}}{\sigma_r + \varepsilon}
-    \end{align*}
-    {\scriptsize Cùng prompt $x$; DPO (Rafailov et al.)}
+    GRPO: $A_i = (r_i - \bar{r})/\sigma_r$, cần $r_i$ verifiable.
+    DPO: $\mathcal{L}_{\text{DPO}} \propto -\log\sigma(\beta\,\Delta\log\pi)$,
+    chỉ cần cặp sở thích $(y^+, y^-)$ từ cùng prompt.
   }
 \end{frame}

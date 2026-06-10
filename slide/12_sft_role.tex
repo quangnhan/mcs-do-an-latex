@@ -1,23 +1,43 @@
-\begin{frame}[t]{SFT không phải điểm đích --- nền tảng thu thập dữ liệu sở thích hợp lệ}
+\begin{frame}[t]{SFT: dễ train, hiệu quả --- nhưng không tối ưu sở thích}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Ưu điểm}
+        \scriptsize
+        \begin{itemize}
+          \item Ổn định: MLE trực tiếp trên dữ liệu có nhãn, không cần reward model
+          \item Chỉ cần 500 mẫu kiểm duyệt để học phong cách F\&B
+          \item 4B+SFT Overall $0{,}687$ --- chỉ cách GPT-5.4-mini $2{,}8\%$
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Giới hạn}
+        \scriptsize
+        \begin{itemize}
+          \item Chỉ học phân phối dữ liệu kiểm duyệt, không tối ưu sở thích
+          \item Không có cơ chế phân biệt ``tốt hơn'' giữa hai output đều chấp nhận được
+          \item Cần dữ liệu sở thích để tiếp tục cải thiện
+        \end{itemize}
+      \end{block}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.5em}
   \centering
   \begin{tikzpicture}[
-    node distance=1.3cm,
+    node distance=1.2cm,
     every node/.style={font=\small},
-    box/.style={draw, rounded corners, text width=3.4cm, minimum height=1.7cm, align=center}
+    box/.style={draw, rounded corners, text width=3.0cm, minimum height=1.1cm, align=center}
   ]
-    \node[box, fill=softblue] (before) {\textbf{Before SFT}\\Phụ thuộc nhiều vào prompt\\giọng văn chưa ổn định};
-    \node[box, fill=softgreen, right=of before] (sft) {\textbf{SFT}\\Học từ dữ liệu F\&B\\đã kiểm duyệt};
-    \node[box, fill=softorange, right=of sft] (after) {\textbf{Candidate Generator}\\Sinh nhiều phương án\\cho cùng một brief};
-    \draw[-{Stealth}, thick] (before) -- (sft);
-    \draw[-{Stealth}, thick] (sft) -- (after);
+    \node[box, fill=softblue] (sft) {\textbf{SFT}\\Học từ nhãn có sẵn};
+    \node[box, fill=softorange, right=of sft] (pref) {\textbf{Preference data}\\Gán nhãn sở thích};
+    \node[box, fill=softgreen, right=of pref] (dpo) {\textbf{DPO}\\Tối ưu sở thích};
+    \draw[-{Stealth}, thick] (sft) -- (pref);
+    \draw[-{Stealth}, thick] (pref) -- (dpo);
   \end{tikzpicture}
 
-  \vspace{0.6em}
-  \begin{block}{Thông điệp}
-    SFT không phải điểm dừng cuối, mà là bước nền để tạo các ứng viên đủ tốt cho thu thập preference hợp lệ.
-  \end{block}
   \eqblock{%
-    $\mathcal{L}_{\text{SFT}} = -\mathbb{E}_{(x,y^*)}\bigl[\log \pi_\theta(y^* \mid x)\bigr]$ trên
-    $\{(x_i, y_i^*)\}$ F\&B đã duyệt $\Rightarrow$ sinh $\{y_1,\ldots,y_G\} \sim \pi_\theta(\cdot \mid x)$ cùng brief.
+    $\mathcal{L}_{\text{SFT}} = -\mathbb{E}_{(x,y^*)}\bigl[\log\pi_\theta(y^*\mid x)\bigr]$:
+    tối ưu xác suất output ``đủ tốt'', không tối ưu ``tốt hơn lựa chọn khác''.
   }
 \end{frame}

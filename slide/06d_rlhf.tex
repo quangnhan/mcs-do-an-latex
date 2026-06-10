@@ -2,20 +2,20 @@
   \begin{columns}[T,onlytextwidth]
     \begin{column}{0.50\textwidth}
       \begin{block}{Ý tưởng}
-        \small
-        \begin{itemize}
+        \scriptsize\vspace{-3pt}
+        \begin{itemize}\setlength{\itemsep}{0pt}\setlength{\parsep}{0pt}
           \item SFT chỉ dạy model \textit{bắt chước} mẫu, chưa biết bài nào \textit{tốt hơn}
           \item RLHF bổ sung tín hiệu: ``với cùng prompt, bài A tốt hơn bài B''
           \item Model học tăng xác suất sinh $y^+$, giảm xác suất sinh $y^-$
-        \end{itemize}
+        \end{itemize}\vspace{-3pt}
       \end{block}
       \begin{block}{Vấn đề của RLHF truyền thống}
-        \small
-        \begin{itemize}
+        \scriptsize\vspace{-3pt}
+        \begin{itemize}\setlength{\itemsep}{0pt}\setlength{\parsep}{0pt}
           \item Phải huấn luyện thêm một \textbf{reward model} riêng biệt
           \item Sau đó dùng PPO để tối ưu policy -- phức tạp, dễ mất ổn định
           \item Chi phí tính toán cao, khó triển khai
-        \end{itemize}
+        \end{itemize}\vspace{-3pt}
       \end{block}
     \end{column}
     \begin{column}{0.46\textwidth}

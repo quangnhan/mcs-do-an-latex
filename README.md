@@ -9,7 +9,8 @@ Kho chứa bản báo cáo LaTeX. Bản đang dùng nằm trong thư mục **`la
 Trong thư mục `latex_new`:
 
 ```powershell
-cd latex_new
+cd de_an
+cd slide
 pdflatex -interaction=nonstopmode -synctex=1 main.tex
 pdflatex -interaction=nonstopmode -synctex=1 main.tex
 ```

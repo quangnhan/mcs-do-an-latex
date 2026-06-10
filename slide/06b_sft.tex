@@ -9,15 +9,6 @@
           \item Sau SFT, model viết đúng phong cách, đúng ngữ cảnh bài toán cụ thể
         \end{itemize}
       \end{block}
-      \begin{block}{QLoRA -- kỹ thuật tiết kiệm bộ nhớ}
-        \small
-        \begin{itemize}
-          \item Full fine-tuning cần cập nhật toàn bộ tham số -- rất tốn GPU
-          \item QLoRA chỉ thêm một lớp tham số nhỏ (rank thấp) vào model gốc
-          \item Model gốc giữ nguyên, chỉ huấn luyện phần bổ sung
-          \item Được dùng trong cả SFT lẫn RL để tiết kiệm bộ nhớ
-        \end{itemize}
-      \end{block}
     \end{column}
     \begin{column}{0.44\textwidth}
       \centering

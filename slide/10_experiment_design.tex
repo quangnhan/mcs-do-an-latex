@@ -5,21 +5,22 @@
     every node/.style={font=\small},
     box/.style={draw, rounded corners, text width=3.0cm, minimum height=1.35cm, align=center}
   ]
-    \node[box, fill=softblue] (base) {\textbf{Baseline}\\Qwen3.5 2B, 4B, 9B};
-    \node[box, fill=softgreen, right=of base] (sft) {\textbf{SFT / QLoRA}\\Qwen3.5 2B, 4B};
-    \node[box, fill=softorange, right=of sft] (grpo) {\textbf{GRPO}\\Qwen3.5 2B\\reward rule-based};
-    \node[box, fill=softred, below=1.2cm of sft] (eval) {\textbf{Evaluation}\\100 trường hợp F\&B\\F/E/V + Overall};
+    \node[box, fill=softblue] (base) {\textbf{Base LLM}\\Qwen2.5 2B, 4B, 9B};
+    \node[box, fill=softgreen, above right=0.6cm and 1.2cm of base] (sft) {\textbf{SFT / QLoRA}\\Qwen2.5 2B, 4B\\fine-tune supervised};
+    \node[box, fill=softorange, below right=0.6cm and 1.2cm of base] (grpo) {\textbf{GRPO}\\Qwen2.5 2B\\reward rule-based};
+    \node[box, fill=softred, right=4.5cm of base] (eval) {\textbf{Evaluation}\\LLM-as-a-Judge\\100 ca F\&B\\F/E/V + Overall};
 
-    \draw[-{Stealth}, thick] (base) -- (sft);
-    \draw[-{Stealth}, thick] (sft) -- (grpo);
-    \draw[-{Stealth}, thick] (base.south) -- (eval.north west);
-    \draw[-{Stealth}, thick] (sft.south) -- (eval.north);
-    \draw[-{Stealth}, thick] (grpo.south) -- (eval.north east);
+    \draw[-{Stealth}, thick] (base.north east) -- (sft.west);
+    \draw[-{Stealth}, thick] (base.south east) -- (grpo.west);
+    \draw[-{Stealth}, thick] (base.east) -- node[above, font=\tiny, yshift=2pt] {baseline} (eval.west);
+    \draw[-{Stealth}, thick] (sft.east) -- (eval.north west);
+    \draw[-{Stealth}, thick] (grpo.east) -- (eval.south west);
   \end{tikzpicture}
 
   \eqblock{%
     QLoRA: $W=W_0+BA$, $r=16$, $\alpha=32$, NF4; $\approx 0{,}58\%$ params trainable (2B).\\
-    Judge: GPT-5.4 Azure; metric $\text{Overall}(y_i)$ trên $n=100$; so sánh
+    GRPO train độc lập từ base (không qua SFT).
+    Judge: GPT-4o Azure; metric $\text{Overall}(y_i)$ trên $n=100$; so sánh
     $\mathbb{E}[\text{Overall}]$ baseline / SFT / GRPO.
   }
 \end{frame}
