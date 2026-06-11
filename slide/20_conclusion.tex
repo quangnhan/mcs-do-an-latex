@@ -1,19 +1,45 @@
-\begin{frame}[t]{Kết luận: SFT nhỏ có thể cạnh tranh API thương mại trong bài toán hẹp}
-  \centering
-  \begin{tikzpicture}[node distance=0.75cm, every node/.style={font=\small}]
-    \node[draw, rounded corners, fill=softblue, text width=9.2cm, minimum height=1.15cm, align=center] (k1) {
-      \textbf{1.} Agent $\pi_\theta$ chuyên biệt F\&B --- kiến trúc đa tác nhân khả thi cho SME.
-    };
-    \node[draw, rounded corners, fill=softgreen, below=of k1, text width=9.2cm, minimum height=1.15cm, align=center] (k2) {
-      \textbf{2.} $\text{Overall}=\tfrac{1}{3}(F+E+V)$: 4B+SFT đạt $0{,}687$ vs GPT $0{,}707$ ($\Delta \approx -2{,}8\%$).
-    };
-    \node[draw, rounded corners, fill=softorange, below=of k2, text width=9.2cm, minimum height=1.15cm, align=center] (k3) {
-      \textbf{3.} RL cần $\mathcal{D}=\{(x,y^+,y^-)\}$; GRPO chéo miền: Overall $0{,}570 \to 0{,}352$.
-    };
-  \end{tikzpicture}
+\begin{frame}[t]{Hướng phát triển}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.47\textwidth}
+      \begin{block}{Cải thiện pipeline học}
+        \small
+        \begin{itemize}
+          \item Thu thập $\mathcal{D}_{\text{pref}} = \{(x, y^+, y^-)\}$ từ vòng duyệt bài
+                $\rightarrow$ fine-tune với DPO trực tiếp trên F\&B
+          \item Thiết kế reward đa chiều $r = w_F F + w_E E + w_V V$
+                thay vì 1 scalar cross-domain
+          \item Validate $\text{corr}(r,\,\text{human})$ để đảm bảo
+                reward model phản ánh đúng sở thích thực
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.47\textwidth}
+      \begin{block}{Mở rộng hệ thống}
+        \small
+        \begin{itemize}
+          \item Scale lên 7B+ khi tài nguyên cho phép;
+                thử nghiệm multimodal (ảnh + caption cùng lúc)
+          \item Mở rộng sang Instagram, TikTok, Zalo OA
+          \item Triển khai on-premise thực tế với một SME F\&B
+                để thu thập phản hồi người dùng thực
+        \end{itemize}
+      \end{block}
+    \end{column}
+  \end{columns}
 
-  \eqblock{%
-    SLM sau SFT có thể thay một phần API thương mại trong bài toán hẹp, nếu gắn vòng
-    $\text{evaluate} \to \text{approve} \to \mathcal{D}_{\text{pref}} \to \text{fine-tune}$.
-  }
+  \vspace{0.5cm}
+  \centering
+  \begin{tikzpicture}[node distance=1.1cm, every node/.style={font=\small}]
+    \node[draw, rounded corners, fill=softblue,
+          text width=2.5cm, minimum height=1.0cm, align=center] (sft) {SFT+DPO\\{\footnotesize hiện tại}};
+    \node[draw, rounded corners, fill=softgreen,
+          right=of sft, text width=2.8cm, minimum height=1.0cm, align=center] (pref) {Preference\\$\mathcal{D}_{\text{pref}}$ F\&B};
+    \node[draw, rounded corners, fill=softorange,
+          right=of pref, text width=2.8cm, minimum height=1.0cm, align=center] (dpo) {DPO/GRPO\\đúng miền};
+    \node[draw, rounded corners, fill=softred,
+          right=of dpo, text width=2.5cm, minimum height=1.0cm, align=center] (deploy) {Triển khai\\SME thực};
+    \draw[-{Stealth}, thick] (sft)   -- (pref);
+    \draw[-{Stealth}, thick] (pref)  -- (dpo);
+    \draw[-{Stealth}, thick] (dpo)   -- (deploy);
+  \end{tikzpicture}
 \end{frame}

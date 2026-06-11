@@ -1,46 +1,39 @@
-\begin{frame}[t]{GRPO phù hợp verifiable reward --- DPO phù hợp text generation}
+\begin{frame}[t]{Dữ liệu huấn luyện: GRPO vs DPO}
   \begin{columns}[T,onlytextwidth]
     \begin{column}{0.48\textwidth}
-      \centering
-      \begin{tikzpicture}[
-        node distance=0.75cm,
-        every node/.style={font=\small},
-        box/.style={draw, rounded corners, text width=4.0cm, minimum height=0.95cm, align=center}
-      ]
-        \node[box, fill=softgreen] (t1) {Code / Toán học};
-        \node[box, fill=softgreen, below=of t1] (r1) {$r_i \in \{0,1\}$, kiểm chứng được};
-        \node[box, fill=softgreen, below=of r1] (s1) {$\sigma_r \approx 0{,}5$ \textbf{(GRPO hiệu quả)}};
-        \draw[-{Stealth}] (t1) -- (r1);
-        \draw[-{Stealth}] (r1) -- (s1);
-      \end{tikzpicture}
+      \textbf{\color{bkblue}GRPO --- Verifiable Reward}
+      \begin{itemize}\small
+        \item Prompt $x$ + nhiều output $\{y_i\}_{i=1}^G$
+        \item Scalar reward $r_i \in \{0,1\}$ kiểm chứng tự động
+        \item Phù hợp: code, toán học, logic
+      \end{itemize}
+      \vspace{0.5em}
+      \scriptsize
+      \textit{Ví dụ: bài toán có đáp án đúng/sai rõ ràng}
     \end{column}
     \begin{column}{0.48\textwidth}
-      \centering
-      \begin{tikzpicture}[
-        node distance=0.75cm,
-        every node/.style={font=\small},
-        box/.style={draw, rounded corners, text width=4.0cm, minimum height=0.95cm, align=center}
-      ]
-        \node[box, fill=softorange] (t2) {Marketing content};
-        \node[box, fill=softorange, below=of t2] (r2) {Chất lượng đa chiều (F, E, V)};
-        \node[box, fill=softblue, below=of r2] (s2) {Cần preference pairs \textbf{(DPO phù hợp hơn)}};
-        \draw[-{Stealth}] (t2) -- (r2);
-        \draw[-{Stealth}] (r2) -- (s2);
-      \end{tikzpicture}
+      \textbf{\color{orange}DPO --- Preference Pairs}
+      \begin{itemize}\small
+        \item Cặp $(x,\, y^+,\, y^-)$ cùng prompt
+        \item $y^+$ được ưa thích hơn $y^-$ (human label)
+        \item Phù hợp: marketing, sáng tạo nội dung
+      \end{itemize}
+      \vspace{0.5em}
+      \scriptsize
+      \textit{Ví dụ: annotator chọn bài viết hay hơn}
     \end{column}
   \end{columns}
 
-  \vspace{0.4em}
-  \begin{block}{Vấn đề cốt lõi}
+  \vspace{0.5em}
+  \begin{block}{Tại sao không dùng GRPO cho marketing?}
     \scriptsize
-    GRPO yêu cầu reward $r_i$ có phương sai đủ lớn \emph{trong nhóm $G$ cùng prompt}.
-    Text marketing không có verifiable reward $\Rightarrow$ không thỏa mãn điều kiện này.
-    DPO tối ưu trực tiếp từ cặp $(x, y^+, y^-)$ mà \textbf{không cần scalar reward}.
+    GRPO yêu cầu reward $r_i$ có phương sai đủ lớn trong nhóm $G$ cùng prompt.
+    Chất lượng text marketing không có verifiable reward $\Rightarrow$ không thỏa mãn điều kiện này.
+    DPO tối ưu trực tiếp từ cặp $(x, y^+, y^-)$ \textbf{mà không cần scalar reward}.
   \end{block}
 
   \eqblock{%
-    GRPO: $A_i = (r_i - \bar{r})/\sigma_r$, cần $r_i$ verifiable.
-    DPO: $\mathcal{L}_{\text{DPO}} \propto -\log\sigma(\beta\,\Delta\log\pi)$,
-    chỉ cần cặp sở thích $(y^+, y^-)$ từ cùng prompt.
+    GRPO: $A_i = (r_i - \bar{r})/\sigma_r$, cần $r_i$ verifiable \quad
+    DPO: $\mathcal{L}_{\text{DPO}} \propto -\log\sigma(\beta\,\Delta\log\pi)$, chỉ cần $(y^+, y^-)$
   }
 \end{frame}

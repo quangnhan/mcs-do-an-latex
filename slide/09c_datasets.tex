@@ -1,0 +1,108 @@
+% --- Slide 1: SFT train ---
+\begin{frame}[t]{Dữ liệu huấn luyện SFT (500 mẫu)}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Input --- \texttt{seed}}
+        \scriptsize
+        Thương hiệu: MiniGo Mart -- siêu thị mini, 8 cửa hàng HN\\
+        Sản phẩm: Combo bữa tối 5 món cho 2 người\\
+        Giá: 129.000đ (gốc 159.000đ, $-$19\%), freeship 2km\\
+        Điều kiện: 17h--20h, đặt FB/Zalo, giới hạn 40 combo/ngày\\
+        Đối tượng: 24--38 tuổi, nhân viên VP, Cầu Giấy -- HBT\\
+        KPI: 50 inbox khảo sát, CTR $\geq$ 2,5\%
+      \end{block}
+    \end{column}
+    \begin{column}{0.50\textwidth}
+      \begin{block}{Output --- \texttt{content} (đã kiểm duyệt)}
+        \scriptsize
+        ``Tan làm rồi mà vẫn phải nghĩ \textit{tối nay ăn gì} là
+        chuyện rất quen với dân văn phòng ở Hà Nội.\\[0.3em]
+        MiniGo Mart đang thử nghiệm Combo bữa tối 5 món cho 2
+        người, kiểu mua nhanh -- đủ món -- không phải đi xa
+        [\ldots]\\[0.3em]
+        Inbox ngay nếu bạn muốn trải nghiệm thử nhé.''
+      \end{block}
+    \end{column}
+  \end{columns}
+  \vspace{0.5em}
+  \begin{block}{Cấu trúc mỗi mẫu}
+    \scriptsize
+    \texttt{instruction} (vai trò copywriter + ràng buộc phong cách)
+    $+$ \texttt{title} $+$ \texttt{seed} $\xrightarrow{\text{học}}$ \texttt{content}
+    \hfill
+    Đa dạng: đồ uống, ăn nhanh, ăn ngồi; bình dân -- trung cấp;
+    AI-generated + hiệu chỉnh thủ công
+  \end{block}
+\end{frame}
+
+% --- Slide 2: GRPO / Dining Review ---
+\begin{frame}[t]{Dữ liệu huấn luyện GRPO --- Dining Review (500 bài)}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.60\textwidth}
+      \begin{block}{Ví dụ bài viết thực}
+        \scriptsize
+        ``Địa chỉ trà chiều mới tại HN. Ks mới khai trương,
+        trà chiều ngon hơn đứt các chỗ tại VN đã từng thử.
+        Bánh ngon thật sự, scone vỏ giòn nhẹ, ruột mềm ẩm.
+        Clotted cream béo và ngậy, chắc tự làm mới được thế.
+        Ngồi dễ chịu, phục vụ dễ thương
+        \#afternoontea \#hanoi \#diningreview''
+      \end{block}
+    \end{column}
+    \begin{column}{0.37\textwidth}
+      \begin{block}{Chỉ số tương tác thực}
+        \scriptsize
+        Likes: \textbf{125} \quad Love: \textbf{11}\\
+        Comments: \textbf{50}\\
+        Shares: \textbf{10}\\[0.4em]
+        $e_{\text{raw}} = L + 0{,}5C + 1{,}5S + \ldots$\\
+        $e = \ln(1 + e_{\text{raw}}) = \mathbf{5{,}68}$
+      \end{block}
+    \end{column}
+  \end{columns}
+  \vspace{0.5em}
+  \begin{block}{Chiến lược Prefix Completion}
+    \scriptsize
+    Dataset \textbf{không có} cặp prompt--response rõ ràng.
+    Giải pháp: \textbf{câu đầu tiên} của mỗi bài = \emph{prompt};
+    phần còn lại do model sinh ra và hàm reward rule-based chấm điểm.
+    Model học hoàn thiện bài post sao cho các tín hiệu hình thức
+    tương quan với engagement cao trong dataset.
+  \end{block}
+\end{frame}
+
+% --- Slide 3: Test set ---
+\begin{frame}[t]{Tập kiểm thử chung (100 mẫu)}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.55\textwidth}
+      \begin{block}{Input --- \texttt{seed} (ví dụ thực)}
+        \scriptsize
+        Thương hiệu: Matcha Mây -- trà trái cây/matcha, 8 điểm bán TP.HCM\\
+        Sản phẩm: Mid-Autumn Duo -- 2 ly 700ml + hộp quà mini\\
+        Giá: 119.000đ (gốc 149.000đ, $-$20\%), freeship 3km\\
+        Điều kiện: 15/8--15/9, GrabFood/inbox, 80 set/ngày\\
+        Đối tượng: 22--35 tuổi, dân VP, Q1, Q3, PN, BT\\
+        KPI: CTR $\geq$ 3,5\%, ROAS $\geq$ 4, GMV $\geq$ 180 triệu
+      \end{block}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \begin{block}{\texttt{content} --- để trống}
+        \scriptsize
+        Mô hình tự sinh đầu ra từ seed.\\[0.4em]
+        Pipeline chấm điểm 3 lớp:\\
+        \textbf{F}aithfulness / \textbf{E}xpansion / \textbf{V}ibe\\[0.4em]
+        Judge: \textbf{GPT-5.4 Azure}\\[0.4em]
+        Dùng chung để so sánh\\
+        tất cả mô hình (Baseline,\\
+        SFT, GRPO, GPT-5.4-mini)
+      \end{block}
+    \end{column}
+  \end{columns}
+  \vspace{0.5em}
+  \begin{block}{Đặc thù tập kiểm thử}
+    \scriptsize
+    Thu thập từ nhà hàng thực tế tại Việt Nam ---
+    từ vựng nhà hàng địa phương, đơn vị phần ăn, văn phong thương hiệu
+    gần nhất với triển khai thực tế của hệ thống.
+  \end{block}
+\end{frame}

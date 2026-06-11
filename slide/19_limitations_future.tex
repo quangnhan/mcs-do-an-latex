@@ -1,28 +1,21 @@
-\begin{frame}[t]{Hạn chế hiện tại và lộ trình SFT → Dataset sở thích → DPO/GRPO}
-  \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.44\textwidth}
-      \begin{alertblock}{Hạn chế}
-        \begin{itemize}
-          \item Fine-tuning mới ở phân khúc 2B--4B
-          \item GRPO: một $\beta$, một tập reward chéo miền
-          \item Cần tương quan $\text{corr}(r, \text{human})$
-        \end{itemize}
-      \end{alertblock}
-      \begin{block}{Hướng phát triển}
-        $r = w_F F + w_E E + w_V V$ hoặc $\mathcal{L}_{\text{DPO}}$ trên $\mathcal{D}_{\text{pref}}$ F\&B.
-      \end{block}
-    \end{column}
-    \begin{column}{0.52\textwidth}
-      \centering
-      \begin{tikzpicture}[node distance=0.85cm, every node/.style={font=\small}]
-        \node[draw, rounded corners, fill=softblue, text width=4.0cm, minimum height=1.0cm, align=center] (sft) {SFT: $\mathcal{L}_{\text{SFT}}$};
-        \node[draw, rounded corners, fill=softgreen, below=of sft, text width=4.0cm, minimum height=1.0cm, align=center] (pref) {Preference $\mathcal{D}$};
-        \node[draw, rounded corners, fill=softorange, below=of pref, text width=4.0cm, minimum height=1.0cm, align=center] (rl) {DPO / GRPO};
-        \node[draw, rounded corners, fill=softred, below=of rl, text width=4.0cm, minimum height=1.0cm, align=center] (human) {Human eval $\rho$};
-        \draw[-{Stealth}, thick] (sft) -- (pref);
-        \draw[-{Stealth}, thick] (pref) -- (rl);
-        \draw[-{Stealth}, thick] (rl) -- (human);
-      \end{tikzpicture}
-    \end{column}
-  \end{columns}
+\begin{frame}[t]{Kết luận}
+  \centering
+  \vspace{0.3cm}
+  \begin{tikzpicture}[node distance=0.75cm, every node/.style={font=\small}]
+    \node[draw, rounded corners, fill=softblue, text width=9.6cm, minimum height=1.2cm, align=center] (k1) {
+      \textbf{RQ\,1 --} Kiến trúc đa tác nhân chuyên biệt F\&B hoạt động được với SME Việt Nam.
+    };
+    \node[draw, rounded corners, fill=softgreen, below=of k1, text width=9.6cm, minimum height=1.2cm, align=center] (k2) {
+      \textbf{RQ\,2 --} SFT+DPO đạt Overall $0{,}687$ (GPT $0{,}707$, $\Delta{=}{-}2{,}8\%$);
+      GRPO chéo miền làm giảm chất lượng $-38{,}2\%$.
+    };
+    \node[draw, rounded corners, fill=softorange, below=of k2, text width=9.6cm, minimum height=1.2cm, align=center] (k3) {
+      \textbf{RQ\,3 --} Bộ tiêu chí F/E/V kết hợp rule-based và LLM Judge là pipeline
+      đánh giá tự động khả dụng cho nội dung F\&B tiếng Việt.
+    };
+  \end{tikzpicture}
+
+  \vspace{0.55cm}
+  {\small\itshape SLM 4B sau SFT có thể cạnh tranh API thương mại trong bài toán ngách ---
+  mở ra hướng triển khai on-premise, tiết kiệm chi phí cho SME.}
 \end{frame}
