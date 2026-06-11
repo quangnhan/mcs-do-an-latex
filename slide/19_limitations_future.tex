@@ -6,8 +6,8 @@
       \textbf{RQ\,1 --} Kiến trúc đa tác nhân chuyên biệt F\&B hoạt động được với SME Việt Nam.
     };
     \node[draw, rounded corners, fill=softgreen, below=of k1, text width=9.6cm, minimum height=1.2cm, align=center] (k2) {
-      \textbf{RQ\,2 --} SFT+DPO đạt Overall $0{,}687$ (GPT $0{,}707$, $\Delta{=}{-}2{,}8\%$);
-      GRPO chéo miền làm giảm chất lượng $-38{,}2\%$.
+      \textbf{RQ\,2 --} LLM chuyên biệt (4B+SFT) cải thiện đáng kể: Overall $0{,}687$ vs.\ base $0{,}622$ (+$10{,}5\%$),
+      xấp xỉ GPT $0{,}707$ ($\Delta{=}{-}2{,}8\%$); RL online (GRPO) không phù hợp do reward OOD.
     };
     \node[draw, rounded corners, fill=softorange, below=of k2, text width=9.6cm, minimum height=1.2cm, align=center] (k3) {
       \textbf{RQ\,3 --} Bộ tiêu chí F/E/V kết hợp rule-based và LLM Judge là pipeline
@@ -16,6 +16,5 @@
   \end{tikzpicture}
 
   \vspace{0.55cm}
-  {\small\itshape SLM 4B sau SFT có thể cạnh tranh API thương mại trong bài toán ngách ---
-  mở ra hướng triển khai on-premise, tiết kiệm chi phí cho SME.}
+  {\small\itshape SLM Qwen3.5:4B sau SFT có thể cạnh tranh API thương mại trong bài toán ngách}
 \end{frame}

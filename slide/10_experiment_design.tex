@@ -6,8 +6,8 @@
     box/.style={draw, rounded corners, text width=3.0cm, minimum height=1.35cm, align=center}
   ]
     \node[box, fill=softblue] (base) {\textbf{Base LLM}\\Qwen2.5 2B, 4B, 9B\\GPT-5.4-mini};
-    \node[box, fill=softgreen, above right=0.6cm and 1.2cm of base] (sft) {\textbf{SFT / DPO}\\Qwen2.5 2B, 4B\\fine-tune supervised};
-    \node[box, fill=softorange, below right=0.6cm and 1.2cm of base] (grpo) {\textbf{RL / GRPO}\\Qwen2.5 2B\\reward rule-based};
+    \node[box, fill=softgreen, above right=0.6cm and 1.2cm of base] (sft) {\textbf{SFT}\\Qwen2.5 2B, 4B\\fine-tune supervised};
+    \node[box, fill=softorange, below right=0.6cm and 1.2cm of base] (grpo) {\textbf{RL}\\Qwen2.5 2B\\reward rule-based};
     \node[box, fill=softred, right=4.5cm of base] (eval) {\textbf{Evaluation}\\LLM-as-a-Judge\\100 ca F\&B\\F/E/V + Overall};
 
     \draw[-{Stealth}, thick] (base.north east) -- (sft.west);
