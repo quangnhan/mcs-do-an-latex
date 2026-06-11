@@ -1,23 +1,77 @@
-\begin{frame}[t]{Đánh giá tự động ba chiều: Faithfulness, Expansion và Vibe}
+\begin{frame}[t]{Đánh giá tự động ba chiều: Faithfulness, Expansion \& Marketing Vibe}
   \centering
-  \begin{tikzpicture}[node distance=0.85cm, every node/.style={font=\small}]
-    \node[draw, rounded corners, fill=softblue, text width=2.9cm, minimum height=1.25cm, align=center] (faith) {\textbf{Faithfulness}\\$s_{\text{rule}}+s_{\text{llm}}$};
-    \node[draw, rounded corners, fill=softgreen, right=of faith, text width=2.9cm, minimum height=1.25cm, align=center] (exp) {\textbf{Expansion}\\diễn giải lợi ích};
-    \node[draw, rounded corners, fill=softorange, right=of exp, text width=2.9cm, minimum height=1.25cm, align=center] (vibe) {\textbf{Vibe}\\5 chiều + $s_{\text{fb}}$};
-    \node[draw, rounded corners, fill=softred, below=0.9cm of exp, text width=4.0cm, minimum height=1.2cm, align=center] (overall) {\textbf{Overall} $=\tfrac{F+E+V}{3}$, $\theta=0{,}75$};
+  \vspace{0.1cm}
+  \begin{tikzpicture}[every node/.style={font=\small}]
 
-    \draw[-{Stealth}, thick] (faith.south) -- (overall.north west);
-    \draw[-{Stealth}, thick] (exp.south) -- (overall.north);
-    \draw[-{Stealth}, thick] (vibe.south) -- (overall.north east);
+    % ---- Cột 1: Overall ----
+    \node[draw, rounded corners, fill=softred, text width=2.3cm,
+          minimum height=6.6cm, align=center, font=\normalsize] (overall) at (0, -0.5) {
+      \textbf{Overall}\\[5pt]
+      $\dfrac{F+E+V}{3}$\\[5pt]
+      $\theta=0{,}75$
+    };
+
+    % ---- Cột 2: Metrics ----
+    \node[draw, rounded corners, fill=softblue, text width=3.3cm,
+          minimum height=2.1cm, align=center] (faith) at (4.5, 1.7) {
+      \textbf{Faithfulness}\\[5pt]
+      $F=0{,}5\,s_r+0{,}5\,s_l$
+    };
+    \node[draw, rounded corners, fill=softgreen, text width=3.3cm,
+          minimum height=2.1cm, align=center] (exp) at (4.5, -0.5) {
+      \textbf{Expansion}\\[5pt]
+      $E=0{,}9\,s_l+0{,}1\,s_r$
+    };
+    \node[draw, rounded corners, fill=softorange, text width=3.3cm,
+          minimum height=2.1cm, align=center] (vibe) at (4.5, -2.7) {
+      \textbf{Marketing Vibe}\\[5pt]
+      $V=\mathrm{clip}(0{,}85\,s_V+0{,}15\,s_f-p)$
+    };
+
+    % ---- Cột 3: Sub-components (spacing 1.1cm center-to-center) ----
+    \node[draw, rounded corners, fill=softblue!30, text width=4.0cm,
+          minimum height=0.9cm, align=center, font=\scriptsize] (f_rule) at (9.5, 2.25) {
+      \textbf{EntityPresenceRule}\\
+      regex: giá, spec, combo, tên
+    };
+    \node[draw, rounded corners, fill=softblue!30, text width=4.0cm,
+          minimum height=0.9cm, align=center, font=\scriptsize] (f_llm) at (9.5, 1.15) {
+      \textbf{GEval Faithfulness}\\
+      LLM: kiểm claim vô căn cứ
+    };
+    \node[draw, rounded corners, fill=softgreen!30, text width=4.0cm,
+          minimum height=0.9cm, align=center, font=\scriptsize] (e_rule) at (9.5, 0.05) {
+      \textbf{ContentExpansionRule}\\
+      length, benefit, context
+    };
+    \node[draw, rounded corners, fill=softgreen!30, text width=4.0cm,
+          minimum height=0.9cm, align=center, font=\scriptsize] (e_llm) at (9.5, -1.05) {
+      \textbf{GEval Expansion}\\
+      LLM: diễn giải lợi ích
+    };
+    \node[draw, rounded corners, fill=softorange!30, text width=4.0cm,
+          minimum height=0.9cm, align=center, font=\scriptsize] (v_rule) at (9.5, -2.15) {
+      \textbf{FbStructureRule + Penalty}\\
+      đoạn ngắn, CTA, hype penalty
+    };
+    \node[draw, rounded corners, fill=softorange!30, text width=4.0cm,
+          minimum height=0.9cm, align=center, font=\scriptsize] (v_llm) at (9.5, -3.25) {
+      \textbf{VibeJudge D1--D5}\\
+      Voice·Biz·Persuasion·CTA·FB
+    };
+
+    % ---- Mũi tên: sub-components → metrics ----
+    \draw[-{Stealth}] (f_rule.west) -- (faith.east |- f_rule);
+    \draw[-{Stealth}] (f_llm.west)  -- (faith.east |- f_llm);
+    \draw[-{Stealth}] (e_rule.west) -- (exp.east |- e_rule);
+    \draw[-{Stealth}] (e_llm.west)  -- (exp.east |- e_llm);
+    \draw[-{Stealth}] (v_rule.west) -- (vibe.east |- v_rule);
+    \draw[-{Stealth}] (v_llm.west)  -- (vibe.east |- v_llm);
+
+    % ---- Mũi tên: metrics → overall ----
+    \draw[-{Stealth}] (faith.west) -- (overall.east |- faith);
+    \draw[-{Stealth}] (exp.west)   -- (overall.east);
+    \draw[-{Stealth}] (vibe.west)  -- (overall.east |- vibe);
+
   \end{tikzpicture}
-
-  \eqblock{%
-    \begin{align*}
-      F &= 0{,}5\,s_{\text{rule}} + 0{,}5\,s_{\text{llm}},\;
-      E = 0{,}9\,s_{\text{llm}} + 0{,}1\,s_{\text{rule}},\;
-      V = \max(0,\min(1,\,0{,}85\,s_{\text{llm}} + 0{,}15\,s_{\text{fb}} - p))\\
-      \text{Overall} &= \tfrac{1}{3}(F+E+V),\; \theta = 0{,}75
-    \end{align*}%
-  }
-  {\small Pipeline đánh giá hỗ trợ auto-approval và so sánh baseline, SFT, GRPO.}
 \end{frame}
