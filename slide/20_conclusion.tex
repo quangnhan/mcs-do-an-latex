@@ -35,7 +35,7 @@
     \node[draw, rounded corners, fill=softgreen,
           right=of sft, text width=2.8cm, minimum height=1.0cm, align=center] (pref) {Preference\\$\mathcal{D}_{\text{pref}}$ F\&B};
     \node[draw, rounded corners, fill=softorange,
-          right=of pref, text width=2.8cm, minimum height=1.0cm, align=center] (dpo) {DPO/GRPO\\đúng miền};
+          right=of pref, text width=2.8cm, minimum height=1.0cm, align=center] (dpo) {Training với DPO};
     \node[draw, rounded corners, fill=softred,
           right=of dpo, text width=2.5cm, minimum height=1.0cm, align=center] (deploy) {Triển khai\\SME thực};
     \draw[-{Stealth}, thick] (sft)   -- (pref);

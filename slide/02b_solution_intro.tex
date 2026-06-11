@@ -3,12 +3,12 @@
   \centering
   \begin{tikzpicture}[node distance=1.8cm, every node/.style={font=\small}]
     \node[draw, rounded corners, fill=softblue,
-          text width=2.6cm, minimum height=2.2cm, align=center] (brief)
+          text width=2.6cm, minimum height=2.2cm, align=center] (seed content)
       {\textbf{Chủ quán}\\[0.4em]
-       {\footnotesize Cung cấp thông tin:\\brief, sản phẩm,\\thương hiệu}};
+       {\footnotesize Cung cấp thông tin:\\seed content, sản phẩm,\\thương hiệu}};
     \node[draw, rounded corners, fill=softgreen,
           text width=3.0cm, minimum height=2.2cm, align=center,
-          right=1.8cm of brief] (agent)
+          right=1.8cm of seed content] (agent)
       {\textbf{Marketing Agent}\\[0.4em]
        {\footnotesize AI sinh nội dung\\chuyên biệt\\F\&B Việt Nam}};
     \node[draw, rounded corners, fill=softorange,
@@ -16,18 +16,18 @@
           right=1.8cm of agent] (post)
       {\textbf{Bài đăng Facebook}\\[0.4em]
        {\footnotesize Caption + ảnh\\sẵn sàng đăng\\đã kiểm duyệt}};
-    \draw[-{Stealth}, very thick, bkblue] (brief) -- (agent);
+    \draw[-{Stealth}, very thick, bkblue] (seed content) -- (agent);
     \draw[-{Stealth}, very thick, bkblue] (agent) -- (post);
   \end{tikzpicture}
 
   \vspace{0.7cm}
   \centering
-  {\small Hướng tiếp cận: một \textbf{tác nhân chuyên biệt} chuyển brief của chủ quán thành bài đăng hoàn chỉnh,
+  {\small Hướng tiếp cận: một \textbf{tác nhân chuyên biệt} chuyển seed content của chủ quán thành bài đăng hoàn chỉnh,
    khai thác tri thức ngành F\&B và dữ liệu thương hiệu nội bộ thay vì dùng LLM tổng quát --- nội dung được kiểm duyệt tự động trước khi đăng.}
 
   \vspace{0.35cm}
   {\footnotesize\color{bkblue} Chất lượng đầu ra đo bằng 3 tiêu chí tự động:
-   \textbf{Faithfulness} (trung thực với brief) \,$\cdot$\,
+   \textbf{Faithfulness} (trung thực với seed content) \,$\cdot$\,
    \textbf{Expansion} (phong phú nội dung) \,$\cdot$\,
    \textbf{Vibe} (cảm xúc marketing F\&B).}
 \end{frame}
