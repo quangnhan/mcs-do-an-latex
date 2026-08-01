@@ -2,7 +2,7 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage[T5]{fontenc}
-\usepackage[vietnamese]{babel}
+\usepackage[english,vietnamese]{babel}
 \usepackage{graphicx}
 \usepackage{amsmath, amssymb}
 \usepackage{array}
@@ -37,28 +37,33 @@
   tabsize=4,
 }
 
+% Danh sách gạch đầu dòng nén dòng, dùng cho phần lý lịch trích ngang
+\newenvironment{llitemize}%
+  {\begin{itemize}\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}\setlength{\topsep}{2pt}}%
+  {\end{itemize}}
+
 \sloppy
 
 \begin{document}
 
 % Trang bìa: titlepage reset \thepage về 1 sau trang đầu, gây trùng anchor
 % ``page.1'' với hyperref (ảnh hưởng bookmark / đôi khi mục lục PDF).
-\hypersetup{pageanchor=false}
-\input{trang_bia}
-\hypersetup{pageanchor=true}
+% \hypersetup{pageanchor=false}
+% \input{trang_bia}
+% \hypersetup{pageanchor=true}
 
 % Front matter đánh số La Mã (i, ii, iii, ...)
 \pagenumbering{roman}
 
 % Front matter: mỗi trang một file riêng để dễ sửa
 \clearpage
-\input{loi_cam_doan}
-\clearpage
 \input{loi_cam_on}
 \clearpage
-\input{xac_nhan_giang_vien}
-\clearpage
 \input{tom_tat}
+\clearpage
+\input{loi_cam_doan}
+% \clearpage
+% \input{xac_nhan_giang_vien}
 \clearpage
 
 % Mục lục (cần ít nhất hai lần pdflatex sau khi đổi cấu trúc chương)
@@ -92,5 +97,10 @@
 \addcontentsline{toc}{chapter}{Tài liệu tham khảo}
 \chapter*{Tài liệu tham khảo}\label{chap:tai-lieu-tham-khao}
 \input{tai_lieu_tham_khao}
+
+% Lý lịch trích ngang: 3 trang cuối cùng của đề án
+\input{ly_lich_trich_ngang}
+\input{qua_trinh_dao_tao}
+\input{qua_trinh_cong_tac}
 
 \end{document}
