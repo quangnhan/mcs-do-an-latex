@@ -1,61 +1,44 @@
-\begin{titlepage}
-    \newgeometry{left=2cm,right=2cm,top=2cm,bottom=2cm}
-    \thispagestyle{empty}
+% Trang bìa (trang 1, không đánh số)
+\thispagestyle{empty}
 
-    % Khung viền bao quanh trang bìa
-    \begin{tikzpicture}[remember picture, overlay]
-        \draw[line width=1pt]
-            ($(current page.north west) + (1.5cm,-1.5cm)$)
-            rectangle
-            ($(current page.south east) + (-1.5cm,1.5cm)$);
-        \draw[line width=0.5pt]
-            ($(current page.north west) + (1.6cm,-1.6cm)$)
-            rectangle
-            ($(current page.south east) + (-1.6cm,1.6cm)$);
-    \end{tikzpicture}
+\begin{center}
+    \fontsize{12}{14.5}\selectfont ĐẠI HỌC QUỐC GIA THÀNH PHỐ HỒ CHÍ MINH\\[0.15cm]
+    \fontsize{13}{15.5}\selectfont\textbf{TRƯỜNG ĐẠI HỌC BÁCH KHOA}
 
-    \centering
-    \vspace*{0.5cm}
+    \vspace{0.3cm}
+    \rule{4.5cm}{0.4pt}
 
-    {\large \textbf{ĐẠI HỌC QUỐC GIA TPHCM}}\\[0.2cm]
-    {\large \textbf{TRƯỜNG ĐẠI HỌC BÁCH KHOA}}\\[0.2cm]
-    {\large \textbf{KHOA KHOA HỌC VÀ KỸ THUẬT MÁY TÍNH}}\\[1.5cm]
+    \vspace{2.5cm}
+    \fontsize{16}{19}\selectfont\textbf{VÕ QUANG NHÂN}
 
-    \includegraphics[width=3.5cm]{images/logo_bach_khoa.png}\\[1.5cm]
+    \vspace{2.5cm}
+    \begin{minipage}{0.8\linewidth}
+        \centering
+        \fontsize{20}{25}\selectfont\baselineskip=1.4\baselineskip\relax
+        \textbf{PHÁT TRIỂN MARKETING AGENT CHO SME NGÀNH F\&B}
+    \end{minipage}
 
-    {\Large \textbf{ĐỀ ÁN TỐT NGHIỆP}}\\[1cm]
+    \vspace{2.5cm}
+\end{center}
 
-    \begin{center}
-        \begin{minipage}{0.85\linewidth}
-            \centering
-            {\large \textbf{PHÁT TRIỂN MARKETING AGENT CHO SME NGÀNH F\&B}}
-        \end{minipage}
-    \end{center}
+\begin{center}
+\begin{minipage}{0.55\linewidth}
+    \fontsize{16}{19}\selectfont
+    Chuyên ngành: Khoa Học Máy Tính\\
+    Mã ngành: 8480101
+\end{minipage}
+\end{center}
 
-    \vspace{2cm}
+\vfill
 
-    \begin{center}
-        \begin{tabular}{rl}
-            \textbf{Ngành:} & KHOA HỌC MÁY TÍNH \\[0.2cm]
-            \textbf{GVHD:} & TS. NGUYỄN AN KHƯƠNG \\
-        \end{tabular}
-    \end{center}
+\begin{center}
+    \fontsize{20}{24}\selectfont\textbf{ĐỀ ÁN TỐT NGHIỆP}
+\end{center}
 
-    \vspace{0.5cm}
-    {\large ---oOo---}
-    \vspace{0.5cm}
+\vfill
 
-    \begin{center}
-        \begin{tabular}{rl}
-            \textbf{Học viên:} & VÕ QUANG NHÂN \\[0.2cm]
-            \textbf{MSHV:} & 2470107 \\
-        \end{tabular}
-    \end{center}
+\begin{center}
+    \fontsize{13}{15.5}\selectfont Thành phố Hồ Chí Minh, tháng 08 năm 2026
+\end{center}
 
-    \vfill
-
-    {\large \textbf{TP. HỒ CHÍ MINH, THÁNG 05/2026}}
-
-    \vspace*{0.5cm}
-    \restoregeometry
-\end{titlepage}
+\clearpage
