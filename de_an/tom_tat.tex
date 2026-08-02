@@ -1,19 +1,24 @@
+% Tóm tắt và Abstract: mỗi phần gói gọn trong đúng một trang nên nén nhẹ
+% khoảng cách giữa các đoạn (3pt thay vì 6pt của phần nội dung chính).
+\begingroup
+\setlength{\parskip}{3pt plus 2pt minus 1pt}
+
 \cleardoublepage
 \phantomsection
 \addcontentsline{toc}{chapter}{Tóm tắt}
 \chapter*{Tóm tắt}
 
-Các doanh nghiệp vừa và nhỏ (SME) ngành Thực phẩm và Đồ uống (F\&B) tại Việt Nam phụ thuộc nhiều vào Facebook để duy trì hiện diện thương hiệu, nhưng việc sản xuất nội dung marketing chất lượng với chi phí thấp và tần suất ổn định vẫn là thách thức lớn, trong khi các công cụ AI tổng quát chưa nắm bắt được đặc trưng ngành và phong cách giao tiếp tại Việt Nam.
+Các doanh nghiệp vừa và nhỏ (SME) ngành Thực phẩm và Đồ uống (F\&B) tại Việt Nam phụ thuộc nhiều vào Facebook để duy trì hiện diện thương hiệu, nhưng sản xuất nội dung marketing chất lượng với chi phí thấp và tần suất ổn định vẫn là thách thức lớn, trong khi các công cụ AI tổng quát chưa nắm bắt được đặc trưng ngành và phong cách giao tiếp tại Việt Nam.
 
 Đề án đề xuất một \textbf{hệ thống Marketing Agent chuyên biệt cho SME ngành F\&B} trên kiến trúc đa tác tử LangGraph, kết hợp FastAPI, PostgreSQL, RabbitMQ/Celery và MinIO, gồm bốn tác tử: \textit{CampaignAgent}, \textit{ContentPlanningAgent}, \textit{ContentAgent} và \textit{ImageAgent}, với người dùng giữ quyền phê duyệt trước khi sản xuất hàng loạt.
 
-Đóng góp cốt lõi thứ hai là \textbf{quy trình đánh giá chất lượng tự động đa lớp} trên DeepEval với ba chiều đo: \textit{Faithfulness}, \textit{Expansion} và \textit{Vibe}, điểm tổng hợp là trung bình ba chiều với ngưỡng phê duyệt $\theta = 0{,}75$.
+Đóng góp cốt lõi thứ hai là \textbf{quy trình đánh giá chất lượng tự động đa lớp} trên DeepEval với ba chiều đo --- \textit{Faithfulness}, \textit{Expansion} và \textit{Vibe} --- điểm tổng hợp là trung bình ba chiều, ngưỡng phê duyệt $\theta = 0{,}75$.
 
-Đề án \textbf{thực nghiệm so sánh ba baseline Qwen3.5} (2B, 4B, 9B) cùng các hướng tinh chỉnh: SFT (QLoRA) trên \texttt{qwen3.5:2b} và \texttt{qwen3.5:4b}, và GRPO với reward rule-based trên \texttt{qwen3.5:2b}, đánh giá trên 100 trường hợp F\&B thực tế. Kết quả nổi bật: \texttt{qwen3.5:4b + SFT} đạt điểm tổng thể $0{,}687$ --- chỉ kém GPT-5.4-mini ($0{,}707$) khoảng $2{,}8\%$ và tương đương ở chiều Vibe ($0{,}648$ vs $0{,}645$, không có ý nghĩa thống kê). Ngược lại, GRPO với dữ liệu chéo miền (review nhà hàng) gây sụt giảm $-38{,}2\%$ điểm tổng thể, gợi ý rằng \emph{domain alignment} của dữ liệu reward là yếu tố cần được kiểm chứng thêm khi áp dụng RL cho sinh văn bản marketing. Kết quả này mở ra khả năng triển khai mô hình mã nguồn mở tham số nhỏ in-house cho SME thay vì phụ thuộc API thương mại.
+Đề án \textbf{thực nghiệm so sánh ba baseline Qwen3.5} (2B, 4B, 9B) cùng các hướng tinh chỉnh: SFT (QLoRA) trên \texttt{qwen3.5:2b} và \texttt{qwen3.5:4b}, và GRPO với reward rule-based trên \texttt{qwen3.5:2b}, đánh giá trên 100 trường hợp F\&B thực tế. Kết quả nổi bật: \texttt{qwen3.5:4b + SFT} đạt điểm tổng thể $0{,}687$ --- chỉ kém GPT-5.4-mini ($0{,}707$) $2{,}8\%$ và tương đương ở chiều Vibe ($0{,}648$ vs $0{,}645$, không có ý nghĩa thống kê). Ngược lại, GRPO với dữ liệu chéo miền (review nhà hàng) làm sụt giảm $-38{,}2\%$, cho thấy \emph{domain alignment} của dữ liệu reward là yếu tố then chốt khi áp dụng RL cho sinh văn bản marketing. Kết quả này mở ra khả năng triển khai mô hình mã nguồn mở tham số nhỏ in-house cho SME thay vì phụ thuộc API thương mại.
 
-\vspace{0.8em}
+\vspace{0.4em}
 
-\noindent\textbf{Từ khóa:} Marketing Agent, LLM, LangGraph, Đánh giá tự động đa lớp, DeepEval, SME, F\&B, Sinh nội dung Facebook.
+\noindent\textbf{Keywords:} Marketing Agent, LLM, Multi-layer evaluation, DeepEval.
 
 \cleardoublepage
 \phantomsection
@@ -22,16 +27,18 @@ Các doanh nghiệp vừa và nhỏ (SME) ngành Thực phẩm và Đồ uống 
 
 \begin{otherlanguage}{english}
 
-Small and medium-sized enterprises (SMEs) in Vietnam's Food and Beverage (F\&B) sector rely heavily on Facebook to maintain their brand presence, yet producing high-quality marketing content at low cost and with a consistent posting cadence remains a major challenge, while general-purpose AI tools fail to capture the domain characteristics of the industry and the communication style used in Vietnam.
+Small and medium-sized enterprises (SMEs) in Vietnam's Food and Beverage (F\&B) sector rely heavily on Facebook for brand presence, yet producing high-quality marketing content cheaply and consistently remains a major challenge, while general-purpose AI tools miss the industry's characteristics and local communication style.
 
-This project proposes a \textbf{Marketing Agent system specialised for F\&B SMEs}, built on a LangGraph multi-agent architecture together with FastAPI, PostgreSQL, RabbitMQ/Celery and MinIO. The system comprises four agents --- \textit{CampaignAgent}, \textit{ContentPlanningAgent}, \textit{ContentAgent} and \textit{ImageAgent} --- with the user retaining approval authority before content is produced at scale.
+This project proposes a \textbf{Marketing Agent system specialised for F\&B SMEs} on a LangGraph multi-agent architecture with FastAPI, PostgreSQL, RabbitMQ/Celery and MinIO, comprising four agents --- \textit{CampaignAgent}, \textit{ContentPlanningAgent}, \textit{ContentAgent} and \textit{ImageAgent} --- with the user approving content before mass production.
 
-The second core contribution is an \textbf{automated multi-layer quality evaluation pipeline} built on DeepEval with three dimensions: \textit{Faithfulness}, \textit{Expansion} and \textit{Vibe}. The overall score is the mean of the three dimensions, with an approval threshold of $\theta = 0.75$.
+The second contribution is an \textbf{automated multi-layer quality evaluation pipeline} on DeepEval with three dimensions --- \textit{Faithfulness}, \textit{Expansion} and \textit{Vibe} --- whose mean forms the overall score, with approval threshold $\theta = 0.75$.
 
-The project \textbf{empirically compares three Qwen3.5 baselines} (2B, 4B, 9B) together with two fine-tuning directions: SFT (QLoRA) on \texttt{qwen3.5:2b} and \texttt{qwen3.5:4b}, and GRPO with a rule-based reward on \texttt{qwen3.5:2b}, evaluated on 100 real-world F\&B cases. The key result: \texttt{qwen3.5:4b + SFT} reaches an overall score of $0.687$ --- only about $2.8\%$ below GPT-5.4-mini ($0.707$) and on par on the Vibe dimension ($0.648$ vs.\ $0.645$, not statistically significant). Conversely, GRPO trained on cross-domain data (restaurant reviews) causes a $-38.2\%$ drop in the overall score, suggesting that the \emph{domain alignment} of the reward data is a factor requiring further verification when applying RL to marketing text generation. These results open up the possibility of deploying small-parameter open-source models in-house for SMEs instead of depending on commercial APIs.
+The project \textbf{empirically compares three Qwen3.5 baselines} (2B, 4B, 9B) with SFT (QLoRA) on \texttt{qwen3.5:2b} and \texttt{qwen3.5:4b} and GRPO with a rule-based reward on \texttt{qwen3.5:2b}, over 100 real-world F\&B cases. \texttt{qwen3.5:4b + SFT} reaches an overall score of $0.687$ --- only $2.8\%$ below GPT-5.4-mini ($0.707$) and on par on Vibe ($0.648$ vs.\ $0.645$, not statistically significant). Conversely, GRPO on cross-domain data (restaurant reviews) causes a $-38.2\%$ drop, showing that the reward data's \emph{domain alignment} is decisive for RL in marketing generation. This supports in-house deployment of small open-source models for SMEs instead of commercial APIs.
 
-\vspace{0.8em}
+\vspace{0.4em}
 
-\noindent\textbf{Keywords:} Marketing Agent, LLM, LangGraph, Automated multi-layer evaluation, DeepEval, SME, F\&B, Facebook content generation.
+\noindent\textbf{Keywords:} Marketing Agent, LLM, Multi-layer evaluation, DeepEval.
 
 \end{otherlanguage}
+
+\endgroup

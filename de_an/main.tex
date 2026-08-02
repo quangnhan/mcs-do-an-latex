@@ -18,7 +18,41 @@
 \usepackage{geometry}
 \usepackage{tikz}
 \usetikzlibrary{calc}
-\usepackage[font=small,labelfont=bf,labelsep=period]{caption}
+\usepackage{setspace}
+\usepackage{etoolbox}
+\usepackage[font={small,singlespacing},labelfont=bf,labelsep=period]{caption}
+
+% ---------------------------------------------------------------------------
+% Giãn dòng phần nội dung: 1.241 ở cỡ chữ 12pt tương đương "cách dòng 1.5"
+% của Word (chuẩn trình bày đề án). Đổi số này nếu muốn thưa/khít hơn.
+% ---------------------------------------------------------------------------
+\newcommand{\gianDongNoiDung}{1.241}
+\setstretch{\gianDongNoiDung}
+\setlength{\parskip}{6pt plus 3pt minus 1pt}
+\setlength{\parindent}{1cm}
+
+% Giữ giãn dòng đơn ở những chỗ giãn 1.5 sẽ làm rời rạc: bảng, mã nguồn,
+% chú thích cuối trang và các danh sách tự sinh (mục lục, hình vẽ, bảng).
+\AtBeginEnvironment{tabular}{\setstretch{1}}
+\AtBeginEnvironment{tabularx}{\setstretch{1}}
+\AtBeginEnvironment{lstlisting}{\setstretch{1}}
+\AtBeginEnvironment{verbatim}{\setstretch{1}}
+\AtBeginEnvironment{tikzpicture}{\setstretch{1}}
+\newcommand{\dsGonGang}{\setstretch{1.15}\setlength{\parskip}{0pt}}
+\preto\tableofcontents{\begingroup\dsGonGang}
+\appto\tableofcontents{\endgroup}
+\preto\listoffigures{\begingroup\dsGonGang}
+\appto\listoffigures{\endgroup}
+\preto\listoftables{\begingroup\dsGonGang}
+\appto\listoftables{\endgroup}
+\let\oldfootnotetext\footnotetext
+\renewcommand{\footnotetext}[1]{\begingroup\setstretch{1}\oldfootnotetext{#1}\endgroup}
+
+% Giãn khoảng cách quanh danh sách và hình/bảng cho cân với giãn dòng 1.5
+\setlength{\textfloatsep}{18pt plus 4pt minus 4pt}
+\setlength{\intextsep}{16pt plus 4pt minus 4pt}
+\setlength{\floatsep}{16pt plus 4pt minus 4pt}
+\renewcommand{\arraystretch}{1.25}
 
 \lstset{
   basicstyle=\small\ttfamily,
@@ -48,9 +82,14 @@
 
 % Ba trang đầu không đánh số: trang bìa, công trình được hoàn thành tại,
 % nhiệm vụ đề án tốt nghiệp.
+% Các trang này có bố cục cố định (căn bằng \vspace) nên giữ giãn dòng đơn.
+\begingroup
+\setstretch{1}
+\setlength{\parskip}{0pt}
 \input{trang_bia}
 \input{cong_trinh_hoan_thanh}
 \input{nhiem_vu_de_an}
+\endgroup
 
 % Front matter đánh số La Mã (i, ii, iii, ...)
 \pagenumbering{roman}
