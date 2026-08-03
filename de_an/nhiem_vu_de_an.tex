@@ -2,24 +2,23 @@
 \cleardoublepage
 \thispagestyle{empty}
 
-% Cỡ chữ header bị giới hạn bởi bề ngang: dòng "CỘNG HÒA..." là dòng dài
-% nhất, ở 10pt vừa khít 0.53\textwidth nên không tăng thêm được nữa.
-\newlength{\wA}\newlength{\wB}
-\settowidth{\wA}{\fontsize{10}{12}\selectfont\textbf{ĐẠI HỌC QUỐC GIA TP. HỒ CHÍ MINH}}
-\settowidth{\wB}{\fontsize{10}{12}\selectfont\textbf{CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM}}
-\typeout{REALWA=\the\wA / REALWB=\the\wB / TW=\the\textwidth}
-\noindent
-\makebox[0.47\textwidth][c]{%
+% Hai dòng tiêu đề (nhất là "CỘNG HÒA...") rộng hơn \textwidth nếu ghép cạnh
+% nhau, nên không thể ấn định cỡ chữ + bề rộng khung bằng tay (từng bị tràn
+% chữ, chồng lên nhau). Dùng \resizebox để co cả khối 2 cột vừa khít
+% \textwidth một cách tự động, luôn đúng dù nội dung có thay đổi sau này.
+\noindent\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}c@{\hspace{1.2cm}}c@{}}
 \begin{tabular}[t]{@{}c@{}}
-\fontsize{10}{12}\selectfont\textbf{ĐẠI HỌC QUỐC GIA TP. HỒ CHÍ MINH}\\[0.2cm]
-\fontsize{11}{13}\selectfont\textbf{TRƯỜNG ĐẠI HỌC BÁCH KHOA}\\[0.3cm]
+\textbf{ĐẠI HỌC QUỐC GIA TP. HỒ CHÍ MINH}\\[0.2cm]
+\textbf{TRƯỜNG ĐẠI HỌC BÁCH KHOA}\\[0.3cm]
 \rule{4.5cm}{0.5pt}
-\end{tabular}}%
-\makebox[0.53\textwidth][c]{%
+\end{tabular}
+&
 \begin{tabular}[t]{@{}c@{}}
-\fontsize{10}{12}\selectfont\textbf{CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM}\\[0.2cm]
-\fontsize{11}{13}\selectfont\textbf{Độc lập -- Tự do -- Hạnh phúc}\\[0.3cm]
+\textbf{CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM}\\[0.2cm]
+\textbf{Độc lập -- Tự do -- Hạnh phúc}\\[0.3cm]
 \rule{4.5cm}{0.5pt}
+\end{tabular}
 \end{tabular}}
 
 \vspace{1.2cm}
