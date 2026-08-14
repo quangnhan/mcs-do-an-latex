@@ -402,7 +402,7 @@ def measure(self, seed, output):
 \end{lstlisting}
 
 \textbf{Thành phần LLM} ($s_{\text{llm}}$): \texttt{FaithfulnessGEval}
-(GEval của DeepEval) đánh giá mâu thuẫn giữa đầu ra và retrieval
+(GEval \tlcite{ref:liu2023} của DeepEval) đánh giá mâu thuẫn giữa đầu ra và retrieval
 context bằng chain-of-thought, trừ điểm nếu output chứa claim không
 được hỗ trợ bởi seed (kể cả hype vô căn cứ).
 
@@ -516,7 +516,8 @@ cách:
 Mô hình \texttt{qwen3.5:9b} được đưa vào bảng tổng hợp làm điểm
 tham chiếu tham số lớn hơn nhưng không tiến hành fine-tuning do chi
 phí tính toán vượt phạm vi thực nghiệm. Cả hai cấu hình fine-tuning
-đều áp dụng QLoRA (chi tiết lý thuyết xem Mục~\ref{subsec:sft}).
+đều áp dụng QLoRA \tlcite{ref:dettmers2023} (chi tiết lý thuyết xem
+Mục~\ref{subsec:sft}).
 
 Mục tiêu là định hình phong cách Facebook-native F\&B --- đặc biệt
 là giọng điệu, cách neo giá/deal, và cấu trúc CTA --- thứ mà các mô
@@ -644,8 +645,10 @@ theo một \emph{hàm thưởng rule-based} xây dựng từ các đặc trưng 
 thức có tương quan với tín hiệu tương tác (lượt thích, bình luận, chia
 sẻ) trong tập bài đăng Facebook hiện có --- thay vì sử dụng trực tiếp
 chỉ số tương tác làm phần thưởng. Phương pháp GRPO (Group Relative
-Policy Optimization) được chọn vì (i)~không cần huấn luyện reward
-model riêng biệt, (ii)~không cần critic/value model như PPO, và
+Policy Optimization) \tlcite{ref:shao2024} được chọn vì (i)~không cần
+huấn luyện reward
+model riêng biệt, (ii)~không cần critic/value model như PPO
+\tlcite{ref:schulman2017}, và
 (iii)~tương thích với hàm reward rule-based, tiết kiệm tài nguyên phù
 hợp với bối cảnh SME. Cơ sở lý thuyết GRPO đã được trình
 bày tại Mục~\ref{subsec:rl} (xem Hình~\ref{fig:grpo}); phần này tập

@@ -28,6 +28,11 @@
 % ---------------------------------------------------------------------------
 % Danh sách hình vẽ / bảng: hiển thị "Hình 3.1:" và "Bảng 3.1:" thay vì "3.1"
 % ---------------------------------------------------------------------------
+% Mục lục: hiển thị "Chương 1" thay vì "1"
+\renewcommand{\cftchappresnum}{\chaptername~}
+\renewcommand{\cftchapaftersnum}{.}
+\settowidth{\cftchapnumwidth}{\bfseries\cftchappresnum 9\cftchapaftersnum\space}
+
 \renewcommand{\cftfigpresnum}{\figurename~}
 \renewcommand{\cftfigaftersnum}{:}
 \settowidth{\cftfignumwidth}{\cftfigpresnum 99.99\cftfigaftersnum\quad}
@@ -90,6 +95,13 @@
 \newenvironment{llitemize}%
   {\begin{itemize}\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}\setlength{\topsep}{2pt}}%
   {\end{itemize}}
+
+% ---------------------------------------------------------------------------
+% Trích dẫn kiểu IEEE: \tlcite{nhan} in ra [n] với n là số thứ tự của tài
+% liệu trong danh mục (tai_lieu_tham_khao.tex). Nhiều tài liệu liền nhau
+% viết \tlcite{a}, \tlcite{b} --- đúng quy ước IEEE ``[1], [2]''.
+% ---------------------------------------------------------------------------
+\newcommand{\tlcite}[1]{[\ref{#1}]}
 
 \sloppy
 

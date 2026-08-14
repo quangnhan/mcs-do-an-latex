@@ -1,277 +1,243 @@
 % !TEX root = main.tex
+%
+% Danh mục tài liệu tham khảo trình bày theo chuẩn IEEE.
+% THỨ TỰ CÁC MỤC = THỨ TỰ ĐƯỢC TRÍCH DẪN LẦN ĐẦU TRONG NỘI DUNG.
+% Khi thêm/bớt tài liệu, hãy giữ đúng quy tắc này và trích dẫn trong
+% các chương bằng lệnh \tlcite{<label>} (định nghĩa ở main.tex).
+%
 \begin{enumerate}
 \def\labelenumi{[\arabic{enumi}]}
 
-%======================================================================
-% I. NỀN TẢNG TRANSFORMER VÀ MÔ HÌNH NGÔN NGỮ LỚN
-%======================================================================
-\item
-  Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez,
-  A.N., Kaiser, Ł., \& Polosukhin, I. (2017). Attention is all you need.
-  Trong \emph{Advances in Neural Information Processing Systems
-  (NeurIPS)}, (Long Beach, CA, USA), 30, 5998--6008.
-
-\item
-  Devlin, J., Chang, M.-W., Lee, K., \& Toutanova, K. (2019). BERT:
-  Pre-training of deep bidirectional transformers for language
-  understanding. Trong \emph{Proceedings of the 2019 Conference of the
-  North American Chapter of the Association for Computational
-  Linguistics (NAACL-HLT)}, (Minneapolis, MN, USA), 4171--4186.
-
-\item
-  Brown, T.B., Mann, B., Ryder, N., Subbiah, M., Kaplan, J., Dhariwal,
-  P., \emph{et al.} (2020). Language models are few-shot learners. Trong
-  \emph{Advances in Neural Information Processing Systems (NeurIPS)},
-  (Virtual), 33, 1877--1901.
-
-\item
-  Ainslie, J., Lee-Thorp, J., de Jong, M., Zemlyanskiy, Y., Lebrón, F.,
-  \& Sanghai, S. (2023). GQA: Training generalized multi-query
-  transformer models from multi-head checkpoints. Trong
-  \emph{Proceedings of the 2023 Conference on Empirical Methods in
-  Natural Language Processing (EMNLP)}, (Singapore), 4895--4901.
-
-\item
-  Su, J., Lu, Y., Pan, S., Murtadha, A., Wen, B., \& Liu, Y. (2024).
-  RoFormer: Enhanced transformer with rotary position embedding.
-  \emph{Neurocomputing}, 568, 127063.
-
-\item
-  Qwen Team. (2025). \emph{Qwen2.5 Technical Report}. Alibaba Cloud.
-  \url{https://arxiv.org/abs/2412.15115}.
-
-%======================================================================
-% II. TINH CHỈNH HIỆU QUẢ THAM SỐ (PEFT) -- LoRA \& QLoRA
-%======================================================================
-\item
-  Hu, E.J., Shen, Y., Wallis, P., Allen-Zhu, Z., Li, Y., Wang, S., Wang,
-  L., \& Chen, W. (2022). LoRA: Low-rank adaptation of large language
-  models. Trong \emph{International Conference on Learning
-  Representations (ICLR)}, (Virtual).
-
-\item
-  Dettmers, T., Pagnoni, A., Holtzman, A., \& Zettlemoyer, L. (2023).
-  QLoRA: Efficient finetuning of quantized LLMs. Trong \emph{Advances in
-  Neural Information Processing Systems (NeurIPS)}, (New Orleans, LA,
-  USA), 36, 10088--10115.
-
-%======================================================================
-% III. HỌC TĂNG CƯỜNG VÀ CĂN CHỈNH MÔ HÌNH (RL, RLHF, GRPO)
-%======================================================================
-\item
-  Sutton, R.S., \& Barto, A.G. (2018). \emph{Reinforcement Learning: An
-  Introduction} (2nd ed.). MIT Press.
-
-\item
-  Christiano, P.F., Leike, J., Brown, T.B., Martic, M., Legg, S., \&
-  Amodei, D. (2017). Deep reinforcement learning from human preferences.
-  Trong \emph{Advances in Neural Information Processing Systems
-  (NeurIPS)}, (Long Beach, CA, USA), 30, 4299--4307.
-
-\item
-  Schulman, J., Wolski, F., Dhariwal, P., Radford, A., \& Klimov, O.
-  (2017). \emph{Proximal Policy Optimization Algorithms}. OpenAI.
-  \url{https://arxiv.org/abs/1707.06347}.
-
-\item
-  Ouyang, L., Wu, J., Jiang, X., Almeida, D., Wainwright, C.L., Mishkin,
-  P., \emph{et al.} (2022). Training language models to follow
-  instructions with human feedback. Trong \emph{Advances in Neural
-  Information Processing Systems (NeurIPS)}, (New Orleans, LA, USA), 35,
-  27730--27744.
-
-\item
-  Shao, Z., Wang, P., Zhu, Q., Xu, R., Song, J., Bi, X., \emph{et al.}
-  (2024). \emph{DeepSeekMath: Pushing the Limits of Mathematical
-  Reasoning in Open Language Models}. DeepSeek-AI.
-  \url{https://arxiv.org/abs/2402.03300}.
-
-\item
-  Rafailov, R., Sharma, A., Mitchell, E., Manning, C.D., Ermon, S., \&
-  Finn, C. (2023). Direct preference optimization: Your language model
-  is secretly a reward model. Trong \emph{Advances in Neural Information
-  Processing Systems (NeurIPS)}, (New Orleans, LA, USA), 36,
-  53728--53741.
-
-%======================================================================
-% IV. RETRIEVAL-AUGMENTED GENERATION (RAG) VÀ TRUY HỒI NGỮ NGHĨA
-%======================================================================
-\item
-  Lewis, P., Perez, E., Piktus, A., Petroni, F., Karpukhin, V., Goyal,
-  N., \emph{et al.} (2020). Retrieval-augmented generation for
-  knowledge-intensive NLP tasks. Trong \emph{Advances in Neural
-  Information Processing Systems (NeurIPS)}, (Virtual), 33, 9459--9474.
-
-\item
-  Karpukhin, V., Oğuz, B., Min, S., Lewis, P., Wu, L., Edunov, S., Chen,
-  D., \& Yih, W. (2020). Dense passage retrieval for open-domain
-  question answering. Trong \emph{Proceedings of the 2020 Conference on
-  Empirical Methods in Natural Language Processing (EMNLP)}, (Virtual),
-  6769--6781.
-
-\item
-  Reimers, N., \& Gurevych, I. (2019). Sentence-BERT: Sentence
-  embeddings using Siamese BERT-networks. Trong \emph{Proceedings of the
-  2019 Conference on Empirical Methods in Natural Language Processing
-  (EMNLP-IJCNLP)}, (Hong Kong, China), 3982--3992.
-
-\item
-  Robertson, S., \& Zaragoza, H. (2009). The probabilistic relevance
-  framework: BM25 and beyond. \emph{Foundations and Trends in
-  Information Retrieval}, 3(4), 333--389.
-
-\item
-  Johnson, J., Douze, M., \& Jégou, H. (2021). Billion-scale similarity
-  search with GPUs. \emph{IEEE Transactions on Big Data}, 7(3),
-  535--547.
-
-\item
-  Asai, A., Wu, Z., Wang, Y., Sil, A., \& Hajishirzi, H. (2024).
-  Self-RAG: Learning to retrieve, generate, and critique through
-  self-reflection. Trong \emph{International Conference on Learning
-  Representations (ICLR)}, (Vienna, Austria).
-
-%======================================================================
-% V. SUY LUẬN, PROMPTING VÀ TÁC TỬ DỰA TRÊN LLM
-%======================================================================
-\item
-  Wei, J., Wang, X., Schuurmans, D., Bosma, M., Ichter, B., Xia, F.,
-  Chi, E., Le, Q.V., \& Zhou, D. (2022). Chain-of-thought prompting
-  elicits reasoning in large language models. Trong \emph{Advances in
-  Neural Information Processing Systems (NeurIPS)}, (New Orleans, LA,
-  USA), 35, 24824--24837.
-
-\item
-  Yao, S., Zhao, J., Yu, D., Du, N., Shafran, I., Narasimhan, K., \&
-  Cao, Y. (2023). ReAct: Synergizing reasoning and acting in language
-  models. Trong \emph{International Conference on Learning
-  Representations (ICLR)}, (Kigali, Rwanda).
-
-\item
-  Shinn, N., Cassano, F., Gopinath, A., Narasimhan, K., \& Yao, S.
-  (2023). Reflexion: Language agents with verbal reinforcement learning.
-  Trong \emph{Advances in Neural Information Processing Systems
-  (NeurIPS)}, (New Orleans, LA, USA), 36, 8634--8652.
-
-\item
-  Schick, T., Dwivedi-Yu, J., Dessì, R., Raileanu, R., Lomeli, M.,
-  Hambro, E., Zettlemoyer, L., Cancedda, N., \& Scialom, T. (2023).
-  Toolformer: Language models can teach themselves to use tools. Trong
-  \emph{Advances in Neural Information Processing Systems (NeurIPS)},
-  (New Orleans, LA, USA), 36, 68539--68551.
-
-%======================================================================
-% VI. HỆ ĐA TÁC TỬ (MULTI-AGENT SYSTEMS)
-%======================================================================
-\item
-  Wooldridge, M. (2009). \emph{An Introduction to MultiAgent Systems}
-  (2nd ed.). John Wiley \& Sons.
-
-\item
-  Russell, S., \& Norvig, P. (2020). \emph{Artificial Intelligence: A
-  Modern Approach} (4th ed.). Pearson.
-
-\item
-  Shoham, Y., \& Leyton-Brown, K. (2008). \emph{Multiagent Systems:
-  Algorithmic, Game-Theoretic, and Logical Foundations}. Cambridge
-  University Press.
-
-\item
-  Stone, P., \& Veloso, M. (2000). Multiagent systems: A survey from a
-  machine learning perspective. \emph{Autonomous Robots}, 8(3),
-  345--383.
-
-\item
-  Wu, Q., Bansal, G., Zhang, J., Wu, Y., Li, B., Zhu, E., \emph{et al.}
-  (2024). AutoGen: Enabling next-gen LLM applications via multi-agent
-  conversation. Trong \emph{Conference on Language Modeling (COLM)},
-  (Philadelphia, PA, USA).
-
-\item
-  Hong, S., Zhuge, M., Chen, J., Zheng, X., Cheng, Y., Wang, J.,
-  \emph{et al.} (2024). MetaGPT: Meta programming for a multi-agent
-  collaborative framework. Trong \emph{International Conference on
-  Learning Representations (ICLR)}, (Vienna, Austria).
-
-\item
-  Park, J.S., O'Brien, J., Cai, C.J., Morris, M.R., Liang, P., \&
-  Bernstein, M.S. (2023). Generative agents: Interactive simulacra of
-  human behavior. Trong \emph{Proceedings of the 36th Annual ACM
-  Symposium on User Interface Software and Technology (UIST)}, (San
-  Francisco, CA, USA), 1--22.
-
-\item
-  Xi, Z., Chen, W., Guo, X., He, W., Ding, Y., Hong, B., \emph{et al.}
-  (2025). The rise and potential of large language model based agents:
-  A survey. \emph{Science China Information Sciences}, 68(2), 121101.
-
-%======================================================================
-% VII. ĐÁNH GIÁ MÔ HÌNH SINH NGÔN NGỮ (NLG EVALUATION)
-%======================================================================
-\item
-  Papineni, K., Roukos, S., Ward, T., \& Zhu, W.-J. (2002). BLEU: A
-  method for automatic evaluation of machine translation. Trong
-  \emph{Proceedings of the 40th Annual Meeting of the Association for
-  Computational Linguistics (ACL)}, (Philadelphia, PA, USA), 311--318.
-
-\item
-  Lin, C.-Y. (2004). ROUGE: A package for automatic evaluation of
-  summaries. Trong \emph{Text Summarization Branches Out: Proceedings of
-  the ACL-04 Workshop}, (Barcelona, Spain), 74--81.
-
-\item
-  Zhang, T., Kishore, V., Wu, F., Weinberger, K.Q., \& Artzi, Y. (2020).
-  BERTScore: Evaluating text generation with BERT. Trong
-  \emph{International Conference on Learning Representations (ICLR)},
-  (Virtual).
-
-\item
-  Zheng, L., Chiang, W.-L., Sheng, Y., Zhuang, S., Wu, Z., Zhuang, Y.,
-  \emph{et al.} (2023). Judging LLM-as-a-judge with MT-Bench and Chatbot
-  Arena. Trong \emph{Advances in Neural Information Processing Systems
-  (NeurIPS) -- Datasets and Benchmarks Track}, (New Orleans, LA, USA),
-  36, 46595--46623.
-
-\item
-  Liu, Y., Iter, D., Xu, Y., Wang, S., Xu, R., \& Zhu, C. (2023).
-  G-Eval: NLG evaluation using GPT-4 with better human alignment. Trong
-  \emph{Proceedings of the 2023 Conference on Empirical Methods in
-  Natural Language Processing (EMNLP)}, (Singapore), 2511--2522.
-
-%======================================================================
-% VIII. SÁCH GIÁO KHOA NỀN TẢNG -- HỌC SÂU, NHẬN DẠNG MẪU VÀ NLP
-%======================================================================
-\item
-  Goodfellow, I., Bengio, Y., \& Courville, A. (2016). \emph{Deep
-  Learning}. MIT Press.
-
-\item
-  Bishop, C.M. (2006). \emph{Pattern Recognition and Machine Learning}.
-  Springer.
-
-\item
-  Jurafsky, D., \& Martin, J.H. (2024). \emph{Speech and Language
-  Processing: An Introduction to Natural Language Processing,
-  Computational Linguistics, and Speech Recognition} (3rd ed.). Stanford
-  University.
-
-%======================================================================
-% IX. HẠ TẦNG THƯ VIỆN VÀ BÁO CÁO NGÀNH
-%======================================================================
-\item
-  Wolf, T., Debut, L., Sanh, V., Chaumond, J., Delangue, C., Moi, A.,
-  \emph{et al.} (2020). Transformers: State-of-the-art natural language
-  processing. Trong \emph{Proceedings of the 2020 Conference on
-  Empirical Methods in Natural Language Processing: System
-  Demonstrations (EMNLP)}, (Virtual), 38--45.
-
+%---------------------------------------------------------------- Chương 2
 \item\label{ref:economy2025}
-  Google, Temasek, \& Bain \& Company. (2025). \emph{e-Conomy SEA 2025:
-  From Digital Decade to AI Reality}.
+  Google, Temasek, and Bain \& Company, ``e-Conomy SEA 2025: From digital
+  decade to AI reality,'' Tech. Rep., 2025.
 
 \item\label{ref:mckinsey2025}
-  McKinsey \& Company. (2025, November). \emph{The State of AI in 2025:
-  Agents, Innovation, and Transformation}. QuantumBlack, AI by
-  McKinsey.
+  McKinsey \& Company, ``The state of AI in 2025: Agents, innovation, and
+  transformation,'' QuantumBlack, AI by McKinsey, Tech. Rep., Nov. 2025.
+
+%---------------------------------------------------------------- Chương 3
+\item\label{ref:goodfellow2016}
+  I. Goodfellow, Y. Bengio, and A. Courville, \emph{Deep Learning}.
+  Cambridge, MA, USA: MIT Press, 2016.
+
+\item\label{ref:bishop2006}
+  C. M. Bishop, \emph{Pattern Recognition and Machine Learning}.
+  New York, NY, USA: Springer, 2006.
+
+\item\label{ref:jurafsky2024}
+  D. Jurafsky and J. H. Martin, \emph{Speech and Language Processing: An
+  Introduction to Natural Language Processing, Computational Linguistics,
+  and Speech Recognition}, 3rd ed. Stanford, CA, USA: Stanford Univ., 2024.
+
+\item\label{ref:vaswani2017}
+  A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez,
+  \emph{et al.}, ``Attention is all you need,'' in \emph{Proc. Adv. Neural
+  Inf. Process. Syst. (NeurIPS)}, Long Beach, CA, USA, 2017, vol. 30,
+  pp. 5998--6008.
+
+\item\label{ref:devlin2019}
+  J. Devlin, M.-W. Chang, K. Lee, and K. Toutanova, ``BERT: Pre-training of
+  deep bidirectional transformers for language understanding,'' in
+  \emph{Proc. Conf. North Amer. Chapter Assoc. Comput. Linguistics
+  (NAACL-HLT)}, Minneapolis, MN, USA, 2019, pp. 4171--4186.
+
+\item\label{ref:brown2020}
+  T. B. Brown, B. Mann, N. Ryder, M. Subbiah, J. Kaplan, P. Dhariwal,
+  \emph{et al.}, ``Language models are few-shot learners,'' in \emph{Proc.
+  Adv. Neural Inf. Process. Syst. (NeurIPS)}, Virtual, 2020, vol. 33,
+  pp. 1877--1901.
+
+\item\label{ref:ainslie2023}
+  J. Ainslie, J. Lee-Thorp, M. de Jong, Y. Zemlyanskiy, F. Lebrón, and
+  S. Sanghai, ``GQA: Training generalized multi-query transformer models
+  from multi-head checkpoints,'' in \emph{Proc. Conf. Empirical Methods
+  Natural Lang. Process. (EMNLP)}, Singapore, 2023, pp. 4895--4901.
+
+\item\label{ref:su2024}
+  J. Su, Y. Lu, S. Pan, A. Murtadha, B. Wen, and Y. Liu, ``RoFormer:
+  Enhanced transformer with rotary position embedding,''
+  \emph{Neurocomputing}, vol. 568, art. no. 127063, 2024.
+
+\item\label{ref:qwen2025}
+  Qwen Team, ``Qwen2.5 technical report,'' Alibaba Cloud, Tech. Rep., 2025.
+  [Online]. Available: \url{https://arxiv.org/abs/2412.15115}
+
+\item\label{ref:hu2022}
+  E. J. Hu, Y. Shen, P. Wallis, Z. Allen-Zhu, Y. Li, S. Wang,
+  \emph{et al.}, ``LoRA: Low-rank adaptation of large language models,'' in
+  \emph{Proc. Int. Conf. Learn. Representations (ICLR)}, Virtual, 2022.
+
+\item\label{ref:dettmers2023}
+  T. Dettmers, A. Pagnoni, A. Holtzman, and L. Zettlemoyer, ``QLoRA:
+  Efficient finetuning of quantized LLMs,'' in \emph{Proc. Adv. Neural Inf.
+  Process. Syst. (NeurIPS)}, New Orleans, LA, USA, 2023, vol. 36,
+  pp. 10088--10115.
+
+\item\label{ref:sutton2018}
+  R. S. Sutton and A. G. Barto, \emph{Reinforcement Learning: An
+  Introduction}, 2nd ed. Cambridge, MA, USA: MIT Press, 2018.
+
+\item\label{ref:christiano2017}
+  P. F. Christiano, J. Leike, T. B. Brown, M. Martic, S. Legg, and
+  D. Amodei, ``Deep reinforcement learning from human preferences,'' in
+  \emph{Proc. Adv. Neural Inf. Process. Syst. (NeurIPS)}, Long Beach, CA,
+  USA, 2017, vol. 30, pp. 4299--4307.
+
+\item\label{ref:schulman2017}
+  J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov,
+  ``Proximal policy optimization algorithms,'' OpenAI, Tech. Rep., 2017.
+  [Online]. Available: \url{https://arxiv.org/abs/1707.06347}
+
+\item\label{ref:ouyang2022}
+  L. Ouyang, J. Wu, X. Jiang, D. Almeida, C. L. Wainwright, P. Mishkin,
+  \emph{et al.}, ``Training language models to follow instructions with
+  human feedback,'' in \emph{Proc. Adv. Neural Inf. Process. Syst.
+  (NeurIPS)}, New Orleans, LA, USA, 2022, vol. 35, pp. 27730--27744.
+
+\item\label{ref:shao2024}
+  Z. Shao, P. Wang, Q. Zhu, R. Xu, J. Song, X. Bi, \emph{et al.},
+  ``DeepSeekMath: Pushing the limits of mathematical reasoning in open
+  language models,'' DeepSeek-AI, Tech. Rep., 2024. [Online]. Available:
+  \url{https://arxiv.org/abs/2402.03300}
+
+\item\label{ref:rafailov2023}
+  R. Rafailov, A. Sharma, E. Mitchell, C. D. Manning, S. Ermon, and C. Finn,
+  ``Direct preference optimization: Your language model is secretly a reward
+  model,'' in \emph{Proc. Adv. Neural Inf. Process. Syst. (NeurIPS)},
+  New Orleans, LA, USA, 2023, vol. 36, pp. 53728--53741.
+
+\item\label{ref:wolf2020}
+  T. Wolf, L. Debut, V. Sanh, J. Chaumond, C. Delangue, A. Moi,
+  \emph{et al.}, ``Transformers: State-of-the-art natural language
+  processing,'' in \emph{Proc. Conf. Empirical Methods Natural Lang.
+  Process.: Syst. Demonstrations (EMNLP)}, Virtual, 2020, pp. 38--45.
+
+\item\label{ref:lewis2020}
+  P. Lewis, E. Perez, A. Piktus, F. Petroni, V. Karpukhin, N. Goyal,
+  \emph{et al.}, ``Retrieval-augmented generation for knowledge-intensive
+  NLP tasks,'' in \emph{Proc. Adv. Neural Inf. Process. Syst. (NeurIPS)},
+  Virtual, 2020, vol. 33, pp. 9459--9474.
+
+\item\label{ref:asai2024}
+  A. Asai, Z. Wu, Y. Wang, A. Sil, and H. Hajishirzi, ``Self-RAG: Learning
+  to retrieve, generate, and critique through self-reflection,'' in
+  \emph{Proc. Int. Conf. Learn. Representations (ICLR)}, Vienna, Austria,
+  2024.
+
+\item\label{ref:reimers2019}
+  N. Reimers and I. Gurevych, ``Sentence-BERT: Sentence embeddings using
+  Siamese BERT-networks,'' in \emph{Proc. Conf. Empirical Methods Natural
+  Lang. Process. (EMNLP-IJCNLP)}, Hong Kong, China, 2019, pp. 3982--3992.
+
+\item\label{ref:karpukhin2020}
+  V. Karpukhin, B. Oğuz, S. Min, P. Lewis, L. Wu, S. Edunov,
+  \emph{et al.}, ``Dense passage retrieval for open-domain question
+  answering,'' in \emph{Proc. Conf. Empirical Methods Natural Lang. Process.
+  (EMNLP)}, Virtual, 2020, pp. 6769--6781.
+
+\item\label{ref:robertson2009}
+  S. Robertson and H. Zaragoza, ``The probabilistic relevance framework:
+  BM25 and beyond,'' \emph{Found. Trends Inf. Retrieval}, vol. 3, no. 4,
+  pp. 333--389, 2009.
+
+\item\label{ref:johnson2021}
+  J. Johnson, M. Douze, and H. Jégou, ``Billion-scale similarity search with
+  GPUs,'' \emph{IEEE Trans. Big Data}, vol. 7, no. 3, pp. 535--547,
+  Jul. 2021.
+
+\item\label{ref:papineni2002}
+  K. Papineni, S. Roukos, T. Ward, and W.-J. Zhu, ``BLEU: A method for
+  automatic evaluation of machine translation,'' in \emph{Proc. 40th Annu.
+  Meeting Assoc. Comput. Linguistics (ACL)}, Philadelphia, PA, USA, 2002,
+  pp. 311--318.
+
+\item\label{ref:lin2004}
+  C.-Y. Lin, ``ROUGE: A package for automatic evaluation of summaries,'' in
+  \emph{Proc. Text Summarization Branches Out: ACL-04 Workshop}, Barcelona,
+  Spain, 2004, pp. 74--81.
+
+\item\label{ref:zhang2020}
+  T. Zhang, V. Kishore, F. Wu, K. Q. Weinberger, and Y. Artzi, ``BERTScore:
+  Evaluating text generation with BERT,'' in \emph{Proc. Int. Conf. Learn.
+  Representations (ICLR)}, Virtual, 2020.
+
+\item\label{ref:liu2023}
+  Y. Liu, D. Iter, Y. Xu, S. Wang, R. Xu, and C. Zhu, ``G-Eval: NLG
+  evaluation using GPT-4 with better human alignment,'' in \emph{Proc. Conf.
+  Empirical Methods Natural Lang. Process. (EMNLP)}, Singapore, 2023,
+  pp. 2511--2522.
+
+\item\label{ref:wei2022}
+  J. Wei, X. Wang, D. Schuurmans, M. Bosma, B. Ichter, F. Xia,
+  \emph{et al.}, ``Chain-of-thought prompting elicits reasoning in large
+  language models,'' in \emph{Proc. Adv. Neural Inf. Process. Syst.
+  (NeurIPS)}, New Orleans, LA, USA, 2022, vol. 35, pp. 24824--24837.
+
+\item\label{ref:zheng2023}
+  L. Zheng, W.-L. Chiang, Y. Sheng, S. Zhuang, Z. Wu, Y. Zhuang,
+  \emph{et al.}, ``Judging LLM-as-a-judge with MT-Bench and Chatbot Arena,''
+  in \emph{Proc. Adv. Neural Inf. Process. Syst. (NeurIPS) Datasets and
+  Benchmarks Track}, New Orleans, LA, USA, 2023, vol. 36, pp. 46595--46623.
+
+\item\label{ref:russell2020}
+  S. Russell and P. Norvig, \emph{Artificial Intelligence: A Modern
+  Approach}, 4th ed. Hoboken, NJ, USA: Pearson, 2020.
+
+\item\label{ref:wooldridge2009}
+  M. Wooldridge, \emph{An Introduction to MultiAgent Systems}, 2nd ed.
+  Chichester, U.K.: John Wiley \& Sons, 2009.
+
+\item\label{ref:xi2025}
+  Z. Xi, W. Chen, X. Guo, W. He, Y. Ding, B. Hong, \emph{et al.}, ``The rise
+  and potential of large language model based agents: A survey,''
+  \emph{Sci. China Inf. Sci.}, vol. 68, no. 2, art. no. 121101, 2025.
+
+\item\label{ref:yao2023}
+  S. Yao, J. Zhao, D. Yu, N. Du, I. Shafran, K. Narasimhan,
+  \emph{et al.}, ``ReAct: Synergizing reasoning and acting in language
+  models,'' in \emph{Proc. Int. Conf. Learn. Representations (ICLR)},
+  Kigali, Rwanda, 2023.
+
+\item\label{ref:shinn2023}
+  N. Shinn, F. Cassano, A. Gopinath, K. Narasimhan, and S. Yao,
+  ``Reflexion: Language agents with verbal reinforcement learning,'' in
+  \emph{Proc. Adv. Neural Inf. Process. Syst. (NeurIPS)}, New Orleans, LA,
+  USA, 2023, vol. 36, pp. 8634--8652.
+
+\item\label{ref:schick2023}
+  T. Schick, J. Dwivedi-Yu, R. Dessì, R. Raileanu, M. Lomeli, E. Hambro,
+  \emph{et al.}, ``Toolformer: Language models can teach themselves to use
+  tools,'' in \emph{Proc. Adv. Neural Inf. Process. Syst. (NeurIPS)},
+  New Orleans, LA, USA, 2023, vol. 36, pp. 68539--68551.
+
+\item\label{ref:shoham2008}
+  Y. Shoham and K. Leyton-Brown, \emph{Multiagent Systems: Algorithmic,
+  Game-Theoretic, and Logical Foundations}. Cambridge, U.K.: Cambridge Univ.
+  Press, 2008.
+
+\item\label{ref:stone2000}
+  P. Stone and M. Veloso, ``Multiagent systems: A survey from a machine
+  learning perspective,'' \emph{Auton. Robots}, vol. 8, no. 3,
+  pp. 345--383, 2000.
+
+\item\label{ref:wu2024}
+  Q. Wu, G. Bansal, J. Zhang, Y. Wu, B. Li, E. Zhu, \emph{et al.},
+  ``AutoGen: Enabling next-gen LLM applications via multi-agent
+  conversation,'' in \emph{Proc. Conf. Lang. Modeling (COLM)}, Philadelphia,
+  PA, USA, 2024.
+
+\item\label{ref:hong2024}
+  S. Hong, M. Zhuge, J. Chen, X. Zheng, Y. Cheng, J. Wang, \emph{et al.},
+  ``MetaGPT: Meta programming for a multi-agent collaborative framework,''
+  in \emph{Proc. Int. Conf. Learn. Representations (ICLR)}, Vienna, Austria,
+  2024.
+
+\item\label{ref:park2023}
+  J. S. Park, J. O'Brien, C. J. Cai, M. R. Morris, P. Liang, and
+  M. S. Bernstein, ``Generative agents: Interactive simulacra of human
+  behavior,'' in \emph{Proc. 36th Annu. ACM Symp. User Interface Softw.
+  Technol. (UIST)}, San Francisco, CA, USA, 2023, pp. 1--22.
 
 \end{enumerate}

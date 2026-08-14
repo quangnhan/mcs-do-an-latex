@@ -11,19 +11,27 @@ lượng đầu ra, ăn khớp với thiết kế tổng thể hệ thống và 
 nghiệm ở Chương~\ref{chap:thuc-nghiem}. Đề án không mở rộng lịch sử
 NLP theo hướng từ mô hình túi từ (Bag-of-Words) hay RNN, mà tập trung
 vào mô hình ngôn ngữ lớn dạng Transformer cải tiến hiện đang được sử dụng
-rộng rãi trong cả nghiên cứu và triển khai.
+rộng rãi trong cả nghiên cứu và triển khai. Các kiến thức nền tảng về học
+sâu, nhận dạng mẫu và xử lý ngôn ngữ tự nhiên được tham khảo từ các tài
+liệu chuẩn \tlcite{ref:goodfellow2016}, \tlcite{ref:bishop2006},
+\tlcite{ref:jurafsky2024}.
 
 \section{Kiến trúc mô hình ngôn ngữ hiện đại}\label{sec:llm-kiem-truc}
 
 \subsection{Từ cơ chế self-attention đến Transformer}
 
 Các mô hình ngôn ngữ lớn (LLM) thế hệ gần đây dựa trên kiến trúc
-Transformer với cơ chế self-attention, cho phép mỗi token
+Transformer \tlcite{ref:vaswani2017} với cơ chế self-attention, cho phép mỗi token
 tại thời điểm $t$ tính tương tác với mọi token trước đó (trong chế độ
 tạo văn bản) hoặc cả trước/sau (trong huấn luyện), thay vì dựa hoàn toàn
 vào trạng thái nén tuần tự như RNN. Ở mức tổng quan, cơ chế này giúp mô
 hình bắt mối phụ thuộc dài, phù hợp tạo bài quảng cáo, mô tả sản phẩm
-hay kịch bản bài đăng có độ dài vừa phải trên mạng xã hội. Trên nền tảng
+hay kịch bản bài đăng có độ dài vừa phải trên mạng xã hội. Từ kiến trúc
+gốc này đã hình thành hai nhánh mô hình tiêu biểu: nhánh encoder hai
+chiều phục vụ tác vụ hiểu ngôn ngữ, đại diện là BERT
+\tlcite{ref:devlin2019}, và nhánh decoder-only phục vụ tác vụ sinh văn
+bản, được phổ biến rộng rãi từ GPT-3 \tlcite{ref:brown2020} --- nhánh
+sau chính là nền tảng của các mô hình được sử dụng trong đề án. Trên nền tảng
 chung này, nhiều cải tiến (GQA, RoPE, MoE) hướng tới tăng tốc suy diễn,
 giảm bộ nhớ, hoặc mở rộng quy mô mà vẫn kiểm soát chi phí vận hành,
 phù hợp tình huống triển khai thực tế tại doanh nghiệp vừa và nhỏ nơi
@@ -55,7 +63,7 @@ trúc tuần tự cũ hơn.
 
 Trong cơ chế chú ý nhiều đầu (multi-head attention), mỗi head thường
 có cặp ma trận truy vấn (Query) và cặp khóa--giá trị (Key--Value) riêng.
-Grouped-Query Attention (GQA) gom nhiều head truy vấn để dùng
+Grouped-Query Attention (GQA) \tlcite{ref:ainslie2023} gom nhiều head truy vấn để dùng
 chung một tập hợp head Key--Value (theo nhóm), giảm số lần tính toán
 và tải bộ nhớ liên quan tới bản sao KV, đặc biệt hữu ích với số lượng
 head lớn khi tạo văn bản từng bước. Về mặt thực tiễn, GQA cân bằng giữa
@@ -68,7 +76,8 @@ các tầng attention.
 \subsection{Rotary Position Embedding (RoPE)}
 
 Thay vì cộng vector vị trí tuyệt đối cố định vào embedding token theo
-kiểu sin/cos từng chiều, Rotary Position Embedding (RoPE) mã
+kiểu sin/cos từng chiều, Rotary Position Embedding (RoPE)
+\tlcite{ref:su2024} mã
 hoá thông tin vị trí bằng phép xoay biểu diễn (trong nhóm
 vector hai chiều) tuỳ theo tương đối vị trí $m-n$ giữa query và key.
 Kết quả là mô hình học mối quan hệ tương đối giữa các token, thường
@@ -98,7 +107,7 @@ cảnh thiết kế mô hình mã nguồn mở hiện đại.
 
 \subsection{Dòng mô hình Qwen3.5 --- lựa chọn thực nghiệm}\label{subsec:qwen}
 
-Dòng mô hình Qwen3.5 (Alibaba Cloud) là họ mô hình ngôn ngữ mã nguồn
+Dòng mô hình Qwen3.5 (Alibaba Cloud) \tlcite{ref:qwen2025} là họ mô hình ngôn ngữ mã nguồn
 mở sử dụng kiến trúc decoder-only Transformer, tích hợp GQA và RoPE,
 hỗ trợ đa ngôn ngữ bao gồm tiếng Việt. Các biến thể có kích thước từ
 dưới 2B đến hơn 70B tham số cho phép lựa chọn linh hoạt giữa chi phí
@@ -143,7 +152,7 @@ luyện. Điều này phù hợp bài toán định hướng phong cách marketi
 hạn, thay vì mô hình hoá lại toàn bộ thống kê ngôn ngữ.
 
 \paragraph{LoRA và QLoRA.}
-Low-Rank Adaptation (LoRA) bổ sung cập nhật có hạng thấp lên
+Low-Rank Adaptation (LoRA) \tlcite{ref:hu2022} bổ sung cập nhật có hạng thấp lên
 một tầng tuyến tính đã cố định trọng số trước. Với ma trận trọng số
 gốc $W_0 \in \mathbb{R}^{d_{\mathrm{out}} \times d_{\mathrm{in}}}$,
 cập nhật được tham số hoá bởi
@@ -159,7 +168,7 @@ giảm mạnh so với cập nhật trực tiếp $W_0$. Tác vụ tạo nội d
 marketing từ prompt có cấu trúc ổn định đặc biệt hưởng lợi từ cách
 ``uốn'' nhẹ lớp tuyến tính mà không cần sao chép cả tỷ tham số.
 
-QLoRA kết hợp lượng tử hoá mô hình cơ sở ở dạng độ chính xác
+QLoRA \tlcite{ref:dettmers2023} kết hợp lượng tử hoá mô hình cơ sở ở dạng độ chính xác
 thấp (4-bit, định dạng NF4) khi tải/huấn luyện, đồng thời duy trì LoRA
 ở vài bit cao hơn cho phép nhảy gradient, giúp giảm bộ nhớ vật lý tới
 mức huấn luyện trên thiết bị tầm trung --- phù hợp tình huống nghiên
@@ -185,7 +194,7 @@ hình để dạy nó cách viết theo phong cách Facebook F\&B Việt Nam.
 
 Khi dữ liệu có nhãn khan hiếm hoặc tín hiệu chất lượng khó đo
 bằng nhãn tường minh --- chẳng hạn ``phong cách marketing đúng chất
-F\&B'' --- học tăng cường (RL) cho phép tối ưu mô hình trực tiếp theo
+F\&B'' --- học tăng cường (RL) \tlcite{ref:sutton2018} cho phép tối ưu mô hình trực tiếp theo
 hàm thưởng đo được. Thay vì học từ câu trả lời mẫu đúng, mô hình
 nhận tín hiệu thưởng sau mỗi đầu ra và cập nhật tham số để tối đa hóa
 thưởng kỳ vọng. Trong ngữ cảnh tạo nội dung, hàm thưởng có thể được
@@ -198,9 +207,15 @@ tại Mục~\ref{sec:grpo-result}); việc dùng trực tiếp pipeline đánh g
 làm reward được đề xuất như hướng phát triển tiếp theo.
 
 \paragraph{Group Relative Policy Optimization (GRPO).}
+Hướng căn chỉnh mô hình theo phản hồi con người khởi nguồn từ ý tưởng học
+hàm thưởng từ các so sánh sở thích thay vì nhãn tuyệt đối
+\tlcite{ref:christiano2017}, sau đó được chuẩn hoá thành quy trình RLHF
+ba bước với thuật toán PPO \tlcite{ref:schulman2017} làm bộ tối ưu và một
+reward model được huấn luyện riêng \tlcite{ref:ouyang2022}.
 Các phương pháp dựa trên PPO và RLHF truyền thống thường cần một reward
 model tách biệt huấn luyện trước, phát sinh chi phí cỡ bậc tương tự mô
-hình chính. Group Relative Policy Optimization (GRPO) giải quyết vấn đề
+hình chính. Group Relative Policy Optimization (GRPO) \tlcite{ref:shao2024}
+giải quyết vấn đề
 này bằng cách tối ưu theo chênh lệch thưởng \emph{tương đối} trong từng
 nhóm mẫu sinh (cùng bối cảnh, nhiều ứng viên đầu ra), thay vì ước lượng
 giá trị tuyệt đối ổn định trên từng bước.
@@ -220,6 +235,11 @@ thời có thêm ràng buộc KL-divergence so với chính sách tham chiếu
 $\pi_{\mathrm{ref}}$ để tránh phân kỳ quá xa. Cơ chế này giảm phụ thuộc
 vận hành vào reward model cỡ lớn, phù hợp phạm vi đề án tập trung
 định hình phong cách và hành vi của Agent mà vẫn an toàn về tài nguyên.
+Một hướng khác cùng mục tiêu loại bỏ reward model là tối ưu sở thích trực
+tiếp (Direct Preference Optimization, DPO) \tlcite{ref:rafailov2023}, đưa
+bài toán RL về dạng phân loại trên các cặp câu trả lời được ưa thích và
+không được ưa thích; tuy nhiên DPO đòi hỏi dữ liệu cặp sở thích có nhãn,
+điều kiện chưa sẵn có trong phạm vi đề án.
 
 Ưu điểm của GRPO so với PPO không chỉ là tiết kiệm tài nguyên. Cơ chế
 so sánh trong nhóm còn trực quan hơn với bài toán sinh nội dung sáng
@@ -249,7 +269,8 @@ cấp các bộ huấn luyện sẵn dùng như \texttt{SFTTrainer} cho
 tinh chỉnh có giám sát và \texttt{GRPOTrainer} cho tối ưu
 theo thưởng tương đối; thư viện Unsloth tối ưu kernel
 huấn luyện LoRA giúp giảm thời gian và bộ nhớ đáng kể trên
-một GPU đơn. Các khung này thường tích hợp PEFT của HuggingFace
+một GPU đơn. Các khung này được xây dựng trên thư viện Transformers
+\tlcite{ref:wolf2020} và thường tích hợp PEFT của HuggingFace
 để quản lý adapter và lượng tử hóa, đưa quy trình tinh chỉnh
 một mô hình mã nguồn mở cỡ vài tỷ tham số vào tầm tài nguyên
 nghiên cứu thực tế. Cấu hình cụ thể được trình bày ở Chương
@@ -269,7 +290,7 @@ hoặc bài không có CTA --- là bước tiền xử lý không thể bỏ qua
 
 \subsection{Nền tảng pipeline}
 
-Retrieval-Augmented Generation (RAG) bổ sung bước
+Retrieval-Augmented Generation (RAG) \tlcite{ref:lewis2020} bổ sung bước
 truy hồi từ tập tài liệu (hoặc cơ sở tri thức) bên
 ngoài trước khi mô hình sinh câu trả lời. Luồng tổng quát: (1)
 mã hóa truy vấn và (một phần) tài liệu thành vector; (2) tìm
@@ -288,7 +309,10 @@ rộng được --- RAG cho phép một mô hình duy nhất phục vụ nhiều
 hiệu khác nhau bằng cách thay đổi ngữ cảnh truy hồi trong prompt.
 Đây là cơ chế tách bạch giữa \emph{năng lực ngôn ngữ} (học qua
 fine-tuning) và \emph{tri thức domain} (cung cấp qua RAG), phù hợp với
-mô hình SaaS cho nhiều SME F\&B.
+mô hình SaaS cho nhiều SME F\&B. Các biến thể nâng cao như Self-RAG
+\tlcite{ref:asai2024} còn cho phép mô hình tự quyết định khi nào cần
+truy hồi và tự phê bình đoạn ngữ cảnh đã lấy về, giảm nhiễu khi kho tài
+liệu lớn dần theo thời gian vận hành.
 
 \begin{figure}[htbp]
     \centering
@@ -319,11 +343,20 @@ mô tả tài nguyên theo từng dịp đăng).
 
 Các bản ghi (chunk) được ánh xạ sang vector bằng bộ
 embedding (mô hình bảng, độc lập với LLM sinh, hoặc
-dùng chung họ nếu cấu hình cho phép). Truy vấn từ
+dùng chung họ nếu cấu hình cho phép); một hướng phổ
+biến là dùng mô hình embedding câu kiểu Sentence-BERT
+\tlcite{ref:reimers2019}. Truy vấn từ
 người dùng/Agent cũng được cùng không gian vector; việc
 tìm kiếm tương tự theo tích vô hướng hoặc khoảng cách
 cosine, kèm top--$k$ ứng viên, là lớp nền
-của vector store. Ứng dụng cho đề án: bảo đảm nội
+của vector store --- cách tiếp cận truy hồi dày đặc
+(dense retrieval) \tlcite{ref:karpukhin2020} này bổ
+sung cho các phương pháp truy hồi từ vựng cổ điển như
+BM25 \tlcite{ref:robertson2009}, vốn mạnh khi truy vấn
+khớp đúng từ khoá nhưng yếu với diễn đạt đồng nghĩa.
+Ở quy mô lớn, việc tìm kiếm lân cận gần đúng thường
+được giao cho các thư viện chuyên dụng như FAISS
+\tlcite{ref:johnson2021}. Ứng dụng cho đề án: bảo đảm nội
 dung sinh còn khớp thực thể (tên món, địa
 danh, tên thương hiệu) bằng cách ưu tiên cung cấp ngữ
 cảnh từ kho tài liệu đã lập chỉ mục, bổ sung cho phần
@@ -338,7 +371,16 @@ vector store và embedding đầy đủ là hướng mở rộng tiếp theo.
 Việc đăng nội dung tự động lên kênh Facebook yêu cầu
 một tầng chấm điểm / lọc trước bước phê
 duyệt cuối, phù hợp bối cảnh ``approval step'' đã
-phân tích ở chương nghiên cứu thị trường. Chương
+phân tích ở chương nghiên cứu thị trường.
+Các chỉ số đánh giá sinh ngôn ngữ cổ điển dựa trên so
+khớp với văn bản tham chiếu --- BLEU \tlcite{ref:papineni2002},
+ROUGE \tlcite{ref:lin2004} hay BERTScore
+\tlcite{ref:zhang2020} --- không phù hợp với bài toán
+này, vì một bài đăng marketing không có đáp án tham
+chiếu duy nhất và chất lượng của nó phụ thuộc vào
+phong cách, tính trung thực với thông tin sản phẩm và
+mức độ thuyết phục hơn là mức trùng khớp từ vựng. Vì
+vậy chương
 này tách hai lớp: quy tắc tường minh và thẩm định theo bước
 tương tự thẩm phán bằng LLM, để Chương
 \ref{chap:thuc-nghiem} mô tả pipeline cụ
@@ -403,9 +445,15 @@ khỏi điểm Vibe tổng hợp.
 
 \subsection{G-Eval và đánh giá đa chiều bằng LLM (LLM-as-a-Judge)}
 
-G-Eval đề xuất dùng chính LLM làm thẩm phán: cung cấp
-rubric (tiêu chí, thang điểm) kèm Chain-of-Thought ngắn
-để gán điểm chất lượng. Đề án tích hợp G-Eval từ thư
+G-Eval \tlcite{ref:liu2023} đề xuất dùng chính LLM làm thẩm phán: cung cấp
+rubric (tiêu chí, thang điểm) kèm Chain-of-Thought
+\tlcite{ref:wei2022} ngắn
+để gán điểm chất lượng. Cách tiếp cận LLM-as-a-Judge
+này đã được kiểm chứng trên các bộ benchmark hội thoại
+quy mô lớn và cho thấy mức tương quan cao với đánh giá
+của con người \tlcite{ref:zheng2023}, đồng thời cũng
+bộc lộ các thiên lệch cần lưu ý (ưu tiên câu trả lời
+dài, thiên lệch theo vị trí). Đề án tích hợp G-Eval từ thư
 viện DeepEval cho lớp Faithfulness và Expansion, mỗi lớp
 có tiêu chí đặc thù (xem Chương~\ref{chap:thuc-nghiem}).
 
@@ -472,6 +520,10 @@ sinh lại, tạo thành vòng lặp phản hồi tự động có định hư�
 
 \subsection{Khái niệm Agent và vòng lặp suy diễn}
 
+Trong trí tuệ nhân tạo cổ điển, tác nhân được định nghĩa là
+một thực thể cảm nhận môi trường qua bộ cảm biến và tác động
+trở lại môi trường qua bộ chấp hành nhằm đạt mục tiêu đặt ra
+\tlcite{ref:russell2020}, \tlcite{ref:wooldridge2009}.
 Trong khuôn khổ đề án, tác nhân (Agent) được hiểu là hệ
 thống gồm một mô hình ngôn ngữ lớn đóng vai bộ điều khiển,
 kèm tập công cụ (tool) bên ngoài, một dạng bộ nhớ ngắn hoặc
@@ -481,7 +533,10 @@ sinh đầu ra cho một prompt cố định, Agent có thể đọc kết
 quả mà công cụ trả về (ví dụ: kết quả truy hồi tài liệu,
 bản ghi sản phẩm trong cơ sở dữ liệu), suy luận lại trên
 thông tin mới, rồi quyết định tiếp tục gọi công cụ khác
-hoặc sinh phản hồi cuối.
+hoặc sinh phản hồi cuối. Đây là hướng nghiên cứu phát
+triển rất nhanh trong vài năm gần đây, với nhiều khảo
+sát tổng hợp về kiến trúc, năng lực và rủi ro của tác
+nhân dựa trên LLM \tlcite{ref:xi2025}.
 
 \begin{figure}[H]
     \centering
@@ -510,12 +565,17 @@ cho tất cả, trong khi kiến trúc đa tác nhân cho phép tối ưu từng
 
 \subsection{Một số mẫu thiết kế phổ biến}
 
-ReAct (Reason + Act) là mẫu phổ biến: ở mỗi bước, mô hình
+ReAct (Reason + Act) \tlcite{ref:yao2023} là mẫu phổ biến: ở mỗi bước, mô hình
 sinh ra một đoạn suy luận ngắn (Thought), quyết định một
 hành động (Action), nhận kết quả quan sát (Observation),
 rồi tiếp tục lặp đến khi đạt điều kiện kết thúc. Cách bố
 trí này giúp ghi vết quá trình ra quyết định và thuận lợi
-cho việc gỡ lỗi khi đầu ra không đạt yêu cầu.
+cho việc gỡ lỗi khi đầu ra không đạt yêu cầu. Một mẫu bổ
+sung là Reflexion \tlcite{ref:shinn2023}, trong đó tác
+nhân tự viết nhận xét bằng ngôn ngữ tự nhiên về lần thử
+thất bại trước rồi đưa nhận xét đó vào ngữ cảnh của lần
+thử tiếp theo --- tương tự cơ chế ``lessons learned''
+được áp dụng cho ContentAgent ở Chương~\ref{chap:thuc-nghiem}.
 
 \begin{figure}[H]
     \centering
@@ -526,7 +586,9 @@ cho việc gỡ lỗi khi đầu ra không đạt yêu cầu.
 
 Tool calling (hay function calling) là cơ chế cho phép LLM
 lựa chọn công cụ thông qua một giao diện có cấu trúc, thường
-là JSON schema mô tả tên công cụ và các tham số. Thay vì để
+là JSON schema mô tả tên công cụ và các tham số; ý tưởng dạy
+mô hình tự học cách gọi công cụ ngoài đã được chứng minh khả
+thi từ Toolformer \tlcite{ref:schick2023}. Thay vì để
 mô hình tự do sinh chuỗi hành động ở dạng văn bản tự do,
 công cụ được khai báo tường minh, mô hình điền tham số, và
 hệ thống ngoài thực thi rồi trả kết quả lại. Cách này nâng
@@ -546,6 +608,8 @@ hồi phiên hội thoại.
 
 Khi một bài toán phức tạp được chia thành nhiều bước có
 tính chất khác nhau, kiến trúc đa tác nhân (multi-agent)
+--- vốn đã có nền tảng lý thuyết lâu đời trong ngành
+\tlcite{ref:shoham2008}, \tlcite{ref:stone2000} ---
 thường thay thế phương án một LLM duy nhất gánh mọi
 trách nhiệm. Mỗi agent đảm nhiệm một vai trò có ranh
 giới rõ: agent điều phối giao tiếp với người dùng và phân
@@ -556,7 +620,14 @@ mỗi vai gọn và dễ tinh chỉnh, có thể thay mô hình của
 từng vai độc lập (ví dụ dùng mô hình nhỏ cho điều phối và
 mô hình lớn hơn cho sinh nội dung), và việc đánh giá chất
 lượng có thể quy về từng vai thay vì một đầu ra tổng hợp
-khó truy vết.
+khó truy vết. Các khung đa tác nhân dựa trên LLM gần đây
+minh hoạ rõ hướng này: AutoGen \tlcite{ref:wu2024} tổ
+chức cộng tác qua hội thoại giữa các agent có thể cấu
+hình, MetaGPT \tlcite{ref:hong2024} gán cho mỗi agent
+một vai trò nghiệp vụ kèm quy trình chuẩn hoá, còn
+Generative Agents \tlcite{ref:park2023} cho thấy vai trò
+của bộ nhớ và cơ chế phản tư khi nhiều agent cùng vận
+hành lâu dài.
 
 \begin{figure}[H]
     \centering
