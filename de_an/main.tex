@@ -8,6 +8,7 @@
 \usepackage{array}
 \usepackage{booktabs}
 \usepackage{xurl}
+\usepackage[titles]{tocloft}
 \usepackage{hyperref}
 \usepackage{xcolor}
 \usepackage{listings}
@@ -23,6 +24,18 @@
 \usepackage[font={small,singlespacing},labelfont=bf,labelsep=colon]{caption}
 \captionsetup[figure]{labelsep=space}
 \captionsetup[table]{labelsep=colon}
+
+% ---------------------------------------------------------------------------
+% Danh sách hình vẽ / bảng: hiển thị "Hình 3.1:" và "Bảng 3.1:" thay vì "3.1"
+% ---------------------------------------------------------------------------
+\renewcommand{\cftfigpresnum}{\figurename~}
+\renewcommand{\cftfigaftersnum}{:}
+\settowidth{\cftfignumwidth}{\cftfigpresnum 99.99\cftfigaftersnum\quad}
+\setlength{\cftfigindent}{0pt}
+\renewcommand{\cfttabpresnum}{\tablename~}
+\renewcommand{\cfttabaftersnum}{:}
+\settowidth{\cfttabnumwidth}{\cfttabpresnum 99.99\cfttabaftersnum\quad}
+\setlength{\cfttabindent}{0pt}
 
 % ---------------------------------------------------------------------------
 % Giãn dòng phần nội dung: 1.241 ở cỡ chữ 12pt tương đương "cách dòng 1.5"
