@@ -7,6 +7,7 @@
 \usepackage{amsmath, amssymb}
 \usepackage{array}
 \usepackage{booktabs}
+\usepackage{longtable}
 \usepackage{xurl}
 \usepackage[titles]{tocloft}
 \usepackage{hyperref}
@@ -21,26 +22,41 @@
 \usetikzlibrary{calc}
 \usepackage{setspace}
 \usepackage{etoolbox}
-\usepackage[font={small,singlespacing},labelfont=bf,labelsep=colon]{caption}
+% Nhãn "Hình 3.1", "Bảng 2.1", "Listing 4.1" in đậm, không có dấu hai chấm
+\usepackage[font={small,singlespacing},labelfont=bf,labelsep=space]{caption}
 \captionsetup[figure]{labelsep=space}
-\captionsetup[table]{labelsep=colon}
+\captionsetup[table]{labelsep=space}
+\captionsetup[lstlisting]{labelsep=space}
 
 % ---------------------------------------------------------------------------
-% Danh sách hình vẽ / bảng: hiển thị "Hình 3.1:" và "Bảng 3.1:" thay vì "3.1"
+% Danh sách hình vẽ / bảng: hiển thị "Hình 3.1" và "Bảng 3.1" thay vì "3.1"
 % ---------------------------------------------------------------------------
 % Mục lục: hiển thị "Chương 1" thay vì "1"
 \renewcommand{\cftchappresnum}{\chaptername~}
 \renewcommand{\cftchapaftersnum}{.}
 \settowidth{\cftchapnumwidth}{\bfseries\cftchappresnum 9\cftchapaftersnum\space}
 
-\renewcommand{\cftfigpresnum}{\figurename~}
-\renewcommand{\cftfigaftersnum}{:}
-\settowidth{\cftfignumwidth}{\cftfigpresnum 99.99\cftfigaftersnum\quad}
+% "Hình 3.1" / "Bảng 2.1" in đậm, không có dấu hai chấm sau số
+\renewcommand{\cftfigpresnum}{\bfseries\figurename~}
+\renewcommand{\cftfigaftersnum}{\mdseries}
+\settowidth{\cftfignumwidth}{\bfseries\figurename~9.9\space}
 \setlength{\cftfigindent}{0pt}
-\renewcommand{\cfttabpresnum}{\tablename~}
-\renewcommand{\cfttabaftersnum}{:}
-\settowidth{\cfttabnumwidth}{\cfttabpresnum 99.99\cfttabaftersnum\quad}
+\renewcommand{\cfttabpresnum}{\bfseries\tablename~}
+\renewcommand{\cfttabaftersnum}{\mdseries}
+\settowidth{\cfttabnumwidth}{\bfseries\tablename~9.9\space}
 \setlength{\cfttabindent}{0pt}
+
+% Danh sách listing (mã nguồn): tocloft quản lý file .lol do package listings ghi ra
+% Dùng tên "listing" cho bộ đếm phụ (listings đã chiếm tên "lstlisting"),
+% rồi trỏ \l@lstlisting sang định dạng của tocloft.
+\newlistof{listing}{lol}{Danh sách listing}
+\renewcommand{\cftlistingpresnum}{\bfseries\lstlistingname~}
+\renewcommand{\cftlistingaftersnum}{\mdseries}
+\settowidth{\cftlistingnumwidth}{\bfseries\lstlistingname~9.9\space}
+\setlength{\cftlistingindent}{0pt}
+\makeatletter
+\AtBeginDocument{\let\l@lstlisting\l@listing}
+\makeatother
 
 % ---------------------------------------------------------------------------
 % Giãn dòng phần nội dung: 1.241 ở cỡ chữ 12pt tương đương "cách dòng 1.5"
@@ -54,6 +70,7 @@
 % Giữ giãn dòng đơn ở những chỗ giãn 1.5 sẽ làm rời rạc: bảng, mã nguồn,
 % chú thích cuối trang và các danh sách tự sinh (mục lục, hình vẽ, bảng).
 \AtBeginEnvironment{tabular}{\setstretch{1}}
+\AtBeginEnvironment{longtable}{\setstretch{1}}
 \AtBeginEnvironment{tabularx}{\setstretch{1}}
 \AtBeginEnvironment{lstlisting}{\setstretch{1}}
 \AtBeginEnvironment{verbatim}{\setstretch{1}}
@@ -65,6 +82,10 @@
 \appto\listoffigures{\endgroup}
 \preto\listoftables{\begingroup\dsGonGang}
 \appto\listoftables{\endgroup}
+\AtBeginDocument{%
+  \preto\listoflisting{\begingroup\dsGonGang}%
+  \appto\listoflisting{\endgroup}%
+}
 \let\oldfootnotetext\footnotetext
 \renewcommand{\footnotetext}[1]{\begingroup\setstretch{1}\oldfootnotetext{#1}\endgroup}
 
@@ -133,6 +154,9 @@
 \clearpage
 
 % Mục lục (cần ít nhất hai lần pdflatex sau khi đổi cấu trúc chương)
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{Mục lục}
 \tableofcontents
 
 % Danh sách hình vẽ và bảng (tạo tự động từ LaTeX)
@@ -145,6 +169,15 @@
 \phantomsection
 \addcontentsline{toc}{chapter}{Danh sách bảng}
 \listoftables
+
+% Danh sách listing (mã nguồn)
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{Danh sách listing}
+\listoflisting
+
+% Danh mục ký hiệu viết tắt
+\input{danh_muc_viet_tat}
 
 % Nội dung chính: đánh số Ả Rập bắt đầu từ 1 tại Chương 1
 \cleardoublepage
@@ -164,9 +197,7 @@
 \chapter*{Tài liệu tham khảo}\label{chap:tai-lieu-tham-khao}
 \input{tai_lieu_tham_khao}
 
-% Lý lịch trích ngang: 3 trang cuối cùng của đề án
+% Lý lịch trích ngang (thông tin cá nhân + quá trình đào tạo, công tác)
 \input{ly_lich_trich_ngang}
-\input{qua_trinh_dao_tao}
-\input{qua_trinh_cong_tac}
 
 \end{document}

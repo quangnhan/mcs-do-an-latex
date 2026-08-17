@@ -1,19 +1,67 @@
-% Phần lý lịch trích ngang -- thông tin cá nhân
+% Phần lý lịch trích ngang: thông tin cá nhân, quá trình đào tạo và công tác.
+% Toàn bộ gói trong một trang: thông tin cá nhân, đào tạo, công tác.
 \cleardoublepage
 \phantomsection
 \addcontentsline{toc}{chapter}{Phần lý lịch trích ngang}
-\chapter*{PHẦN LÝ LỊCH TRÍCH NGANG}
+\chapter*{Phần lý lịch trích ngang}
 
-\vspace{-1em}
+% Nén chiều cao dòng của các bảng để cả phần này gọn trong một trang
+\renewcommand{\arraystretch}{1.05}
+
+% Tiêu đề "Quá trình ..." dùng đúng font của tiêu đề chương (\Huge\bfseries,
+% canh lề trái) như "Tài liệu tham khảo" để các headline đồng bộ nhau.
+\newcommand{\llheading}[1]{%
+  \par\vspace{1em}%
+  \begingroup\setstretch{1}\raggedright\noindent
+  \Huge\bfseries #1\par
+  \endgroup
+  \nobreak\vspace{0.3em}\nobreak}
+
+\vspace{-3.5em}
 
 \noindent
 \begin{tabular}{@{}p{4.2cm}p{10cm}@{}}
 \textbf{Họ và tên:} & Võ Quang Nhân \\[0.2em]
-\textbf{Mã số học viên:} & 2470107 \\[0.2em]
-\textbf{Ngày, tháng, năm sinh:} & 14/05/1995 \\[0.2em]
-\textbf{Nơi sinh:} & Thừa Thiên Huế \\[0.2em]
-\textbf{Chuyên ngành:} & Khoa học Máy tính (Mã ngành: 8480101) \\[0.2em]
+\textbf{Ngày sinh:} & 14/05/1995 \\[0.2em]
 \textbf{Điện thoại:} & 0773 494 369 \\[0.2em]
-\textbf{Email:} & \texttt{quangnhan145@gmail.com} \\[0.2em]
-\textbf{Địa chỉ liên lạc:} & 20 Nguyễn Văn Công, Phường Hạnh Thông, Thành phố Hồ Chí Minh \\
+\textbf{Email:} & quangnhan145@gmail.com \\
+\end{tabular}
+
+% ---------------------------------------------------------------------------
+% Quá trình đào tạo -- cùng trang với thông tin cá nhân
+% ---------------------------------------------------------------------------
+\llheading{Quá trình đào tạo}
+
+\noindent\small
+\begin{tabular}{@{}p{3.4cm}>{\raggedright\arraybackslash}p{5.9cm}>{\raggedright\arraybackslash}p{4.5cm}@{}}
+\toprule
+\textbf{Thời gian} & \textbf{Cơ sở đào tạo} & \textbf{Ngành / Bậc đào tạo} \\
+\midrule
+09/2024 -- 06/2026 & Trường Đại học Bách khoa -- Đại học Quốc gia TP.\ Hồ Chí Minh & Thạc sĩ Khoa học Máy tính \\
+\addlinespace
+06/2021 -- 06/2023 & Viện Đào tạo Quốc tế (ISB) -- Trường Đại học Kinh tế TP.\ Hồ Chí Minh (UEH) & Thạc sĩ Quản trị Kinh doanh (MBA)\\
+\addlinespace
+06/2018 -- 12/2020 & Trường Đại học Duy Tân & Quản trị Kinh doanh\\
+\addlinespace
+10/2013 -- 05/2018 & Trường Đại học Bách khoa -- Đại học Đà Nẵng & Công nghệ Thông tin\\
+\bottomrule
+\end{tabular}
+
+% ---------------------------------------------------------------------------
+% Quá trình công tác -- xếp từ hiện tại ngược về quá khứ.
+% Không \clearpage: gom chung một trang với các phần trên.
+% ---------------------------------------------------------------------------
+\llheading{Quá trình công tác}
+
+\noindent\small
+\begin{tabular}{@{}p{3.4cm}>{\raggedright\arraybackslash}p{5.2cm}>{\raggedright\arraybackslash}p{5.2cm}@{}}
+\toprule
+\textbf{Thời gian} & \textbf{Đơn vị công tác} & \textbf{Chức vụ} \\
+\midrule
+11/2020 -- nay & Công ty TMA Solutions & Trưởng nhóm (Team Leader) \\
+\addlinespace
+10/2018 -- 10/2020 & Công ty LeadPlus Việt Nam & Lập trình viên cao cấp \\
+\addlinespace
+10/2017 -- 09/2018 & Công ty Gameloft & Lập trình viên \\
+\bottomrule
 \end{tabular}
